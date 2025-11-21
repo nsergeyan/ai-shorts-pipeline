@@ -1,0 +1,23 @@
+gpt-oss:latest
+to run ai type OLLAMA_FLASH_ATTENTION="1" OLLAMA_KV_CACHE_TYPE="q8_0" ollama serve
+
+
+
+
+
+
+TTS
+transformers<4.37
+tokenizers<0.19
+torch
+torchaudio
+yt-dlp
+moviepy>=2.1.1
+imageio-ffmpeg
+ffmpeg-python
+
+
+to start in terminal
+export YT_COOKIES_BROWSER=chrome
+export YT_COOKIES_PROFILE=Default
+python main.py or python main.py --offline
