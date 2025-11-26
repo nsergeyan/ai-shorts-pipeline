@@ -15,9 +15,120 @@ yt-dlp
 moviepy>=2.1.1
 imageio-ffmpeg
 ffmpeg-python
-
+pip install pydub
+pip install pyannote.audio==3.1.1
+pip install elevenlabs
 
 to start in terminal
 export YT_COOKIES_BROWSER=chrome
 export YT_COOKIES_PROFILE=Default
 python main.py or python main.py --offline
+
+
+
+for queries:
+python main.py \
+  --mode bio \
+  --subject "Arman Tsarukyan" \
+  --search-query "Arman Tsarukyan fight highlights" \
+  --output "short_tsarukyan.mp4"
+
+
+
+
+
+NEW AI llama3.1:8b
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# modules/voice_generator.py
+import os
+import re
+import torch
+from TTS.api import TTS
+
+from TTS.tts.configs.xtts_config import XttsConfig
+from TTS.tts.models.xtts import XttsAudioConfig, XttsArgs
+from TTS.config.shared_configs import BaseDatasetConfig
+from config import DATA_DIR
+
+# Allow XTTS configs for PyTorch 2.6+ safe loading
+if hasattr(torch, "serialization") and hasattr(torch.serialization, "add_safe_globals"):
+    torch.serialization.add_safe_globals(
+        [XttsConfig, XttsAudioConfig, XttsArgs, BaseDatasetConfig]
+    )
+
+AUDIO_DIR = os.path.join(DATA_DIR, "audio")
+os.makedirs(AUDIO_DIR, exist_ok=True)
+
+# Long neutral + amused Josh reference
+JOSH_REF = "/Users/nareksergeyan/voices/josh_all/josh_neutral_amused_long.wav"
+
+
+def clean_text(text: str) -> str:
+    """Basic cleanup: remove simple markup chars and compress whitespace."""
+    text = re.sub(r"[*\[\]]", "", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def generate_voice(script_text: str,
+                   language: str = "en",
+                   speaker: str = "Damien Black",
+                   filename: str = "narration.wav") -> str:
+    """
+    XTTS with Josh clone, tuned for clear but not-too-robotic pacing.
+    Single XTTS call, no extra processing.
+    """
+    print("🎙️  Loading Coqui XTTS v2...")
+    tts = TTS(
+        model_name="tts_models/multilingual/multi-dataset/xtts_v2",
+        progress_bar=False
+    )
+
+    out_path = os.path.join(AUDIO_DIR, filename)
+    text = clean_text(script_text)
+    if not text:
+        raise ValueError("Script text is empty after cleaning.")
+
+    # Tuned pacing: a bit slower than before, slightly more expressive
+    speed = 1.15
+    temp = 0.66
+
+    print(f"🎧  Generating with speed={speed:.2f}, temp={temp:.2f} using Josh clone...")
+
+    tts.tts_to_file(
+        text=text,
+        speaker_wav=JOSH_REF,
+        language=language,
+        file_path=out_path,
+        temperature=temp,
+        speed=speed,
+        repetition_penalty=1.13
+    )
+
+    print(f"✅  Voice saved to: {out_path}")
+    return out_path
+
+
+if __name__ == "__main__":
+    test_script = (
+        "This is a test of the cloned Josh voice. "
+        "The pace should feel fast and natural for a short, "
+        "without robotic pauses or weird rhythm."
+    )
+    p = generate_voice(test_script, filename="test_josh_xtts_clean_fast.wav")
+    print("Test audio saved at:", p)
