@@ -12,9 +12,8 @@ os.makedirs(AUDIO_DIR, exist_ok=True)
 
 # Put ALL your ElevenLabs API keys here, in priority order.
 ELEVENLABS_API_KEYS = [
-    "sk_1fb956bf6e7460a0335243fd9853a31e80aef1ae2d8fb6f5",
-    "sk_5afd3099309442d3c90105eff526b87e715bbbd3c4097669",
-    "sk_ad89ecd4f4c8344b204aaf03f52eaf2dfce346bfab650438"
+    "sk_cc21928182ec16130df3d57bef14b84de7229010f4e613e1",
+    "sk_f80c169097d116809e2463308520694104be3199ffc7f6fd"
 ]
 
 if not ELEVENLABS_API_KEYS:

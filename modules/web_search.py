@@ -14,7 +14,7 @@ GOOGLE_API_KEY = "AIzaSyCljgmfWD2H2Yv2M3KvadBCW_Kdn3OSan0"
 GOOGLE_CX = "f6b8ba130056b4463"
 
 # How many results per Google page and how many pages to scan
-GOOGLE_RESULTS_PER_PAGE = 10
+GOOGLE_RESULTS_PER_PAGE = 12
 MAX_GOOGLE_PAGES = 5  # Up to 30 results total (10 * 3)
 
 # -------------------------------------------------------------------
@@ -62,7 +62,7 @@ BAD_PATH_KEYWORDS = (
 
 # Minimum + maximum characters for extracted articles
 MIN_ARTICLE_LENGTH = 400  # lowered a bit so short wiki pages still count
-MAX_ARTICLE_CHARS = 6000  # HARD cap per source for your prompt
+MAX_ARTICLE_CHARS = 7000  # HARD cap per source for your prompt
 
 # Very generic words to ignore when extracting main keywords
 GENERIC_QUERY_WORDS = {

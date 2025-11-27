@@ -104,12 +104,6 @@ TASK:
 Write a high-energy script. Target length: 160-180 words.
 Write it as ONE paragraph, no line breaks. Keep the pacing fast.
 
-STRUCTURE:
-1. Hook: Start with "Bro, this game is INSANE." and add 1 more hook sentence.
-2. The Detail: Explain exactly ONE mechanic or story beat in depth. (4-5 short sentences)
-3. The Reaction: Why is this so cool or scary? (3 punchy sentences)
-4. Conclusion: End with "You have to play this."
-
 RULES:
 1. Use casual spoken English.
 2. Use contractions: you're, it's, can't, won't, didn't.
