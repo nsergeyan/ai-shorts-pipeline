@@ -15,7 +15,7 @@ GOOGLE_CX = "f6b8ba130056b4463"
 
 # How many results per Google page and how many pages to scan
 GOOGLE_RESULTS_PER_PAGE = 10
-MAX_GOOGLE_PAGES = 3  # Up to 30 results total (10 * 3)
+MAX_GOOGLE_PAGES = 5  # Up to 30 results total (10 * 3)
 
 # -------------------------------------------------------------------
 # FILTER / HEURISTICS
@@ -29,8 +29,7 @@ SOCIAL_DOMAINS = (
     "tiktok.com",
     "x.com", "twitter.com",
     "pinterest.com",
-    "linkedin.com",
-    "reddit.com",
+    "linkedin.com"
 )
 
 # Blog / fanfic / "noname essay" type sites you said you don't want
@@ -62,8 +61,8 @@ BAD_PATH_KEYWORDS = (
 )
 
 # Minimum + maximum characters for extracted articles
-MIN_ARTICLE_LENGTH = 200  # lowered a bit so short wiki pages still count
-MAX_ARTICLE_CHARS = 1800  # HARD cap per source for your prompt
+MIN_ARTICLE_LENGTH = 400  # lowered a bit so short wiki pages still count
+MAX_ARTICLE_CHARS = 6000  # HARD cap per source for your prompt
 
 # Very generic words to ignore when extracting main keywords
 GENERIC_QUERY_WORDS = {
@@ -114,6 +113,18 @@ def _looks_like_useful_page(url: str, title: str, snippet: str) -> bool:
     parsed = urlparse(url)
     domain = parsed.netloc.lower()
     path = parsed.path.lower()
+
+    # --- EXTRA FILTERS (NO FANON / NON-CANON WIKIS) ---
+    # Block any "Fanon Wiki" style pages
+    if "fanon wiki" in (title or "").lower():
+        return False
+
+    # Block the specific "Journey to the Light" wiki (non-canon)
+    if "journey-to-the-light" in domain or "journey_to_the_light" in domain:
+        return False
+    if "journey-to-the-light" in path or "journey_to_the_light" in path:
+        return False
+    # --------------------------------------------------
 
     # Block known junk / social / non-article domains
     if any(bad in domain for bad in BLOCKED_DOMAINS):

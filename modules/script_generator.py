@@ -5,39 +5,51 @@ from config import OLLAMA_MODEL, DEFAULT_GAME
 from modules.web_search import get_deep_research
 
 # ------------------------------------------------------------
-# CLEANER FOR TTS — ELEVENLABS OPTIMIZED
+# CLEANER FOR TTS — ELEVENLABS OPTIMIZED (FAST TIKTOK STYLE)
 # ------------------------------------------------------------
 def clean_for_audio(text: str) -> str:
     """
-    Final Polish: Removes specific characters that confuse ElevenLabs.
+    Final Polish for ElevenLabs:
+    - Removes formatting
+    - Normalizes punctuation
+    - Avoids long dramatic pauses (no real ellipses)
     """
-    # 1. Standardize Dashes/Ellipses
+    # 0. Normalize newlines
+    text = text.replace("\n", " ")
+
+    # 1. Standardize dashes / ellipses to SHORT pauses
     text = text.replace("—", ", ")
     text = text.replace("–", ", ")
-    text = text.replace("…", ".")  # <--- Fixes the "Then…" issue
-    text = text.replace("...", ".")
+    # Ellipses create huge pauses in TTS; convert to comma (short pause)
+    text = text.replace("…", ", ")
+    text = text.replace("...", ", ")
 
-    # 2. Remove formatting
-    text = re.sub(r'\*\*.*?\*\*', '', text)
+    # 2. Remove / simplify formatting (keep words)
+    # **bold** -> bold
+    text = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+    # [label](url) -> label
+    text = re.sub(r'\[(.*?)\]\(.*?\)', r'\1', text)
+    # [note] -> ""
     text = re.sub(r'\[.*?\]', '', text)
+    # #tags -> ""
     text = re.sub(r'#\w+', '', text)
 
-    # 3. Fix Double Punctuation (The "ROUND!.Tsarukyan" fix)
+    # 3. Fix double punctuation that can confuse prosody
     text = text.replace("!.", "!")
     text = text.replace("?.", "?")
-    text = text.replace("..", ".")
+    text = re.sub(r'\.{2,}', '.', text)   # any remaining "...." -> "."
+    text = re.sub(r',,+', ',', text)
 
-    # 4. Fix missing spaces after punctuation
-    # This turns "ROUND!Tsarukyan" into "ROUND! Tsarukyan"
-    text = re.sub(r'([.!?])([A-Z])', r'\1 \2', text)
+    # 4. Ensure space after punctuation (avoids "ROUND!Tsarukyan")
+    text = re.sub(r'([.!?])([A-Za-z])', r'\1 \2', text)
 
-    # 5. Fix "electric. can" (Lowercase start sentences)
-    # Finds a period followed by space and lowercase, makes it uppercase
-    def capitalize_match(m): return m.group(0).upper()
+    # 5. Capitalize sentence starts after punctuation if lowercase
+    def capitalize_match(m: re.Match) -> str:
+        return m.group(0).upper()
 
     text = re.sub(r'(?<=[.!?]\s)[a-z]', capitalize_match, text)
 
-    # 6. Final Cleanup
+    # 6. Final whitespace cleanup
     text = re.sub(r'\s+', ' ', text).strip()
 
     return text
@@ -75,6 +87,7 @@ def _ollama_generate(prompt: str) -> str:
         if obj.get("done"):
             break
 
+    # Clean here so TTS gets a TikTok‑optimized line
     return clean_for_audio(output)
 
 
@@ -89,12 +102,13 @@ TOPIC: {game}
 
 TASK:
 Write a high-energy script. Target length: 160-180 words.
+Write it as ONE paragraph, no line breaks. Keep the pacing fast.
 
 STRUCTURE:
-1. **Hook:** "Bro, this game is INSANE." (2 sentences)
-2. **The Detail:** Explain exactly ONE mechanic or story beat in depth. (4-5 sentences)
-3. **The Reaction:** Why is this so cool or scary? (3 sentences)
-4. **Conclusion:** "You have to play this."
+1. Hook: Start with "Bro, this game is INSANE." and add 1 more hook sentence.
+2. The Detail: Explain exactly ONE mechanic or story beat in depth. (4-5 short sentences)
+3. The Reaction: Why is this so cool or scary? (3 punchy sentences)
+4. Conclusion: End with "You have to play this."
 
 RULES:
 1. Use casual spoken English.
@@ -103,9 +117,10 @@ RULES:
 
 EMOTION INSTRUCTIONS (CRITICAL):
 - Do NOT use brackets like [excited].
-- To show excitement, use CAPITAL LETTERS for the emphasized word (e.g., "This is INSANE").
-- To show suspense, use "..." (e.g., "But then... it happened").
-- To show shouting, use an exclamation mark !
+- Use CAPITAL LETTERS to emphasize hype words (e.g., "This is INSANE").
+- Keep the pacing FAST. Avoid long dramatic pauses.
+- Use "..." only very rarely and NEVER at the end of a sentence.
+- Use "!" when shouting.
 
 BANNED WORDS:
 - "in this video", "we're going to", "let me tell you", "without further ado"
@@ -132,26 +147,27 @@ RESEARCH:
 {context}
 
 TASK:
-Write a detailed, 140-word storytelling script. 
+Write a detailed, 140-word storytelling script.
 Do not write a short summary. Tell a full story.
+Write as ONE paragraph, no line breaks, fast pacing.
 
 STRUCTURE:
-1. **The Hook (2 sentences):** Start with a shocking statement.
-2. **The Struggle (3-4 sentences):** Give context. Explain why it was hard.
-3. **The Climax (3-4 sentences):** Reveal the crazy detail or achievement using CAPITAL LETTERS.
-4. **The Outro (2 sentences):** A final mind-blowing thought.
+1. The Hook (2 sentences): Start with a shocking statement.
+2. The Struggle (3-4 sentences): Give context. Explain why it was hard.
+3. The Climax (3-4 sentences): Reveal the crazy detail or achievement using CAPITAL LETTERS.
+4. The Outro (2 sentences): A final mind-blowing thought.
 
 EMOTION INSTRUCTIONS:
 - Use CAPITAL LETTERS to emphasize shocking words.
-- Use "..." for dramatic pauses.
+- Avoid long dramatic pauses. Use "..." very rarely and keep talking after it.
 - Use "!" for energetic moments.
 
 BANNED:
 - "was born in", "he/she is known for", "dates", "timelines"
 
 GOOD OPENERS:
-- "[Name] did something nobody expected."
-- "You probably know [Name], but not this."
+- "{name} did something nobody expected."
+- "You probably know {name}, but not this."
 
 OUTPUT: Only spoken words. No headers. No brackets. Do not say "Here is the script."
 
@@ -176,13 +192,15 @@ RESEARCH:
 
 TASK:
 Write a 140-word script sharing mind-blowing facts.
+Write as ONE paragraph, no line breaks. Fast, continuous delivery.
 
 STRUCTURE:
-- **Hook:** "Did you know..."
+- Hook: Start with "Did you know that..." and IMMEDIATELY continue into the crazy fact in the SAME sentence. No big pause after the hook.
 
 EMOTION INSTRUCTIONS:
 - Use CAPITAL LETTERS for mind-blowing words (e.g., "It was HUGE").
-- Use "..." before revealing a fact.
+- Keep the pacing tight. Avoid dramatic "..." pauses.
+- Use "!" when something is shocking.
 
 OUTPUT: Only spoken words. No headers. No brackets. Do not say "Here is the script."
 
@@ -196,7 +214,6 @@ Write the script now:
 # ------------------------------------------------------------
 if __name__ == "__main__":
     print("=== TESTING BIO SCRIPT ===")
-    # Example call
     script = generate_bio_script("Lamine Yamal")
     print(script)
     print(f"\nWord count: {len(script.split())}")

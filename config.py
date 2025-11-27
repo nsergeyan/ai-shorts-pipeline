@@ -2,7 +2,7 @@
 import os
 
 # LLM model
-OLLAMA_MODEL = "gpt-oss:latest"
+OLLAMA_MODEL = "llama3.1:8b"
 DEFAULT_GAME = "ARC Raiders"
 
 # How many seconds from each downloaded video to keep
