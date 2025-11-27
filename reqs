@@ -23,19 +23,7 @@ to start in terminal
 export YT_COOKIES_BROWSER=chrome
 export YT_COOKIES_PROFILE=Default
 python main.py or python main.py --offline
-
-
-
-for queries:
-python main.py \
-  --mode bio \
-  --subject "Arman Tsarukyan" \
-  --search-query "Arman Tsarukyan fight highlights" \
-  --output "short_tsarukyan.mp4"
-
-
-
-
+pip install google-api-python-client google-auth-oauthlib google-auth-httplib2
 
 NEW AI llama3.1:8b
 
@@ -132,3 +120,14 @@ if __name__ == "__main__":
     )
     p = generate_voice(test_script, filename="test_josh_xtts_clean_fast.wav")
     print("Test audio saved at:", p)
+
+
+
+    YOUTUBE:
+
+   CLIENT ID  =  REDACTED_CLIENT_ID
+
+   CLIENT SECRET = REDACTED_CLIENT_SECRET
+
+
+   {"installed":{"client_id":"REDACTED_CLIENT_ID","project_id":"hazbinyoutuber","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"REDACTED_CLIENT_SECRET","redirect_uris":["http://localhost"]}}
