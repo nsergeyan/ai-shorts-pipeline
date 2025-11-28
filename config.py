@@ -1,18 +1,18 @@
-# config.py
 import os
 
-# LLM model
+# LLM model (llama3.1:8b recommended)
 OLLAMA_MODEL = "llama3.1:8b"
-DEFAULT_GAME = "ARC Raiders"
 
-# How many seconds from each downloaded video to keep
-VIDEO_LENGTH_SEC = 60  # set 0 or None to download full videos
+# Download FULL videos so we can pick random segments
+VIDEO_LENGTH_SEC = 60
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 GAMEPLAY_DIR = os.path.join(DATA_DIR, "gameplay")
-os.makedirs(GAMEPLAY_DIR, exist_ok=True)
-
 MUSIC_DIR = os.path.join(DATA_DIR, "music")
-os.makedirs(MUSIC_DIR, exist_ok=True)
+FINAL_DIR = os.path.join(DATA_DIR, "final")
+AUDIO_DIR = os.path.join(DATA_DIR, "audio")
+
+for d in [GAMEPLAY_DIR, MUSIC_DIR, FINAL_DIR, AUDIO_DIR]:
+    os.makedirs(d, exist_ok=True)
