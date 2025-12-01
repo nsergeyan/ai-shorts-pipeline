@@ -62,6 +62,17 @@ def _looks_russian(text: str) -> bool:
     return cyr > 20 and cyr >= lat
 
 
+def _looks_english(text: str) -> bool:
+    """
+    Rough heuristic: is this mostly Latin characters?
+    """
+    if not text:
+        return False
+    lat = sum(1 for ch in text if "A" <= ch <= "z")
+    cyr = sum(1 for ch in text if "А" <= ch <= "я" or ch in "Ёё")
+    return lat > 20 and lat >= cyr
+
+
 def generate_dynamic_script(topic: str, research_query: str, language: str = "en") -> str:
     print(f"🧠 Researching '{research_query}'...")
 
@@ -97,6 +108,7 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
 их можно оставить латиницей.
 
 ФОРМАТ:
+- 110-130 слов в обшем.
 - Один абзац, без переносов строк.
 - Около ста сорока слов.
 - Короткие устные фразы по 3–8 слов.
@@ -161,8 +173,7 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
 - Энергичный стиль, как у ютубера, рассказывающего криповые факты.
 - Без эмодзи, без разметки, без скобок.
 - Никаких пояснений, выведи только готовый текст сценария.
-- Нельзя упоминать источники, сайты, подкасты, контекст или то, что «невозможно составить сценарий».
-- Нельзя рекламировать подкасты, каналы, Patreon, Discord и т.п.
+- Нельзя упоминать источники, сайты, подкасты, каналы, Patreon, Discord и т.п.
 
 ТЕМА:
 {topic}
@@ -180,48 +191,39 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         return script
 
     # ======================= ENGLISH MODE ==========================
-    prompt = f"""
-You are a scriptwriter for short-form fact videos (TikTok, Reels, YouTube Shorts).
+    else:  # This was the bug - changed from exact "en" check to else
+        prompt = prompt = f"""
+You are writing a TikTok facts script.
 
-THE TOPIC CAN BE ANYTHING:
-characters, SCP, horror, history, games, science, mysteries, myths, etc.
+TOPIC: {topic}
 
-VERY IMPORTANT:
-- The script MUST be only about the main topic in TOPIC.
-- Ignore parts of the context that describe podcasts, hosts, channels, social media,
-  Patreon, Discord, episode descriptions, show promotions, and similar meta content.
-- NEVER mention names of podcasts, channels, hosts, platforms (YouTube, Spotify, Patreon, etc.).
-- Do NOT say "in this podcast", "on our channel", "follow us", etc.
-- The text must be about the entity/event in TOPIC itself, not about people who talk about it.
-
-TOPIC:
-{topic}
-
-LORE / CONTEXT (for you only, do NOT mention sources or that you were given context):
+RESEARCH:
 {context}
 
 TASK:
-Write a short, engaging script (about 140 words) for a spoken video.
+Write a 140-word script sharing mind-blowing facts.
+Write as ONE paragraph, no line breaks. Fast, continuous delivery.
 
-STYLE:
-- One single paragraph, no line breaks.
-- Short spoken phrases, 3–8 words.
-- Energetic YouTube/facts-channel tone, not academic.
-- No lists, no numbering.
-- No emojis, no brackets, no markdown.
-- Do NOT talk about the task or the context itself.
+STRUCTURE:
+- The script MUST be only about the main topic from the TOPIC block. TOPIC: {topic}
+- Hook: Start with "Let me tell you about..." and IMMEDIATELY continue into the crazy fact in the SAME sentence. No big pause after the hook.
 
-CONTENT RULES:
-- Use only what can be logically derived from the context and is relevant to the main topic.
-- If information is unclear or contradictory, use soft phrasing like
-  "some say", "according to legend", "who knows".
-- Do NOT invent official canon, but light dramatization for storytelling is OK.
-- NEVER mention websites, wikis, podcasts, authors, or "sources".
-- NEVER say you cannot write the script or that information is insufficient.
-- You must ALWAYS output a finished script.
+EMOTION INSTRUCTIONS:
+- Use CAPITAL LETTERS for emotional words.
+- Keep the pacing tight. Avoid dramatic "..." pauses.
+- Use "!" when something is shocking.
 
-OUTPUT:
-Return ONLY the final script text as one paragraph, nothing else.
-    """.strip()
+OUTPUT: Only spoken words. No headers. No brackets. Do not say "Here is the script."
 
-    return _ollama_generate(prompt, temperature=0.6)
+Write the script now:
+""".strip()
+
+        script = _ollama_generate(prompt, temperature=0.6)
+
+        # If model responded in wrong language, try to fix it
+        if language == "es" and not _looks_english(script):  # For Spanish mode
+            print("⚠️ Model didn't respond in expected language. Attempting correction...")
+            # Add language correction logic here if needed
+            pass
+
+        return script

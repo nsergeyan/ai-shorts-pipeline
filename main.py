@@ -20,7 +20,7 @@ except ImportError as e:
 # ==============================================================================
 
 # 1. CHOOSE LANGUAGE ("en" or "ru")
-LANGUAGE = "ru"
+LANGUAGE = "en"
 
 if LANGUAGE == "ru":
     # --- RUSSIAN MODE ---
@@ -30,7 +30,7 @@ if LANGUAGE == "ru":
     GOOGLE_RESEARCH_QUERY = "SCP-096 The Shy Guy facts and lore"
 
     # Video Search (анимации / геймплей по SCP-096)
-    YOUTUBE_GAMEPLAY_QUERY = "SCP 096 animation"
+    YOUTUBE_GAMEPLAY_QUERY = "scp 096 containment breach"
 
     # Name of the voice from VOICES in modules/voice_generator.py
     # VOICES = {"hamid": "...", "Alan": "...", "Molodoy": "..."}
@@ -38,16 +38,16 @@ if LANGUAGE == "ru":
 
 else:
     # --- ENGLISH MODE ---
-    TOPIC = "Alastor from Hazbin Hotel: Scary Facts"
-    GOOGLE_RESEARCH_QUERY = "Alastor Hazbin Hotel interesting facts"
-    YOUTUBE_GAMEPLAY_QUERY = "Alastor Hazbin Hotel moments 4k"
+    TOPIC = "Iteresting facts ABOUT SCP 173, ONLY about scp 173"
+    GOOGLE_RESEARCH_QUERY = "scp 173"
+    YOUTUBE_GAMEPLAY_QUERY = "scp 173 animation, footages"
 
     # English voice name from VOICES in modules/voice_generator.py
     VOICE_NAME = "hamid"
 
 # --- SHARED SETTINGS ---
-MUSIC_QUERY = "scp background musci 10 min"
-MUSIC_VOLUME = 0.1
+MUSIC_QUERY = "SCP: Containment Breach background ambient music"
+MUSIC_VOLUME = 0.07
 
 OUTPUT_FILE = "final_short.mp4"
 SUBTITLES_POSITION = "top"
@@ -77,7 +77,11 @@ def run_pipeline():
         print("❌ No video found.")
         return
 
-    # 3. VOICE (ElevenLabs) -- UPDATED CALL SIGNATURE
+    # 3. MUSIC
+    print(f"🎵 Fetching music: '{MUSIC_QUERY}'")
+    music_path = fetch_random_music(search_query=MUSIC_QUERY)
+
+    # 4. VOICE (ElevenLabs) -- UPDATED CALL SIGNATURE
     print(f"🗣️  Generating voice: {VOICE_NAME}...")
     audio_path = generate_voice(
         script_text=script,
@@ -86,17 +90,13 @@ def run_pipeline():
         lang=LANGUAGE    # "ru" or "en" – matches your LANGUAGE setting
     )
 
-    # 4. SUBTITLES (Whisper) -- PASS LANGUAGE FOR BETTER ACCURACY
+    # 5. SUBTITLES (Whisper) -- PASS LANGUAGE FOR BETTER ACCURACY
     print("👂 Transcribing for perfect sync...")
     subtitle_data = transcribe_audio_to_groups(
         audio_path,
         words_per_group=2,
         language=LANGUAGE
     )
-
-    # 5. MUSIC
-    print(f"🎵 Fetching music: '{MUSIC_QUERY}'")
-    music_path = fetch_random_music(search_query=MUSIC_QUERY)
 
     # 6. EDIT
     print("\n🎬  Editing video...")
