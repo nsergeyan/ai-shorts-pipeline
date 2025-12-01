@@ -1,62 +1,117 @@
+# modules/voice_generator.py
 import os
+import re
 from elevenlabs import ElevenLabs
 from config import DATA_DIR
 
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-# ------------------------------------------------------------
-# 🔑 ELEVENLABS CONFIG (PUT YOUR KEYS HERE)
-# ------------------------------------------------------------
 ELEVENLABS_API_KEYS = [
-    "sk_1fb956bf6e7460a0335243fd9853a31e80aef1ae2d8fb6f5",
-    "sk_5afd3099309442d3c90105eff526b87e715bbbd3c4097669",
-    # Add fresh keys here if previous ones are banned/empty
+    "sk_8e9a2105297aebbb4dafeab9d34a5b2388924b12d43e1b56",
+    "sk_cc21928182ec16130df3d57bef14b84de7229010f4e613e1",
+    "sk_57c59bb543ed036e5899a255f6ca26107b53d8cfe7aa35c7",
+    "sk_bb1ef697ea634f801d2940ff0ca0eb40b0af6c8acd13d42c"
 ]
 
 if not ELEVENLABS_API_KEYS:
-    raise RuntimeError("No ElevenLabs API keys configured!")
+    raise RuntimeError("No ElevenLabs API keys configured.")
+
+VOICES = {
+    "hamid": "yr43K8H5LoTp6S1QFSGg",
+    "Alan": "htFfPSZGJwjBv1CL0aMD",
+    "Molodoy": "VKjbtGrk0YiYbA2Xpq7n"
+}
 
 
-# ------------------------------------------------------------
+def clean_text_for_speech(text: str) -> str:
+    """Removes newlines to prevent awkward pauses in both languages."""
+    text = text.replace("\n", " ").replace("\r", " ")
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
-def _try_generate(api_key, text, output_path, voice_id):
-    """Attempts generation with one specific key."""
-    print(f"🔑 Trying key: {api_key[:8]}...")
+
+def _try_generate_with_key(
+        api_key: str,
+        script_text: str,
+        output_path: str,
+        voice_id: str,
+        lang: str
+) -> bool:
     client = ElevenLabs(api_key=api_key)
+    print(f"🔑 Using key: {api_key[:8]}... for Language: {lang.upper()}")
+
+    tmp_path = output_path + ".partial"
+
+    # --- DYNAMIC SETTINGS BASED ON LANGUAGE ---
+    if lang == "ru":
+        # RUSSIAN SETTINGS (Slower, more accurate, specific model)
+        model_id = "eleven_multilingual_v2"
+        voice_settings = {
+            "stability": 0.6,  # Higher stability prevents skipping words
+            "similarity_boost": 0.6,
+            "style": 0.5,
+            "use_speaker_boost": True
+        }
+        latency_opt = None  # Disable optimization for quality
+    else:
+        # ENGLISH SETTINGS (Your "Perfect" settings)
+        model_id = "eleven_turbo_v2_5"
+        voice_settings = {
+            "stability": 0.45,
+            "similarity_boost": 0.85,
+            "style": 0.9,
+            "use_speaker_boost": True
+        }
+        latency_opt = "3"  # Speed optimization
 
     try:
+        cleaned_text = clean_text_for_speech(script_text)
+
         audio_stream = client.text_to_speech.convert(
-            text=text,
+            text=cleaned_text,
             voice_id=voice_id,
-            # Multilingual v2 or Turbo v2.5 MUST be used for Russian
-            model_id="eleven_multilingual_v2",
-            output_format="mp3_44100_128",
-            voice_settings={
-                "stability": 0.40,
-                "similarity_boost": 0.80,
-                "style": 0.5,
-                "use_speaker_boost": True
-            }
+            model_id=model_id,
+            voice_settings=voice_settings,
+            optimize_streaming_latency=latency_opt
         )
 
-        with open(output_path, "wb") as f:
+        with open(tmp_path, "wb") as f:
             for chunk in audio_stream:
                 f.write(chunk)
 
+        os.replace(tmp_path, output_path)
+        print(f"✅ Success. Saved → {output_path}")
         return True
+
     except Exception as e:
-        print(f"⚠️ Key failed: {e}")
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        print(f"⚠️ Error: {e}")
         return False
 
 
-def generate_voice(script_text: str, filename: str, voice_id: str) -> str:
+def generate_voice(
+        script_text: str,
+        filename: str = "narration.mp3",
+        voice: str = "hamid",
+        lang: str = "en"  # <--- ADDED LANG PARAMETER
+) -> str:
     output_path = os.path.join(AUDIO_DIR, filename)
+    voice_id = VOICES.get(voice, VOICES["hamid"])
 
-    # Loop through keys until one works
-    for key in ELEVENLABS_API_KEYS:
-        if _try_generate(key, script_text, output_path, voice_id):
-            print(f"✅ Saved -> {output_path}")
+    print(f"🎙️ Generating voice '{voice}' ({lang})...")
+
+    for api_key in ELEVENLABS_API_KEYS:
+        ok = _try_generate_with_key(
+            api_key=api_key,
+            script_text=script_text,
+            output_path=output_path,
+            voice_id=voice_id,
+            lang=lang
+        )
+        if ok:
             return output_path
+        print("⏭️ Switching key...")
 
-    raise RuntimeError("❌ All ElevenLabs keys failed (Quota exceeded or Banned).")
+    raise RuntimeError("All ElevenLabs keys failed.")

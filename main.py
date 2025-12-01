@@ -1,7 +1,5 @@
 import os
 import sys
-import random
-import time
 
 # Allow imports from modules/
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
@@ -26,17 +24,17 @@ LANGUAGE = "ru"
 
 if LANGUAGE == "ru":
     # --- RUSSIAN MODE ---
-    TOPIC = "Аластор (Отель Хазбин): Пугающие факты"
+    TOPIC = "SCP‑096, он же ""скромник"": жуткие факты, кто он на самом деле?"
 
     # Research in English gives better results, AI will translate
-    GOOGLE_RESEARCH_QUERY = "Alastor Hazbin Hotel facts lore theories"
+    GOOGLE_RESEARCH_QUERY = "SCP-096 The Shy Guy facts and lore"
 
-    # Video Search
-    YOUTUBE_GAMEPLAY_QUERY = "Hazbin Hotel Alastor moments 4k"
+    # Video Search (анимации / геймплей по SCP-096)
+    YOUTUBE_GAMEPLAY_QUERY = "SCP 096 animation"
 
-    # PUT YOUR RUSSIAN ELEVENLABS VOICE ID HERE
-    # (You can find it in ElevenLabs -> VoiceLab -> ID)
-    VOICE_ID = "2EiwWnXFnvU5JabPnv8n"  # Example: Clyde (Deep) or find a Russian one
+    # Name of the voice from VOICES in modules/voice_generator.py
+    # VOICES = {"hamid": "...", "Alan": "...", "Molodoy": "..."}
+    VOICE_NAME = "Molodoy"   # or "Alan"
 
 else:
     # --- ENGLISH MODE ---
@@ -44,18 +42,20 @@ else:
     GOOGLE_RESEARCH_QUERY = "Alastor Hazbin Hotel interesting facts"
     YOUTUBE_GAMEPLAY_QUERY = "Alastor Hazbin Hotel moments 4k"
 
-    # English Voice ID (Hamid/Mat)
-    VOICE_ID = "yr43K8H5LoTp6S1QFSGg"
+    # English voice name from VOICES in modules/voice_generator.py
+    VOICE_NAME = "hamid"
 
 # --- SHARED SETTINGS ---
-MUSIC_QUERY = "Dark cabaret instrumental no lyrics"
-MUSIC_VOLUME = 0.06
+MUSIC_QUERY = "scp background musci 10 min"
+MUSIC_VOLUME = 0.1
 
 OUTPUT_FILE = "final_short.mp4"
-SUBTITLES_POSITION = "center"
+SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
 
+# ==============================================================================
+# PIPELINE
 # ==============================================================================
 
 def run_pipeline():
@@ -77,13 +77,22 @@ def run_pipeline():
         print("❌ No video found.")
         return
 
-    # 3. VOICE (ElevenLabs)
-    print(f"🗣️  Generating Voice ID: {VOICE_ID}...")
-    audio_path = generate_voice(script, "narration.mp3", voice_id=VOICE_ID)
+    # 3. VOICE (ElevenLabs) -- UPDATED CALL SIGNATURE
+    print(f"🗣️  Generating voice: {VOICE_NAME}...")
+    audio_path = generate_voice(
+        script_text=script,
+        filename="narration.mp3",
+        voice=VOICE_NAME,
+        lang=LANGUAGE    # "ru" or "en" – matches your LANGUAGE setting
+    )
 
-    # 4. SUBTITLES (Whisper)
+    # 4. SUBTITLES (Whisper) -- PASS LANGUAGE FOR BETTER ACCURACY
     print("👂 Transcribing for perfect sync...")
-    subtitle_data = transcribe_audio_to_groups(audio_path, words_per_group=2)
+    subtitle_data = transcribe_audio_to_groups(
+        audio_path,
+        words_per_group=2,
+        language=LANGUAGE
+    )
 
     # 5. MUSIC
     print(f"🎵 Fetching music: '{MUSIC_QUERY}'")
@@ -92,9 +101,9 @@ def run_pipeline():
     # 6. EDIT
     print("\n🎬  Editing video...")
     final_path = merge_audio_video(
-        video_paths,
-        audio_path,
-        OUTPUT_FILE,
+        video_paths=video_paths,
+        audio_path=audio_path,
+        output_name=OUTPUT_FILE,
         vertical=True,
         shorts_cap=True,
         music_path=music_path,
@@ -107,10 +116,13 @@ def run_pipeline():
 
     # 7. CLEANUP
     if CLEANUP_FILES:
-        if os.path.exists(audio_path): os.remove(audio_path)
-        if music_path and os.path.exists(music_path): os.remove(music_path)
+        if os.path.exists(audio_path):
+            os.remove(audio_path)
+        if music_path and os.path.exists(music_path):
+            os.remove(music_path)
         for v in video_paths:
-            if os.path.exists(v): os.remove(v)
+            if os.path.exists(v):
+                os.remove(v)
 
 
 if __name__ == "__main__":
