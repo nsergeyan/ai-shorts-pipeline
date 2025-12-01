@@ -3,14 +3,35 @@ import re
 from config import OLLAMA_MODEL
 from modules.web_search import get_deep_research
 
-def clean_for_audio(text: str) -> str:
-    text = text.replace("\n", " ").replace("*", "").replace("#", "")
+
+def clean_script_output(text: str) -> str:
+    """
+    Final cleanup: removes emojis, markdown, and fixes spacing.
+    """
+    if not text:
+        return ""
+
+    # Remove surrounding code fences / triple quotes
+    text = re.sub(r'^\s*["`]{3,}\s*', '', text)
+    text = re.sub(r'\s*["`]{3,}\s*$', '', text)
+
+    # Remove basic markdown markers
+    text = text.replace("**", "").replace("*", "").replace("#", "").replace("`", "")
+
+    # Remove most non-text symbols (emojis etc.), but keep basic punctuation
+    text = re.sub(r'[^\w\s,.\-!?()"\':;@]', '', text)
+
+    # Normalize dots
     text = text.replace("...", ".").replace("..", ".")
-    return re.sub(r'\s+', ' ', text).strip()
+
+    # Strip empty lines and collapse into single line
+    lines = [line.strip() for line in text.split('\n') if line.strip()]
+    return " ".join(lines)
+
 
 def _ollama_generate(prompt: str, temperature: float = 0.7) -> str:
     try:
-        response = requests.post(
+        resp = requests.post(
             "http://localhost:11434/api/generate",
             json={
                 "model": OLLAMA_MODEL,
@@ -20,53 +41,187 @@ def _ollama_generate(prompt: str, temperature: float = 0.7) -> str:
             },
             timeout=120
         )
-        if response.status_code != 200: return "Error."
-        return clean_for_audio(response.json()["response"])
+        if resp.status_code != 200:
+            print(f"⚠️ Ollama HTTP {resp.status_code}: {resp.text[:200]}")
+            return "Error."
+        raw = resp.json().get("response", "")
+        return clean_script_output(raw)
     except Exception as e:
         print(f"⚠️ Ollama error: {e}")
         return "Error generating script."
 
+
+def _looks_russian(text: str) -> bool:
+    """
+    Rough heuristic: is this mostly Cyrillic?
+    """
+    if not text:
+        return False
+    cyr = sum(1 for ch in text if "А" <= ch <= "я" or ch in "Ёё")
+    lat = sum(1 for ch in text if "A" <= ch <= "z")
+    return cyr > 20 and cyr >= lat
+
+
 def generate_dynamic_script(topic: str, research_query: str, language: str = "en") -> str:
     print(f"🧠 Researching '{research_query}'...")
-    context = get_deep_research(research_query, max_results=3)
 
+    # Use fewer, more relevant sources to avoid noise like podcast pages
+    context = get_deep_research(research_query, lang="en", max_results=2)
+
+    if not context or len(context) < 50:
+        context = "No specific details found. Write a generic narrative."
+
+    # ======================= RUSSIAN MODE ==========================
     if language == "ru":
         prompt = f"""
-You are a Russian YouTube Shorts narrator.
-TOPIC: {topic}
-SOURCE MATERIAL:
+Ты сценарист для коротких роликов с фактами (TikTok, Reels, YouTube Shorts).
+
+ТЕМА МОЖЕТ БЫТЬ ЛЮБОЙ:
+персонажи, SCP, хоррор, история, игры, наука, загадки, мифы и так далее.
+Просто используй тему и контекст, не сомневайся и не жалуйся.
+
+ГЛАВНОЕ:
+- Сценарий ДОЛЖЕН быть только про главную тему из блока ТЕМА.
+- Игнорируй всё в контексте, что рассказывает про подкасты, ведущих, ютуб‑каналы,
+  соцсети, Patreon, Discord, рекламные описания шоу, эпизоды, обновления и т.п.
+- НЕЛЬЗЯ использовать названия подкастов, каналов, ведущих, платформ
+  (YouTube, Spotify, Patreon и т.п.) в самом сценарии.
+- НЕЛЬЗЯ упоминать, что это «подкаст», «выпуск», «серия», «наш канал» и т.п.
+- Текст должен быть про сам объект/событие из ТЕМЫ (например, SCP‑049), а не про тех, кто о нём рассказывает.
+- Названия вроде "Plague Doctor" переводи как "Чумной Доктор".
+
+ТВОЯ ЗАДАЧА:
+Написать короткий сценарий с фактами по теме.
+Только по‑русски. Основной текст — кириллицей.
+Если в контексте есть названия или имена латиницей (бренды, объекты, персонажи),
+их можно оставить латиницей.
+
+ФОРМАТ:
+- Один абзац, без переносов строк.
+- Около ста сорока слов.
+- Короткие устные фразы по 3–8 слов.
+- Энергичный «ютуберский» стиль под формат крипового/фактового ролика.
+- Без списка, без нумерации.
+- Без эмодзи, без скобок, без разметки.
+- Никаких комментариев от себя — только готовый текст.
+- НЕ ИСПОЛЬЗУЙ ЦИФРЫ. Любые числа пиши словами: «ноль», «один», «сорок девять», «тысяча» и т.п.
+
+ИМЕНА И НАЗВАНИЯ:
+- Сохраняй написание имён и терминов так, как они есть в контексте,
+  но без цифр внутри обычного текста.
+- Если встречаются обозначения вроде "SCP-049", переписывай их в читабельном виде
+  без цифр, например: «объект Эс‑си‑пи ноль сорок девять».
+- Не придумывай новые имена, если это не нужно для плавности речи.
+
+СОДЕРЖАНИЕ:
+- Используй ТОЛЬКО факты и детали, которые логично вытекают из контекста
+  и относятся к главной теме.
+- Если информации мало или она противоречивая, заполняй пробелы аккуратными общими фразами
+  с формулировками «говорят», «по легенде», «кто знает», «по одной версии».
+- Не выдумывай новый официальный канон, но можешь слегка приукрасить под подачу в ролике.
+
+СТРОГИЙ ЗАПРЕТ:
+- НЕЛЬЗЯ упоминать источники, сайты, статьи, вики, авторов, фанфики, подкасты.
+- НЕЛЬЗЯ писать фразы вроде «по предоставленным источникам», «первый источник», 
+  «второй источник», «я не могу составить сценарий», «нет конкретного сценария».
+- НЕЛЬЗЯ обсуждать саму задачу, контекст или качество информации.
+- ТЫ ВСЕГДА ДОЛЖЕН дать законченный сценарий, даже если данных мало или они странные.
+
+ФИНАЛ:
+- В конце добавь одну очень короткую общую фразу‑призыв подписаться
+  (без упоминания конкретного канала или платформы).
+
+ТЕМА:
+{topic}
+
+КОНТЕКСТ (на английском, только для тебя, не упоминай его явно в тексте):
 {context}
 
-TASK: Write a viral script in RUSSIAN (на русском языке).
-STRUCTURE:
-1. Hook: Start with "А ты знал, что..." or "Это просто ЖЕСТЬ...".
-2. Body: Explain the facts from the research. Use energetic, casual Russian.
-3. Climax: The most shocking detail.
-4. Outro: "Подпишись!"
+Сейчас напиши финальный русский текст сценария одним абзацем.
+Выведи только этот текст, без пояснений.
+        """.strip()
 
-RULES:
-- Write ONLY in Cyrillic (Russian).
-- No English words unless proper names.
-- Keep it under 150 words.
-- One single paragraph.
-"""
-    else:
-        prompt = f"""
-You are a YouTube Shorts narrator.
-TOPIC: {topic}
-SOURCE MATERIAL:
+        script = _ollama_generate(prompt, temperature=0.6)
+
+        # 2) Если модель всё равно ответила не по‑русски — принудительный перевод/адаптация
+        if not _looks_russian(script):
+            print("⚠️ Модель ответила не по‑русски. Пробую перевести и адаптировать в русский...")
+            translate_prompt = f"""
+Ты переводчик и сценарист коротких роликов с фактами.
+
+Возьми текст ниже и преврати его 
+в живой русский сценарий для короткого ролика (TikTok, Reels, Shorts)
+строго про главную тему из блока ТЕМА, а не про подкасты или каналы.
+
+ТРЕБОВАНИЯ:
+- Пиши ТОЛЬКО по‑русски.
+- Основной текст — кириллицей, но имена/названия, которые уже латиницей, можешь оставить латиницей.
+- Один абзац, без переносов строк.
+- Короткие устные фразы 3–8 слов.
+- Энергичный стиль, как у ютубера, рассказывающего криповые факты.
+- Без эмодзи, без разметки, без скобок.
+- Никаких пояснений, выведи только готовый текст сценария.
+- Нельзя упоминать источники, сайты, подкасты, контекст или то, что «невозможно составить сценарий».
+- Нельзя рекламировать подкасты, каналы, Patreon, Discord и т.п.
+
+ТЕМА:
+{topic}
+
+ТЕКСТ ДЛЯ ПЕРЕРАБОТКИ:
+{script}
+            """.strip()
+
+            script2 = _ollama_generate(translate_prompt, temperature=0.5)
+            if _looks_russian(script2):
+                script = script2
+            else:
+                print("⚠️ Вторая попытка тоже не дала нормальный русский текст, возвращаю как есть.")
+
+        return script
+
+    # ======================= ENGLISH MODE ==========================
+    prompt = f"""
+You are a scriptwriter for short-form fact videos (TikTok, Reels, YouTube Shorts).
+
+THE TOPIC CAN BE ANYTHING:
+characters, SCP, horror, history, games, science, mysteries, myths, etc.
+
+VERY IMPORTANT:
+- The script MUST be only about the main topic in TOPIC.
+- Ignore parts of the context that describe podcasts, hosts, channels, social media,
+  Patreon, Discord, episode descriptions, show promotions, and similar meta content.
+- NEVER mention names of podcasts, channels, hosts, platforms (YouTube, Spotify, Patreon, etc.).
+- Do NOT say "in this podcast", "on our channel", "follow us", etc.
+- The text must be about the entity/event in TOPIC itself, not about people who talk about it.
+
+TOPIC:
+{topic}
+
+LORE / CONTEXT (for you only, do NOT mention sources or that you were given context):
 {context}
 
-TASK: Write a high-energy viral script (140-160 words).
-STRUCTURE:
-1. Hook: "Did you know that..." or "This is INSANE."
-2. Body: Explain the facts/lore.
-3. Climax: The most shocking detail.
-4. Outro: "Subscribe for more!"
+TASK:
+Write a short, engaging script (about 140 words) for a spoken video.
 
-RULES:
-- Natural spoken English.
-- One single paragraph.
-"""
+STYLE:
+- One single paragraph, no line breaks.
+- Short spoken phrases, 3–8 words.
+- Energetic YouTube/facts-channel tone, not academic.
+- No lists, no numbering.
+- No emojis, no brackets, no markdown.
+- Do NOT talk about the task or the context itself.
 
-    return _ollama_generate(prompt, temperature=0.7)
+CONTENT RULES:
+- Use only what can be logically derived from the context and is relevant to the main topic.
+- If information is unclear or contradictory, use soft phrasing like
+  "some say", "according to legend", "who knows".
+- Do NOT invent official canon, but light dramatization for storytelling is OK.
+- NEVER mention websites, wikis, podcasts, authors, or "sources".
+- NEVER say you cannot write the script or that information is insufficient.
+- You must ALWAYS output a finished script.
+
+OUTPUT:
+Return ONLY the final script text as one paragraph, nothing else.
+    """.strip()
+
+    return _ollama_generate(prompt, temperature=0.6)

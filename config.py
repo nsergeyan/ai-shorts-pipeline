@@ -1,7 +1,7 @@
 import os
 
 # LLM model (llama3.1:8b recommended)
-OLLAMA_MODEL = "llama3.1:8b"
+OLLAMA_MODEL = "qwen2.5:14b"
 
 # Download FULL videos so we can pick random segments
 VIDEO_LENGTH_SEC = 60
