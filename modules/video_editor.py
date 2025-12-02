@@ -1,6 +1,6 @@
-# modules/video_editor.py
 import os
 import sys
+import random
 from typing import List, Union, Optional
 
 # ---------------------------------------------------------
@@ -9,25 +9,14 @@ from typing import List, Union, Optional
 import moviepy.config as mp_config
 
 if sys.platform == "darwin":
-    # Common paths where Homebrew puts ImageMagick
     possible_paths = [
-        "/opt/homebrew/bin/convert",  # Apple Silicon (M1/M2/etc)
-        "/usr/local/bin/convert",  # Intel Mac
+        "/opt/homebrew/bin/convert",
+        "/usr/local/bin/convert",
     ]
-
-    binary_found = False
     for p in possible_paths:
         if os.path.exists(p):
             mp_config.change_settings({"IMAGEMAGICK_BINARY": p})
-            print(f"✅ Configured ImageMagick: {p}")
-            binary_found = True
             break
-
-    if not binary_found:
-        print("⚠️  WARNING: ImageMagick 'convert' binary not found in standard paths.")
-        print("    Please run: brew install imagemagick")
-
-# ---------------------------------------------------------
 
 from moviepy.editor import (
     VideoFileClip,
@@ -39,7 +28,6 @@ from moviepy.editor import (
     vfx
 )
 
-# Try to import audio effects (location varies slightly by sub-version)
 try:
     from moviepy.audio.fx.all import audio_loop, volumex
 except ImportError:
@@ -54,61 +42,35 @@ os.makedirs(FINAL_DIR, exist_ok=True)
 
 # ----------------------- Helper functions ----------------------- #
 
-def _cut_to_duration(clip, duration: float):
-    """Trim clip to at most `duration` seconds (no looping)."""
-    if not getattr(clip, "duration", None):
-        return clip
-    if clip.duration <= duration:
-        return clip
-    return clip.subclip(0, duration)
-
-
 def _make_vertical_9x16(clip, target_w=1080, target_h=1920, bg_color=(0, 0, 0)):
-    """
-    Resize the clip to fit inside a vertical 9:16 frame WITHOUT cropping.
-    Adds black bars (letterboxing/pillarboxing) as needed.
-    """
     w, h = clip.size
     src_ratio = w / h
     tgt_ratio = target_w / target_h
 
-    # Scale to fit completely inside target while preserving aspect ratio
     if src_ratio > tgt_ratio:
-        # Source is relatively wider -> match width, height will be smaller
         new_w = target_w
         new_h = int(new_w / src_ratio)
     else:
-        # Source is relatively taller -> match height, width will be smaller
         new_h = target_h
         new_w = int(new_h * src_ratio)
 
     resized = clip.resize((new_w, new_h))
-
-    # Pad to exact target size with background color (black by default)
-    return resized.on_color(
-        size=(target_w, target_h),
-        color=bg_color,
-        pos=("center", "center")
-    )
+    return resized.on_color(size=(target_w, target_h), color=bg_color, pos=("center", "center"))
 
 
 def _loop_video_to_duration(clip, target_duration: float):
-    """Loop video clip logic."""
     if clip.duration and clip.duration >= target_duration:
         return clip.subclip(0, target_duration)
-    # vfx.loop in 1.0.3 works well
     return clip.fx(vfx.loop, duration=target_duration).subclip(0, target_duration)
 
 
 def _loop_audio_to_duration(audio_clip, target_duration: float):
-    """Loop audio clip logic."""
     if audio_clip.duration and audio_clip.duration >= target_duration:
         return audio_clip.subclip(0, target_duration)
 
     if audio_loop:
         return audio_clip.fx(audio_loop, duration=target_duration).subclip(0, target_duration)
 
-    # Manual loop fallback
     import math
     n = math.ceil(target_duration / audio_clip.duration)
     clips = [audio_clip.set_start(i * audio_clip.duration) for i in range(n)]
@@ -116,12 +78,29 @@ def _loop_audio_to_duration(audio_clip, target_duration: float):
 
 
 def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: float) -> List[VideoFileClip]:
-    """Logic to combine multiple clips to match exact voice duration."""
+    """
+    ✅ THE LOGIC YOU ASKED FOR:
+    If we have a 5-minute video and need 1 minute, pick a RANDOM 1-minute chunk.
+    """
     if not clips: return []
 
+    # Scenario 1: We have a single long background video (the 5min download)
+    if len(clips) == 1:
+        c = clips[0]
+        if c.duration > total_duration:
+            # Calculate the latest possible start time
+            max_start_time = c.duration - total_duration
+
+            # Pick a random start time
+            random_start = random.uniform(0, max_start_time)
+            random_end = random_start + total_duration
+
+            print(f"🎲 RANDOM CUT: Selecting video segment from {int(random_start)}s to {int(random_end)}s")
+            return [c.subclip(random_start, random_end)]
+
+    # Scenario 2: Video is shorter than audio, or multiple clips (Fallback)
     total_source = sum(c.duration for c in clips)
 
-    # If total footage is less than needed, loop clips
     if total_source < total_duration:
         extended = []
         accum = 0
@@ -137,7 +116,6 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
                 accum += needed
         return extended
 
-    # Proportional trim if we have excess footage
     ratio = total_duration / total_source
     processed = []
     for c in clips:
@@ -146,40 +124,25 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
     return processed
 
 
-# ----------------------- Subtitles (Whisper Ready) ----------------------- #
-
 def _make_subtitle_clips(subtitles_data, video_size, position="center"):
-    """
-    Creates clips from EXACT timestamps provided by Whisper.
-    subtitles_data: List of (start, end, text)
-    """
     w_vid, h_vid = video_size
     clips = []
-
-    # Huge font for impact
     fontsize = int(h_vid * 0.08)
 
-    # Position logic
     if position == 'bottom':
-        # 75% down
         pos_arg = ('center', int(h_vid * 0.75))
     elif position == 'top':
-        # 20% down
-        margin_from_top = int(h_vid * 0.08)  # smaller = closer to top
+        margin_from_top = int(h_vid * 0.08)
         pos_arg = ('center', margin_from_top)
     else:
-        # Dead center
         pos_arg = ('center', 'center')
 
-    # Font choice (Impact is standard for Shorts)
     font_name = "Impact"
-    # If Impact fails on your mac, change to "Arial-Bold"
 
     for start, end, txt in subtitles_data:
         dur = end - start
         if dur <= 0: continue
 
-        # Create Text
         txt_clip = TextClip(
             txt.upper(),
             fontsize=fontsize,
@@ -198,8 +161,6 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
     return clips
 
 
-# ----------------------- Main Pipeline ----------------------- #
-
 def merge_audio_video(
         video_paths: Union[str, List[str]],
         audio_path: str,
@@ -211,9 +172,8 @@ def merge_audio_video(
         cap_seconds: float = 59.0,
         music_path: Optional[str] = None,
         music_volume: float = 0.01,
-        subtitles_data: Optional[list] = None,  # Timestamps from Whisper
+        subtitles_data: Optional[list] = None,
         subtitles_position: str = "bottom",
-        # keep legacy arg for compatibility, but ignore it
         subtitles_text: Optional[str] = None
 ):
     print("\n🎬  Starting Video Editor...")
@@ -238,7 +198,7 @@ def merge_audio_video(
             voice_audio = voice_audio.subclip(0, final_len)
         final_dur = final_len
 
-    # 4. Trim/Concat Video
+    # 4. Trim/Concat Video (THIS CALLS THE RANDOM LOGIC)
     clips_ready = _trim_clips_to_total_duration(raw_clips, final_dur)
 
     if len(clips_ready) > 1:
@@ -248,10 +208,9 @@ def merge_audio_video(
 
     video = _loop_video_to_duration(video, final_dur)
 
-    # 5. Subtitles (Updated logic)
+    # 5. Subtitles
     if subtitles_data:
         try:
-            # We now pass the LIST of timestamps, not raw text
             subs = _make_subtitle_clips(subtitles_data, video.size, subtitles_position)
             if subs:
                 video = CompositeVideoClip([video] + subs)
@@ -265,7 +224,14 @@ def merge_audio_video(
             bg_music = AudioFileClip(music_path)
             if volumex:
                 bg_music = bg_music.fx(volumex, music_volume)
-            bg_music = _loop_audio_to_duration(bg_music, final_dur)
+
+            # Random music start logic (Optional bonus)
+            if bg_music.duration > final_dur:
+                start_m = random.uniform(0, bg_music.duration - final_dur)
+                bg_music = bg_music.subclip(start_m, start_m + final_dur)
+            else:
+                bg_music = _loop_audio_to_duration(bg_music, final_dur)
+
             final_audio = CompositeAudioClip([voice_audio, bg_music])
         except Exception as e:
             print(f"⚠️ Music failed: {e}")
@@ -282,7 +248,6 @@ def merge_audio_video(
         logger=None
     )
 
-    # Close handles
     voice_audio.close()
     for c in raw_clips: c.close()
 

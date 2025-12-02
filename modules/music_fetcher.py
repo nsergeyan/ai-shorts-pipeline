@@ -1,4 +1,3 @@
-# modules/music_fetcher.py
 import os
 import random
 import re
@@ -24,7 +23,6 @@ def _make_opts(skip_download: bool, *, noplaylist: bool = False, extract_flat: b
                download_start_end: Optional[str] = None):
     """
     Build yt-dlp options tuned for audio.
-    - download_start_end: e.g., "0:00-5:00" to download only that segment (requires yt-dlp >= 2023.07.06)
     """
     opts = {
         "outtmpl": os.path.join(MUSIC_DIR, "%(id)s - %(title).200B.%(ext)s"),
@@ -35,14 +33,17 @@ def _make_opts(skip_download: bool, *, noplaylist: bool = False, extract_flat: b
         "merge_output_format": "m4a",
         "sleep_interval_requests": 1.0,
         "max_sleep_interval_requests": 2.5,
-        "extractor_args": {"youtube": {"player_client": ["default"]}},
         "restrictfilenames": True,
         "noplaylist": noplaylist,
     }
 
-    # Download only a section (e.g., first 5 minutes)
+    # ✅ THE FIX: Force FFmpeg to control the download time (Same as Gameplay)
     if download_start_end and not skip_download:
-        opts["download_sections"] = download_start_end  # e.g., "0:00-5:00"
+        opts["external_downloader"] = "ffmpeg"
+        opts["external_downloader_args"] = {
+            # Start at 0, Stop exactly after 5 minutes (300 seconds)
+            "ffmpeg_i": ["-ss", "00:00:00", "-t", "00:05:00"]
+        }
 
     if extract_flat:
         opts["extract_flat"] = True
@@ -50,10 +51,8 @@ def _make_opts(skip_download: bool, *, noplaylist: bool = False, extract_flat: b
     # Cookies
     if COOKIEFILE and os.path.exists(COOKIEFILE):
         opts["cookiefile"] = COOKIEFILE
-        print(f"Using cookies from file: {COOKIEFILE}")
     else:
         opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
-        print(f"Using cookies from browser: {BROWSER} (profile: {PROFILE})")
 
     return opts
 
@@ -122,14 +121,13 @@ def _expand_playlist(playlist_url: str, max_items: int = PLAYLIST_ITEMS_MAX) -> 
     try:
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(playlist_url, download=False)
-    except yt_dlp.utils.DownloadError as e:
+    except Exception as e:
         print(f"⚠️ Failed to expand playlist: {e}")
         return []
     entries = (info or {}).get("entries") or []
     videos = []
     for e in entries:
         if isinstance(e, dict) and (e.get("_type") in (None, "url") or e.get("id")):
-            # normalize minimal fields
             videos.append({
                 "id": e.get("id"),
                 "title": e.get("title"),
@@ -142,28 +140,24 @@ def _expand_playlist(playlist_url: str, max_items: int = PLAYLIST_ITEMS_MAX) -> 
 
 
 def _score_entry(e: Dict[str, Any]) -> int:
-    """Prefer instrumental/no-lyrics, reasonable length. Strongly penalize bad content types."""
+    """Prefer instrumental/no-lyrics, reasonable length."""
     title = (e.get("title") or "").lower()
     dur = e.get("duration")
     s = 0
 
-    # BIG BONUS for good music keywords
     good_keywords = ("instrumental", "ost", "soundtrack", "background", "ambient", "atmospheric")
     for keyword in good_keywords:
         if keyword in title:
             s += 5
 
-    # Medium bonus for extended/playable versions
     medium_keywords = ("extended", "loop", "10 min", "10min", "long version")
     for keyword in medium_keywords:
         if keyword in title:
             s += 3
 
-    # Small bonus for potentially usable stuff
     if "no lyrics" in title or "without lyrics" in title:
         s += 2
 
-    # STRONG PENALTIES for bad types (karaoke, covers, etc.)
     bad_keywords = (
         "sing along", "nightcore", "8d audio", "slowed",
         "reverb", "cover", "lyrics", "vocal", "singing", "acoustic",
@@ -171,13 +165,12 @@ def _score_entry(e: Dict[str, Any]) -> int:
     )
     for bad_keyword in bad_keywords:
         if bad_keyword in title:
-            s -= 10  # Strong penalty
+            s -= 10
 
-    # Duration scoring
     if isinstance(dur, (int, float)):
-        if 90 <= dur <= 1200:  # 1.5min to 20min - ideal
+        if 90 <= dur <= 1200:
             s += 3
-        elif dur < 45 or dur > 3600:  # Too short or too long
+        elif dur < 45 or dur > 3600:
             s -= 2
 
     return s
@@ -185,8 +178,7 @@ def _score_entry(e: Dict[str, Any]) -> int:
 
 def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
     """
-    Search YouTube for background music. If a result is a PLAYLIST,
-    expand it and pick a random item from within (instead of downloading the whole playlist).
+    Search YouTube for music, download ONLY FIRST 5 MINS.
     """
     os.makedirs(MUSIC_DIR, exist_ok=True)
 
@@ -195,16 +187,15 @@ def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
     try:
         with yt_dlp.YoutubeDL(_make_opts(skip_download=True, extract_flat=True)) as ydl:
             info = ydl.extract_info(f"ytsearch{search_count}:{search_query}", download=False)
-    except yt_dlp.utils.DownloadError as e:
+    except Exception as e:
         print(f"❌ Failed to search YouTube for music: {e}")
         return []
 
     entries = (info or {}).get("entries") or []
     if not entries:
-        print("⚠️  No music results found for that search query.")
+        print("⚠️  No music results found.")
         return []
 
-    # Flatten: videos as-is; playlists expanded to their video entries
     video_candidates: List[Dict[str, Any]] = []
     for e in entries:
         if not isinstance(e, dict):
@@ -222,51 +213,48 @@ def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
                 "duration": e.get("duration"),
             })
 
-    # Filter invalid
     video_candidates = [v for v in video_candidates if v.get("webpage_url") and v.get("id")]
-    if not video_candidates:
-        print("⚠️  No playable items found (after expanding playlists).")
-        return []
-
-    # Rank and pick randomly from top pool for variety
     ranked = sorted(video_candidates, key=_score_entry, reverse=True)
-
-    # Filter out heavily penalized items (score < 0)
     filtered_ranked = [item for item in ranked if _score_entry(item) >= 0]
+
     if not filtered_ranked:
-        print("⚠️  All music candidates were filtered out due to low quality scores.")
-        return []
+        # If strict filtering fails, fallback to top results
+        filtered_ranked = ranked[:5]
 
     pool = filtered_ranked[: min(12, len(filtered_ranked))]
     random.shuffle(pool)
     chosen_items = pool[: max_tracks]
 
-    print(f"🧾 Picked {len(chosen_items)} item(s) to download from search/playlist.")
+    print(f"🧾 Picked {len(chosen_items)} item(s) to download.")
 
-    # Download each chosen as a SINGLE item (noplaylist=True)
     paths: List[str] = []
     try:
+        # ✅ TRIGGER THE 5-MINUTE LIMIT: Pass download_start_end="0:00-5:00"
         ydl_opts = _make_opts(skip_download=False, noplaylist=True, extract_flat=False, download_start_end="0:00-5:00")
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             for v in chosen_items:
                 url = v["webpage_url"]
                 title = _safe_title(v.get("title") or "untitled")
-                print(f"⬇️  Downloading music: {title}")
+                print(f"⬇️  Downloading music (Hard limit: 5 mins): {title}")
                 try:
                     info = ydl.extract_info(url, download=True)
-                except yt_dlp.utils.DownloadError as de:
+                    filepath = _final_filepath(ydl, info)
+
+                    # Ensure file exists (ffmpeg sometimes messes with naming slightly)
+                    if not os.path.exists(filepath):
+                        # check if a .m4a exists with similar name
+                        base = os.path.splitext(filepath)[0]
+                        if os.path.exists(base + ".m4a"):
+                            filepath = base + ".m4a"
+
+                    paths.append(filepath)
+                except Exception as de:
                     print(f"❌ Failed to download '{title}': {de}; skipping.")
                     continue
-                filepath = _final_filepath(ydl, info)
-                paths.append(filepath)
-    except yt_dlp.utils.DownloadError as e:
+    except Exception as e:
         print(f"❌ Download session error: {e}")
 
-    if not paths:
-        print("⚠️  No music files were downloaded successfully.")
-        return []
-
-    print(f"\n✅ Downloaded {len(paths)} music file(s).")
     return paths
 
 
@@ -276,12 +264,6 @@ def fetch_random_music(
         offline: bool = False,
         reuse_path: Optional[str] = None,
 ) -> Optional[str]:
-    """
-    Choose one music track:
-    - reuse_path (if exists) → use that
-    - offline=True → pick existing local audio file
-    - search_query → search and download (expands playlists, picks a random item)
-    """
     if reuse_path:
         if os.path.exists(reuse_path):
             print(f"🎵 Reusing provided music: {reuse_path}")
