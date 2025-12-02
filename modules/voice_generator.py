@@ -11,7 +11,8 @@ ELEVENLABS_API_KEYS = [
     "sk_8e9a2105297aebbb4dafeab9d34a5b2388924b12d43e1b56",
     "sk_cc21928182ec16130df3d57bef14b84de7229010f4e613e1",
     "sk_57c59bb543ed036e5899a255f6ca26107b53d8cfe7aa35c7",
-    "sk_bb1ef697ea634f801d2940ff0ca0eb40b0af6c8acd13d42c"
+    "sk_bb1ef697ea634f801d2940ff0ca0eb40b0af6c8acd13d42c",
+    "sk_6b64f023fd72c3d8f3da191458bf30609a76f8a5a2f7923f",
 ]
 
 if not ELEVENLABS_API_KEYS:
@@ -19,8 +20,8 @@ if not ELEVENLABS_API_KEYS:
 
 VOICES = {
     "hamid": "yr43K8H5LoTp6S1QFSGg",
-    "Alan": "htFfPSZGJwjBv1CL0aMD",
-    "Molodoy": "VKjbtGrk0YiYbA2Xpq7n"
+    "Molodoy": "VKjbtGrk0YiYbA2Xpq7n",
+    "spanish_guy": "kwajW3Xh5svCeKU5ky2S",
 }
 
 
@@ -45,17 +46,29 @@ def _try_generate_with_key(
 
     # --- DYNAMIC SETTINGS BASED ON LANGUAGE ---
     if lang == "ru":
-        # RUSSIAN SETTINGS (Slower, more accurate, specific model)
+        # RUSSIAN SETTINGS
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.6,  # Higher stability prevents skipping words
+            "stability": 0.5,
             "similarity_boost": 0.6,
-            "style": 0.5,
+            "style": 0.6,
             "use_speaker_boost": True
         }
-        latency_opt = None  # Disable optimization for quality
+        latency_opt = None
+
+    elif lang == "es":
+        # SPANISH SETTINGS (similar to Russian: slower/higher quality)
+        model_id = "eleven_multilingual_v2"
+        voice_settings = {
+            "stability": 0.5,
+            "similarity_boost": 0.7,
+            "style": 0.6,
+            "use_speaker_boost": True
+        }
+        latency_opt = None
+
     else:
-        # ENGLISH SETTINGS (Your "Perfect" settings)
+        # DEFAULT TO ENGLISH SETTINGS
         model_id = "eleven_turbo_v2_5"
         voice_settings = {
             "stability": 0.45,
@@ -63,7 +76,7 @@ def _try_generate_with_key(
             "style": 0.9,
             "use_speaker_boost": True
         }
-        latency_opt = "3"  # Speed optimization
+        latency_opt = "3"
 
     try:
         cleaned_text = clean_text_for_speech(script_text)
