@@ -19,7 +19,9 @@ AUDIO_EXTS = (".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg")
 # Limit how many items to read from a playlist when expanding
 PLAYLIST_ITEMS_MAX = 50
 
-def _make_opts(skip_download: bool, *, noplaylist: bool = False, extract_flat: bool = False, download_start_end: Optional[str] = None):
+
+def _make_opts(skip_download: bool, *, noplaylist: bool = False, extract_flat: bool = False,
+               download_start_end: Optional[str] = None):
     """
     Build yt-dlp options tuned for audio.
     - download_start_end: e.g., "0:00-5:00" to download only that segment (requires yt-dlp >= 2023.07.06)
@@ -140,24 +142,44 @@ def _expand_playlist(playlist_url: str, max_items: int = PLAYLIST_ITEMS_MAX) -> 
 
 
 def _score_entry(e: Dict[str, Any]) -> int:
-    """Prefer instrumental/no-lyrics, reasonable length."""
+    """Prefer instrumental/no-lyrics, reasonable length. Strongly penalize bad content types."""
     title = (e.get("title") or "").lower()
     dur = e.get("duration")
     s = 0
-    if "instrumental" in title or "ost" in title or "soundtrack" in title:
-        s += 3
+
+    # BIG BONUS for good music keywords
+    good_keywords = ("instrumental", "ost", "soundtrack", "background", "ambient", "atmospheric")
+    for keyword in good_keywords:
+        if keyword in title:
+            s += 5
+
+    # Medium bonus for extended/playable versions
+    medium_keywords = ("extended", "loop", "10 min", "10min", "long version")
+    for keyword in medium_keywords:
+        if keyword in title:
+            s += 3
+
+    # Small bonus for potentially usable stuff
     if "no lyrics" in title or "without lyrics" in title:
         s += 2
-    if "extended" in title or "loop" in title:
-        s += 1
-    bads = ("karaoke", "sing along", "nightcore", "8d audio", "slowed", "reverb", "cover")
-    if any(b in title for b in bads):
-        s -= 3
+
+    # STRONG PENALTIES for bad types (karaoke, covers, etc.)
+    bad_keywords = (
+        "sing along", "nightcore", "8d audio", "slowed",
+        "reverb", "cover", "lyrics", "vocal", "singing", "acoustic",
+        "shorts", "#shorts", "tutorial", "how to"
+    )
+    for bad_keyword in bad_keywords:
+        if bad_keyword in title:
+            s -= 10  # Strong penalty
+
+    # Duration scoring
     if isinstance(dur, (int, float)):
-        if 90 <= dur <= 1200:
-            s += 2
-        elif dur < 45 or dur > 3600:
-            s -= 1
+        if 90 <= dur <= 1200:  # 1.5min to 20min - ideal
+            s += 3
+        elif dur < 45 or dur > 3600:  # Too short or too long
+            s -= 2
+
     return s
 
 
@@ -208,7 +230,14 @@ def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
 
     # Rank and pick randomly from top pool for variety
     ranked = sorted(video_candidates, key=_score_entry, reverse=True)
-    pool = ranked[: min(12, len(ranked))]
+
+    # Filter out heavily penalized items (score < 0)
+    filtered_ranked = [item for item in ranked if _score_entry(item) >= 0]
+    if not filtered_ranked:
+        print("⚠️  All music candidates were filtered out due to low quality scores.")
+        return []
+
+    pool = filtered_ranked[: min(12, len(filtered_ranked))]
     random.shuffle(pool)
     chosen_items = pool[: max_tracks]
 
@@ -242,10 +271,10 @@ def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
 
 
 def fetch_random_music(
-    *,
-    search_query: Optional[str] = None,
-    offline: bool = False,
-    reuse_path: Optional[str] = None,
+        *,
+        search_query: Optional[str] = None,
+        offline: bool = False,
+        reuse_path: Optional[str] = None,
 ) -> Optional[str]:
     """
     Choose one music track:

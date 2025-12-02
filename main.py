@@ -19,36 +19,38 @@ except ImportError as e:
 # ⚙️ CONFIGURATION
 # ==============================================================================
 
-# 1. CHOOSE LANGUAGE ("en" or "ru")
-LANGUAGE = "en"
+# 1. CHOOSE LANGUAGE ("en" or "ru" or "es)
+LANGUAGE = "es"
+
+MUSIC_QUERY = "ARC RAIDERS MAIN THEME OST 10 min"
+MUSIC_VOLUME = 0.05
 
 if LANGUAGE == "ru":
     # --- RUSSIAN MODE ---
-    TOPIC = "SCP‑096, он же ""скромник"": жуткие факты, кто он на самом деле?"
-
-    # Research in English gives better results, AI will translate
-    GOOGLE_RESEARCH_QUERY = "SCP-096 The Shy Guy facts and lore"
+    TOPIC = "SCP Щекотун: жуткие факты, кто он на самом деле?"
+    GOOGLE_RESEARCH_QUERY = "SCP-999 The Tickle Monster facts and lore"
 
     # Video Search (анимации / геймплей по SCP-096)
-    YOUTUBE_GAMEPLAY_QUERY = "scp 096 containment breach"
+    YOUTUBE_GAMEPLAY_QUERY = "scp 999 animation, footages"
 
     # Name of the voice from VOICES in modules/voice_generator.py
     # VOICES = {"hamid": "...", "Alan": "...", "Molodoy": "..."}
     VOICE_NAME = "Molodoy"   # or "Alan"
 
+elif LANGUAGE == "es":
+    TOPIC = "La próxima actualización de invierno de Arc Raiders"
+    GOOGLE_RESEARCH_QUERY = "Arc raiders new winter update coming"
+    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS no comentery gameplay 10 min"
+    VOICE_NAME = "spanish_guy"  # Or use placeholder until real voice added
+
 else:
     # --- ENGLISH MODE ---
-    TOPIC = "Iteresting facts ABOUT SCP 173, ONLY about scp 173"
-    GOOGLE_RESEARCH_QUERY = "scp 173"
-    YOUTUBE_GAMEPLAY_QUERY = "scp 173 animation, footages"
-
-    # English voice name from VOICES in modules/voice_generator.py
+    TOPIC = "scp 999, interesting facts"
+    GOOGLE_RESEARCH_QUERY = "SCP-999 The Tickle Monster facts and lore"
+    YOUTUBE_GAMEPLAY_QUERY = "scp 999 animation, footages"
     VOICE_NAME = "hamid"
 
 # --- SHARED SETTINGS ---
-MUSIC_QUERY = "SCP: Containment Breach background ambient music"
-MUSIC_VOLUME = 0.07
-
 OUTPUT_FILE = "final_short.mp4"
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True

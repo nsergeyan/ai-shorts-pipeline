@@ -191,8 +191,8 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         return script
 
     # ======================= ENGLISH MODE ==========================
-    else:  # This was the bug - changed from exact "en" check to else
-        prompt = prompt = f"""
+    elif language == "en":  # This was the bug - changed from exact "en" check to else
+        prompt = f"""
 You are writing a TikTok facts script.
 
 TOPIC: {topic}
@@ -226,4 +226,41 @@ Write the script now:
             # Add language correction logic here if needed
             pass
 
+        return script
+    else:
+        prompt = f"""
+                ROL: Eres un Narrador Nativo de Español experto en storytelling viral.
+                TU META: Convertir información (que puede estar en inglés) en una historia emocionante en ESPAÑOL NATIVO.
+
+                TEMA PRINCIPAL: {topic}
+
+                INFORMACIÓN A PROCESAR (Contexto en Inglés):
+                {context}
+
+                REGLAS DE ADAPTACIÓN (CRÍTICO - LEE ESTO):
+                1. ENFOQUE ÚNICO (IMPORTANTE): El contexto puede contener comparaciones con otros juegos o temas. ¡IGNÓRALOS! Tu guión debe tratar 100% sobre el TEMA PRINCIPAL ({topic}) y nada más.
+                2. NO TRADUZCAS LITERALMENTE. Lee el contexto, entiéndelo, y cuéntalo con tus propias palabras.
+                3. CORRIGE LA GRAMÁTICA:
+                   - Si el texto dice "in adults", NO escribas "en adultos". Escribe: "cuando creció", "de adulto" o "en su adultez".
+                   - Evita la sintaxis inglesa. Haz que suene a como habla una persona real en España o Latinoamérica.
+                4. FLUIDEZ: Usa conectores narrativos (Ej: "Lo más loco es que...", "Resulta que...", "Poco después...").
+
+                INSTRUCCIONES DE FORMATO:
+                - Comienza EXACTAMENTE con: "Déjame contarte algo sobre..."
+                - Idioma: ESPAÑOL PERFECTO (Sin errores de traducción).
+                - Longitud: 130-150 palabras.
+                - Estructura: Un solo párrafo bloque (sin saltos de línea).
+                - Estilo: Usa MAYÚSCULAS para gritar partes importantes, emojis (😱🔥) y signos de exclamación.
+
+                LO QUE ESTÁ PROHIBIDO:
+                - PROHIBIDO mencionar otros juegos, productos o temas que no sean {topic}.
+                - No incluyas explicaciones fuera del guión.
+                - No uses frases pasivas o robóticas.
+                - No pongas texto en inglés.
+
+                GENERA EL GUIÓN AHORA:
+                """.strip()
+
+        # Recommended tweak for Qwen 2.5: Increase temperature slightly to make it less rigid
+        script = _ollama_generate(prompt, temperature=0.7)
         return script
