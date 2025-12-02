@@ -20,18 +20,18 @@ except ImportError as e:
 # ==============================================================================
 
 # 1. CHOOSE LANGUAGE ("en" or "ru" or "es)
-LANGUAGE = "es"
+LANGUAGE = "ru"
 
-MUSIC_QUERY = "ARC RAIDERS MAIN THEME OST 10 min"
-MUSIC_VOLUME = 0.05
+MUSIC_QUERY = "metro 2033 soundtrack"
+MUSIC_VOLUME = 0.04
 
 if LANGUAGE == "ru":
     # --- RUSSIAN MODE ---
-    TOPIC = "SCP Щекотун: жуткие факты, кто он на самом деле?"
-    GOOGLE_RESEARCH_QUERY = "SCP-999 The Tickle Monster facts and lore"
+    TOPIC = "Арк Рейдерс Новый зимный апдейт"
+    GOOGLE_RESEARCH_QUERY = "Arc raiders  winter update news"
 
     # Video Search (анимации / геймплей по SCP-096)
-    YOUTUBE_GAMEPLAY_QUERY = "scp 999 animation, footages"
+    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS no comentery gameplay 10 min"
 
     # Name of the voice from VOICES in modules/voice_generator.py
     # VOICES = {"hamid": "...", "Alan": "...", "Molodoy": "..."}
