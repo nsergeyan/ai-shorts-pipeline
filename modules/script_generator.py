@@ -1,35 +1,23 @@
 import requests
 import re
-from config import OLLAMA_MODEL
 from modules.web_search import get_deep_research
+
+# MODEL
+OLLAMA_MODEL = "gemma2:27b"
 
 
 def clean_script_output(text: str) -> str:
-    """
-    Final cleanup: removes emojis, markdown, and fixes spacing.
-    """
-    if not text:
-        return ""
-
-    # Remove surrounding code fences / triple quotes
+    if not text: return ""
     text = re.sub(r'^\s*["`]{3,}\s*', '', text)
     text = re.sub(r'\s*["`]{3,}\s*$', '', text)
-
-    # Remove basic markdown markers
-    text = text.replace("**", "").replace("*", "").replace("#", "").replace("`", "")
-
-    # Remove most non-text symbols (emojis etc.), but keep basic punctuation
-    text = re.sub(r'[^\w\s,.\-!?()"\':;@]', '', text)
-
-    # Normalize dots
-    text = text.replace("...", ".").replace("..", ".")
-
-    # Strip empty lines and collapse into single line
+    text = text.replace("**", "").replace("##", "").replace("Title:", "")
+    text = re.sub(r'^(Here is|Sure,|In this video|Based on).*?(\n|$)', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'[^\w\s,.\-!?()"\':;@%]', '', text)
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     return " ".join(lines)
 
 
-def _ollama_generate(prompt: str, temperature: float = 0.7) -> str:
+def _ollama_generate(prompt: str, temperature: float) -> str:
     try:
         resp = requests.post(
             "http://localhost:11434/api/generate",
@@ -37,230 +25,98 @@ def _ollama_generate(prompt: str, temperature: float = 0.7) -> str:
                 "model": OLLAMA_MODEL,
                 "prompt": prompt,
                 "stream": False,
-                "options": {"temperature": temperature}
+                "options": {
+                    "temperature": temperature,
+                    "num_ctx": 8192
+                }
             },
             timeout=120
         )
-        if resp.status_code != 200:
-            print(f"⚠️ Ollama HTTP {resp.status_code}: {resp.text[:200]}")
-            return "Error."
-        raw = resp.json().get("response", "")
-        return clean_script_output(raw)
+        return clean_script_output(resp.json().get("response", ""))
     except Exception as e:
-        print(f"⚠️ Ollama error: {e}")
-        return "Error generating script."
-
-
-def _looks_russian(text: str) -> bool:
-    """
-    Rough heuristic: is this mostly Cyrillic?
-    """
-    if not text:
-        return False
-    cyr = sum(1 for ch in text if "А" <= ch <= "я" or ch in "Ёё")
-    lat = sum(1 for ch in text if "A" <= ch <= "z")
-    return cyr > 20 and cyr >= lat
-
-
-def _looks_english(text: str) -> bool:
-    """
-    Rough heuristic: is this mostly Latin characters?
-    """
-    if not text:
-        return False
-    lat = sum(1 for ch in text if "A" <= ch <= "z")
-    cyr = sum(1 for ch in text if "А" <= ch <= "я" or ch in "Ёё")
-    return lat > 20 and lat >= cyr
+        print(f"⚠️ Error: {e}")
+        return ""
 
 
 def generate_dynamic_script(topic: str, research_query: str, language: str = "en") -> str:
     print(f"🧠 Researching '{research_query}'...")
-
-    # Use fewer, more relevant sources to avoid noise like podcast pages
     context = get_deep_research(research_query, lang="en", max_results=2)
+    if not context or len(context) < 100:
+        context = "No details found."
 
-    if not context or len(context) < 50:
-        context = "No specific details found. Write a generic narrative."
+    print(f"✍️ Writing Narrative Script for '{topic}' ({language})...")
 
-    # ======================= RUSSIAN MODE ==========================
+    # ======================= RUSSIAN MODE (DIRECT STORYTELLING) ==========================
     if language == "ru":
         prompt = f"""
-Ты сценарист для коротких роликов с фактами (TikTok, Reels, YouTube Shorts).
+        ТВОЯ ЦЕЛЬ: Рассказать историю или психологический факт про: {topic}.
 
-ТЕМА МОЖЕТ БЫТЬ ЛЮБОЙ:
-персонажи, SCP, хоррор, история, игры, наука, загадки, мифы и так далее.
-Просто используй тему и контекст, не сомневайся и не жалуйся.
+        ДАННЫЕ:
+        {context[:8000]}
 
-ГЛАВНОЕ:
-- Сценарий ДОЛЖЕН быть только про главную тему из блока ТЕМА.
-- Игнорируй всё в контексте, что рассказывает про подкасты, ведущих, ютуб‑каналы,
-  соцсети, Patreon, Discord, рекламные описания шоу, эпизоды, обновления и т.п.
-- НЕЛЬЗЯ использовать названия подкастов, каналов, ведущих, платформ
-  (YouTube, Spotify, Patreon и т.п.) в самом сценарии.
-- НЕЛЬЗЯ упоминать, что это «подкаст», «выпуск», «серия», «наш канал» и т.п.
-- Текст должен быть про сам объект/событие из ТЕМЫ (например, SCP‑049), а не про тех, кто о нём рассказывает.
-- Названия вроде "Plague Doctor" переводи как "Чумной Доктор".
+        РОЛЬ:
+        Ты рассказчик (Narrator). Ты не блогер, ты не хайпишь. Ты просто рассказываешь суть.
 
-ТВОЯ ЗАДАЧА:
-Написать короткий сценарий с фактами по теме.
-Только по‑русски. Основной текст — кириллицей.
-Если в контексте есть названия или имена латиницей (бренды, объекты, персонажи),
-их можно оставить латиницей.
+        ГЛАВНОЕ ПРАВИЛО:
+        **ГОВОРИ ТОЛЬКО О: {topic}.**
 
-ФОРМАТ:
-- 110-130 слов в обшем.
-- Один абзац, без переносов строк.
-- Около ста сорока слов.
-- Короткие устные фразы по 3–8 слов.
-- Энергичный «ютуберский» стиль под формат крипового/фактового ролика.
-- Без списка, без нумерации.
-- Без эмодзи, без скобок, без разметки.
-- Никаких комментариев от себя — только готовый текст.
-- НЕ ИСПОЛЬЗУЙ ЦИФРЫ. Любые числа пиши словами: «ноль», «один», «сорок девять», «тысяча» и т.п.
+        СТИЛЬ (NO CRINGE, NO CLICHÉS):
+        1. **ЗАПРЕТ НА КЛИШЕ:** 
+           - ЗАПРЕЩЕНО начинать с "Многие не знают", "А вы знали?", "Интересный факт", "Давайте разберем".
+           - ЗАПРЕЩЕНО говорить очевидные вещи с пафосом.
+        2. **НАЧАЛО:** Начни сразу с утверждения или описания характера. 
+           - *Плохо:* "Многие не знают, что Сэр Пенциос одинок."
+           - *Хорошо:* "За маской безумного изобретателя Сэра Пенциоса скрывается глубокое человеческое одиночество."
+        3. **ТОН:** Спокойный, аналитический,  но не скучный.
+        4. **ФОРМАТ:** Один сплошной абзац.
 
-ИМЕНА И НАЗВАНИЯ:
-- Сохраняй написание имён и терминов так, как они есть в контексте,
-  но без цифр внутри обычного текста.
-- Если встречаются обозначения вроде "SCP-049", переписывай их в читабельном виде
-  без цифр, например: «объект Эс‑си‑пи ноль сорок девять».
-- Не придумывай новые имена, если это не нужно для плавности речи.
+        Текст сценария (Русский):
+        """
+        # Slightly higher temp allows for better sentence structure diversity
+        script = _ollama_generate(prompt, temperature=0.75)
 
-СОДЕРЖАНИЕ:
-- Используй ТОЛЬКО факты и детали, которые логично вытекают из контекста
-  и относятся к главной теме.
-- Если информации мало или она противоречивая, заполняй пробелы аккуратными общими фразами
-  с формулировками «говорят», «по легенде», «кто знает», «по одной версии».
-- Не выдумывай новый официальный канон, но можешь слегка приукрасить под подачу в ролике.
-
-СТРОГИЙ ЗАПРЕТ:
-- НЕЛЬЗЯ упоминать источники, сайты, статьи, вики, авторов, фанфики, подкасты.
-- НЕЛЬЗЯ писать фразы вроде «по предоставленным источникам», «первый источник», 
-  «второй источник», «я не могу составить сценарий», «нет конкретного сценария».
-- НЕЛЬЗЯ обсуждать саму задачу, контекст или качество информации.
-- ТЫ ВСЕГДА ДОЛЖЕН дать законченный сценарий, даже если данных мало или они странные.
-
-ФИНАЛ:
-- В конце добавь одну очень короткую общую фразу‑призыв подписаться
-  (без упоминания конкретного канала или платформы).
-
-ТЕМА:
-{topic}
-
-КОНТЕКСТ (на английском, только для тебя, не упоминай его явно в тексте):
-{context}
-
-Сейчас напиши финальный русский текст сценария одним абзацем.
-Выведи только этот текст, без пояснений.
-        """.strip()
-
-        script = _ollama_generate(prompt, temperature=0.6)
-
-        # 2) Если модель всё равно ответила не по‑русски — принудительный перевод/адаптация
-        if not _looks_russian(script):
-            print("⚠️ Модель ответила не по‑русски. Пробую перевести и адаптировать в русский...")
-            translate_prompt = f"""
-Ты переводчик и сценарист коротких роликов с фактами.
-
-Возьми текст ниже и преврати его 
-в живой русский сценарий для короткого ролика (TikTok, Reels, Shorts)
-строго про главную тему из блока ТЕМА, а не про подкасты или каналы.
-
-ТРЕБОВАНИЯ:
-- Пиши ТОЛЬКО по‑русски.
-- Основной текст — кириллицей, но имена/названия, которые уже латиницей, можешь оставить латиницей.
-- Один абзац, без переносов строк.
-- Короткие устные фразы 3–8 слов.
-- Энергичный стиль, как у ютубера, рассказывающего криповые факты.
-- Без эмодзи, без разметки, без скобок.
-- Никаких пояснений, выведи только готовый текст сценария.
-- Нельзя упоминать источники, сайты, подкасты, каналы, Patreon, Discord и т.п.
-
-ТЕМА:
-{topic}
-
-ТЕКСТ ДЛЯ ПЕРЕРАБОТКИ:
-{script}
-            """.strip()
-
-            script2 = _ollama_generate(translate_prompt, temperature=0.5)
-            if _looks_russian(script2):
-                script = script2
-            else:
-                print("⚠️ Вторая попытка тоже не дала нормальный русский текст, возвращаю как есть.")
-
-        return script
-
-    # ======================= ENGLISH MODE ==========================
-    elif language == "en":  # This was the bug - changed from exact "en" check to else
+    # ======================= SPANISH MODE (DIRECT STORYTELLING) ==========================
+    elif language == "es":
         prompt = f"""
-You are writing a TikTok facts script.
+        OBJETIVO: Narrar una historia profunda sobre: {topic}.
 
-TOPIC: {topic}
+        DATOS:
+        {context[:8000]}
 
-RESEARCH:
-{context}
+        REGLAS ANTI-CLICHÉ:
+        1. **NO USES FRASES DE RELLENO:** 
+           - PROHIBIDO empezar con "¿Sabías que...?", "Mucha gente ignora...", "Aquí hay un dato curioso".
+           - Empieza DIRECTAMENTE con la narrativa.
+        2. **EJEMPLO:**
+           - *Mal:* "¿Sabías que Alastor era un asesino?"
+           - *Bien:* "Antes de convertirse en el Demonio de la Radio, Alastor ya aterrorizaba las calles de Nueva Orleans..."
+        3. **TONO:** Narrativo, serio, elegante.
+        4. **FORMATO:** Un solo párrafo.
 
-TASK:
-Write a 140-word script sharing mind-blowing facts.
-Write as ONE paragraph, no line breaks. Fast, continuous delivery.
+        Guion (Español):
+        """
+        script = _ollama_generate(prompt, temperature=0.75)
 
-STRUCTURE:
-- The script MUST be only about the main topic from the TOPIC block. TOPIC: {topic}
-- Hook: Start with "Let me tell you about..." and IMMEDIATELY continue into the crazy fact in the SAME sentence. No big pause after the hook.
-
-EMOTION INSTRUCTIONS:
-- Use CAPITAL LETTERS for emotional words.
-- Keep the pacing tight. Avoid dramatic "..." pauses.
-- Use "!" when something is shocking.
-
-OUTPUT: Only spoken words. No headers. No brackets. Do not say "Here is the script."
-
-Write the script now:
-""".strip()
-
-        script = _ollama_generate(prompt, temperature=0.6)
-
-        # If model responded in wrong language, try to fix it
-        if language == "es" and not _looks_english(script):  # For Spanish mode
-            print("⚠️ Model didn't respond in expected language. Attempting correction...")
-            # Add language correction logic here if needed
-            pass
-
-        return script
+    # ======================= ENGLISH MODE (DIRECT STORYTELLING) ==========================
     else:
         prompt = f"""
-                ROL: Eres un Narrador Nativo de Español experto en storytelling viral.
-                TU META: Convertir información (que puede estar en inglés) en una historia emocionante en ESPAÑOL NATIVO.
+        TARGET: Tell a compelling narrative about {topic}.
 
-                TEMA PRINCIPAL: {topic}
+        DATA:
+        {context[:8000]}
 
-                INFORMACIÓN A PROCESAR (Contexto en Inglés):
-                {context}
+        STYLE RULES (NO CLICKBAIT):
+        1. **BAN THE HOOKS:** 
+           - DO NOT start with "Did you know", "Most people miss", "Here is a fact".
+           - Just start telling the story immediately.
+        2. **DIRECT NARRATIVE:** 
+           - *Bad:* "Let me tell you about Artyom's childhood."
+           - *Good:* "Artyom was born just days before the bombs fell, making him one of the last children of the old world."
+        3. **TONE:** Storyteller / Lore Keeper. Not a YouTuber.
+        4. **FORMAT:** One single paragraph block.
 
-                REGLAS DE ADAPTACIÓN (CRÍTICO - LEE ESTO):
-                1. ENFOQUE ÚNICO (IMPORTANTE): El contexto puede contener comparaciones con otros juegos o temas. ¡IGNÓRALOS! Tu guión debe tratar 100% sobre el TEMA PRINCIPAL ({topic}) y nada más.
-                2. NO TRADUZCAS LITERALMENTE. Lee el contexto, entiéndelo, y cuéntalo con tus propias palabras.
-                3. CORRIGE LA GRAMÁTICA:
-                   - Si el texto dice "in adults", NO escribas "en adultos". Escribe: "cuando creció", "de adulto" o "en su adultez".
-                   - Evita la sintaxis inglesa. Haz que suene a como habla una persona real en España o Latinoamérica.
-                4. FLUIDEZ: Usa conectores narrativos (Ej: "Lo más loco es que...", "Resulta que...", "Poco después...").
+        Script:
+        """
+        script = _ollama_generate(prompt, temperature=0.75)
 
-                INSTRUCCIONES DE FORMATO:
-                - Comienza EXACTAMENTE con: "Déjame contarte algo sobre..."
-                - Idioma: ESPAÑOL PERFECTO (Sin errores de traducción).
-                - Longitud: 130-150 palabras.
-                - Estructura: Un solo párrafo bloque (sin saltos de línea).
-                - Estilo: Usa MAYÚSCULAS para gritar partes importantes, emojis (😱🔥) y signos de exclamación.
-
-                LO QUE ESTÁ PROHIBIDO:
-                - PROHIBIDO mencionar otros juegos, productos o temas que no sean {topic}.
-                - No incluyas explicaciones fuera del guión.
-                - No uses frases pasivas o robóticas.
-                - No pongas texto en inglés.
-
-                GENERA EL GUIÓN AHORA:
-                """.strip()
-
-        # Recommended tweak for Qwen 2.5: Increase temperature slightly to make it less rigid
-        script = _ollama_generate(prompt, temperature=0.7)
-        return script
+    return script
