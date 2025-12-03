@@ -1,9 +1,8 @@
 import os
 
-# LLM model (llama3.1:8b recommended)
 OLLAMA_MODEL = "qwen2.5:14b"
 
-# Download FULL videos so we can pick random segments
+#max shorts lenght for video
 VIDEO_LENGTH_SEC = 60
 
 # Paths

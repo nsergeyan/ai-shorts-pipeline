@@ -18,13 +18,10 @@ def _make_opts(skip_download: bool, download_start_end: Optional[str] = None):
         "quiet": False,
         "skip_download": skip_download,
         "playlistend": 1,
-        # We use 'best' to avoid complex merging that might break the time limit
         "format": "best[ext=mp4]/best",
         "restrictfilenames": True,
     }
 
-    # ✅ THE FIX: Force FFmpeg to control the download time
-    # This creates a "hard cut" after 5 minutes so you don't download 700MB
     if download_start_end and not skip_download:
         opts["external_downloader"] = "ffmpeg"
         opts["external_downloader_args"] = {

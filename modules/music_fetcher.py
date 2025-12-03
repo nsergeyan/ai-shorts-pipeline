@@ -6,16 +6,14 @@ from typing import Optional, List, Dict, Any
 import yt_dlp
 from config import MUSIC_DIR
 
-# Browser cookies (same approach as gameplay)
 BROWSER = "chrome"
 PROFILE = "Default"
-COOKIEFILE = ""  # path to cookies.txt if you prefer; leave empty to use browser cookies
+COOKIEFILE = ""
 
 os.makedirs(MUSIC_DIR, exist_ok=True)
 
 AUDIO_EXTS = (".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg")
 
-# Limit how many items to read from a playlist when expanding
 PLAYLIST_ITEMS_MAX = 50
 
 

@@ -1,7 +1,6 @@
 import os
 import sys
 
-# Allow imports from modules/
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 
 try:
@@ -15,39 +14,32 @@ except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
 
-# ==============================================================================
-# ⚙️ CONFIGURATION
-# ==============================================================================
 
 # 1. CHOOSE LANGUAGE ("en" or "ru" or "es)
-LANGUAGE = "ru"
+LANGUAGE = "es"
 
-MUSIC_QUERY = "metro 2033 soundtrack"
+MUSIC_QUERY = "ARC RAIDERS OST"
 MUSIC_VOLUME = 0.04
 
 if LANGUAGE == "ru":
     # --- RUSSIAN MODE ---
-    TOPIC = "Арк Рейдерс Новый зимный апдейт"
-    GOOGLE_RESEARCH_QUERY = "Arc raiders  winter update news"
-
-    # Video Search (анимации / геймплей по SCP-096)
-    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS no comentery gameplay 10 min"
-
-    # Name of the voice from VOICES in modules/voice_generator.py
-    # VOICES = {"hamid": "...", "Alan": "...", "Molodoy": "..."}
+    TOPIC = "Шарль Азнавур Интиресные факты!"
+    GOOGLE_RESEARCH_QUERY = "Charles Aznavour interesting facts"
+    YOUTUBE_GAMEPLAY_QUERY = "charles aznavour footages"
     VOICE_NAME = "Molodoy"   # or "Alan"
 
+    # --- SPANISH MODE ---
 elif LANGUAGE == "es":
-    TOPIC = "La próxima actualización de invierno de Arc Raiders"
-    GOOGLE_RESEARCH_QUERY = "Arc raiders new winter update coming"
-    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS no comentery gameplay 10 min"
-    VOICE_NAME = "spanish_guy"  # Or use placeholder until real voice added
+    TOPIC = "ARC Raiders lore oculto"
+    GOOGLE_RESEARCH_QUERY = "ARC Raiders hidden lore"
+    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS cinematic"
+    VOICE_NAME = "spanish_guy"
 
 else:
     # --- ENGLISH MODE ---
-    TOPIC = "scp 999, interesting facts"
-    GOOGLE_RESEARCH_QUERY = "SCP-999 The Tickle Monster facts and lore"
-    YOUTUBE_GAMEPLAY_QUERY = "scp 999 animation, footages"
+    TOPIC = "ARC Raiders deeper lore"
+    GOOGLE_RESEARCH_QUERY = "ARC Raiders hidden lore"
+    YOUTUBE_GAMEPLAY_QUERY = "ARC RAIDERS cinematic"
     VOICE_NAME = "hamid"
 
 # --- SHARED SETTINGS ---
@@ -55,10 +47,6 @@ OUTPUT_FILE = "final_short.mp4"
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
-
-# ==============================================================================
-# PIPELINE
-# ==============================================================================
 
 def run_pipeline():
     print(f"\n🚀 STARTING PIPELINE IN [{LANGUAGE.upper()}] MODE")
@@ -89,10 +77,10 @@ def run_pipeline():
         script_text=script,
         filename="narration.mp3",
         voice=VOICE_NAME,
-        lang=LANGUAGE    # "ru" or "en" – matches your LANGUAGE setting
+        lang=LANGUAGE
     )
 
-    # 5. SUBTITLES (Whisper) -- PASS LANGUAGE FOR BETTER ACCURACY
+    # 5. SUBTITLES (Whisper)
     print("👂 Transcribing for perfect sync...")
     subtitle_data = transcribe_audio_to_groups(
         audio_path,
