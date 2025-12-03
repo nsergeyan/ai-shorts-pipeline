@@ -126,10 +126,6 @@ def _looks_like_useful_page(url: str, title: str, snippet: str) -> bool:
     return True
 
 
-# -------------------------------------------------------------------
-# HELPER: CALL GOOGLE API — WITH KEY ROTATION + 429 RETRY
-# -------------------------------------------------------------------
-
 def _google_search_page(query: str, start: int, num: int = GOOGLE_RESULTS_PER_PAGE, lang: str = "en"):
     """
     Fetch one page of Google Custom Search results — with key rotation + auto-retry on 429.
@@ -182,10 +178,6 @@ def _google_search_page(query: str, start: int, num: int = GOOGLE_RESULTS_PER_PA
     return data.get("items", []) or []
 
 
-# -------------------------------------------------------------------
-# HELPER: SANITIZE TEXT FOR TTS (REMOVE CHINESE/EMOJI/GARBAGE)
-# -------------------------------------------------------------------
-
 def _sanitize_for_tts(text: str, lang: str) -> str:
     """
     Strip any characters that could break TTS or cause weird output.
@@ -203,10 +195,6 @@ def _sanitize_for_tts(text: str, lang: str) -> str:
     clean = re.sub(r'\s+', ' ', clean).strip()
     return clean
 
-
-# -------------------------------------------------------------------
-# MAIN FUNCTION — RAW. SIMPLE. POWERFUL.
-# -------------------------------------------------------------------
 
 def get_deep_research(query: str, lang: str = "en", max_results: int = 3) -> str:
     """

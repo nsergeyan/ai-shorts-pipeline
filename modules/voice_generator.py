@@ -1,4 +1,3 @@
-# modules/voice_generator.py
 import os
 import re
 from elevenlabs import ElevenLabs
@@ -8,11 +7,7 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_8e9a2105297aebbb4dafeab9d34a5b2388924b12d43e1b56",
-    "sk_cc21928182ec16130df3d57bef14b84de7229010f4e613e1",
-    "sk_57c59bb543ed036e5899a255f6ca26107b53d8cfe7aa35c7",
-    "sk_bb1ef697ea634f801d2940ff0ca0eb40b0af6c8acd13d42c",
-    "sk_6b64f023fd72c3d8f3da191458bf30609a76f8a5a2f7923f",
+    "sk_a4a77bb494ed8ae67cbcd3cec4c3e037f7fddb021f2cc46c"
 ]
 
 if not ELEVENLABS_API_KEYS:

@@ -6,7 +6,6 @@ import whisper
 # Keep console clean
 warnings.filterwarnings("ignore")
 
-# Pick model from env or default to multilingual "base"
 MODEL_NAME = os.getenv("WHISPER_MODEL", "large-v3")
 
 print(f"⏳ Loading Whisper AI model ({MODEL_NAME}) once...")

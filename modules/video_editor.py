@@ -238,7 +238,6 @@ def merge_audio_video(
 
     video = video.set_audio(final_audio)
 
-    # 7. Export
     out_path = os.path.join(FINAL_DIR, output_name)
     video.write_videofile(
         out_path,
