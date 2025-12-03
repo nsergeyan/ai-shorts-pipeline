@@ -1,6 +1,6 @@
 import os
 
-OLLAMA_MODEL = "qwen2.5:14b"
+OLLAMA_MODEL = "gemma2:27b"
 
 #max shorts lenght for video
 VIDEO_LENGTH_SEC = 60

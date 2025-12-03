@@ -92,7 +92,7 @@ BAD_PATH_KEYWORDS = (
 
 # Minimum + maximum characters for extracted articles
 MIN_ARTICLE_LENGTH = 400
-MAX_ARTICLE_CHARS = 10000
+MAX_ARTICLE_CHARS = 8000
 
 
 # -------------------------------------------------------------------
