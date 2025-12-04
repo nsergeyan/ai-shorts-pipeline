@@ -23,7 +23,7 @@ except ImportError as e:
 # 1. CONFIGURATION
 # ==============================================================================
 
-LANGUAGE = "ru"  # "en", "es", "ru"
+LANGUAGE = "es"  # "en", "es", "ru"
 
 MY_NICHES = [
     "SCP",
