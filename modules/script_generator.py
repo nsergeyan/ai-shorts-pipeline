@@ -30,7 +30,7 @@ def _ollama_generate(prompt: str, temperature: float) -> str:
                     "num_ctx": 8192
                 }
             },
-            timeout=120
+            timeout=240
         )
         return clean_script_output(resp.json().get("response", ""))
     except Exception as e:
@@ -49,16 +49,26 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
     # ======================= RUSSIAN MODE (DIRECT STORYTELLING) ==========================
     if language == "ru":
         prompt = f"""
-        ТВОЯ ЦЕЛЬ: Рассказать историю или психологический факт про: {topic}.
+        ТВОЯ ЦЕЛЬ: Рассказать историю или  факт про: {topic}.
 
         ДАННЫЕ:
-        {context[:8000]}
+        {context[:10000]}
 
         РОЛЬ:
-        Ты рассказчик (Narrator). Ты не блогер, ты не хайпишь. Ты просто рассказываешь суть.
+        Ты — профессиональный диктор TikTok-роликов.  
+        Сейчас ты готовишь текст ДЛЯ ОЗВУЧКИ В ELEVENLABS.  
+        ElevenLabs полностью ломается и выдаёт роботский голос на любых арабских цифрах 0-9.  
+        Поэтому в твоём ответе НЕ ДОЛЖНО БЫТЬ НИ ОДНОЙ ЦИФРЫ — вообще нигде и никогда.  
+        Все годы, даты, проценты, номера, этажи, версии, количества — только словами и только по-русски.  
+        Примеры:  
+        - вместо 1991 → «тысяча девятьсот девяносто первый»  
+        - вместо 95% → «девяносто пять процентов»  
+        - вместо SCP-096 → «Эс Си Пи ноль девяносто шесть»  
+        - вместо 13-й → «тринадцатый»
 
         ГЛАВНОЕ ПРАВИЛО:
         **ГОВОРИ ТОЛЬКО О: {topic}.**
+        **ОБЪЕМ: СТРОГО 100-130 СЛОВ.**
 
         СТИЛЬ:
         1. **ЗАПРЕТ НА КЛИШЕ:** 
@@ -67,15 +77,8 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         2. **НАЧАЛО:** Начни сразу с утверждения или описания характера. 
            - *Плохо:* "Многие не знают, что Сэр Пенциос одинок."
            - *Хорошо:* "За маской безумного изобретателя Сэра Пенциоса скрывается глубокое человеческое одиночество."
-        3. **ТОН:** Спокойный, аналитический,  но не скучный.
+        3. **ТОН:** в зависимости од темы Спокойный или активный, аналитический,  но не скучный.
         4. **ФОРМАТ:** Один сплошной абзац.
-        
-!!! КРИТИЧНО ВАЖНО ДЛЯ ОЗВУЧКИ !!!
-- АБСОЛЮТНЫЙ ЗАПРЕТ НА ЦИФРЫ (0-9). Озвучка ломается от цифр.
-- ВСЕ числа, даты, годы, проценты и номера пиши ТОЛЬКО СЛОВАМИ на русском.
-- Не пиши «1987», пиши «тысяча девятьсот восемьдесят седьмой».
-- Не пиши «50%», пиши «пятьдесят процентов».
-- Не пиши «SCP-173», пиши «Эс Си Пи сто семьдесят три».
 
         Текст сценария (Русский):
         """
@@ -85,20 +88,21 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
     # ======================= SPANISH MODE (DIRECT STORYTELLING) ==========================
     elif language == "es":
         prompt = f"""
-        OBJETIVO: Narrar una historia profunda sobre: {topic}.
+        OBJETIVO: Narrar una historia inmersiva y oscura sobre: {topic}.
 
         DATOS:
-        {context[:8000]}
+        {context[:20000]}
 
         REGLAS ANTI-CLICHÉ:
         1. **NO USES FRASES DE RELLENO:** 
-           - PROHIBIDO empezar con "¿Sabías que...?", "Mucha gente ignora...", "Aquí hay un dato curioso".
-           - Empieza DIRECTAMENTE con la narrativa.
-        2. **EJEMPLO:**
-           - *Mal:* "¿Sabías que Alastor era un asesino?"
-           - *Bien:* "Antes de convertirse en el Demonio de la Radio, Alastor ya aterrorizaba las calles de Nueva Orleans..."
-        3. **TONO:** Narrativo, serio, elegante.
-        4. **FORMATO:** Un solo párrafo.
+           - PROHIBIDO empezar con "¿Sabías que...?", "Mucha gente ignora...", "Te contaré la historia de...".
+           - Empieza DIRECTAMENTE con la acción, la atmósfera o el dato crudo.
+        2. **EJEMPLO DE ESTILO:**
+           - *Mal:* "¿Sabías que Nemesis persigue a los protagonistas?"
+           - *Bien:* "Creado con el único propósito de eliminar a los supervivientes, Nemesis representa la cúspide del armamento bioorgánico, una fuerza imparable que no conoce el miedo ni el dolor."
+        3. **TONO:** Narrador de misterio o terror. Serio, profundo y elegante.
+        4. **LONGITUD:** ESTRICTAMENTE 120-140 PALABRAS.
+        5. **FORMATO:** Un solo párrafo.
 
         Guion (Español):
         """
@@ -110,7 +114,7 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         TARGET: Tell a compelling narrative about {topic}.
 
         DATA:
-        {context[:8000]}
+        {context[:20000]}
 
         STYLE RULES (NO CLICKBAIT):
         1. **BAN THE HOOKS:** 
@@ -120,10 +124,11 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
            - *Bad:* "Let me tell you about Artyom's childhood."
            - *Good:* "Artyom was born just days before the bombs fell, making him one of the last children of the old world."
         3. **TONE:** Storyteller / Lore Keeper. Not a YouTuber.
-        4. **FORMAT:** One single paragraph block.
+        4. **LENGTH:** STRICTLY 90-110 WORDS.
+        5. **FORMAT:** One single paragraph block.
 
         Script:
         """
         script = _ollama_generate(prompt, temperature=0.75)
 
-    return script
+    return script, context[:20000]

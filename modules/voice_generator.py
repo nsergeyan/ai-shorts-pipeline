@@ -7,7 +7,7 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_a4a77bb494ed8ae67cbcd3cec4c3e037f7fddb021f2cc46c"
+    "sk_9136a8b2de1e2147c477a6f2414c8c8392cb634bd0e4a3bb"
 ]
 
 if not ELEVENLABS_API_KEYS:
