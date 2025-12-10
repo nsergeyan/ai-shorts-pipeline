@@ -12,6 +12,7 @@ GOOGLE_API_KEY = "AIzaSyCljgmfWD2H2Yv2M3KvadBCW_Kdn3OSan0"
 GOOGLE_CX = "f6b8ba130056b4463"
 GOOGLE_API_KEY_2 = "AIzaSyDUzS3-rI4EyXnUaPdYaFnxpch4RuOV2yA"
 GOOGLE_CX_2 = "960182ae1d3f5432e"
+
 # Your existing key setup
 _GOOGLE_KEY_PAIRS = []
 if 'GOOGLE_API_KEY' in globals() and 'GOOGLE_CX' in globals() and GOOGLE_API_KEY and GOOGLE_CX:
@@ -34,152 +35,121 @@ MAX_GOOGLE_PAGES = 2
 MAX_ARTICLE_CHARS = 8000
 
 # -------------------------------------------------------------------
-# UNIVERSAL BLOCKING SYSTEM
+# UNIVERSAL QUALITY FILTERING (NO UNIVERSE-SPECIFIC INFO)
 # -------------------------------------------------------------------
 
 SOCIAL_DOMAINS = ("youtube.com", "youtu.be", "instagram.com", "facebook.com", "tiktok.com", "x.com", "twitter.com",
                   "pinterest.com", "linkedin.com", "reddit.com")
 BLOG_DOMAINS = ("medium.com", "tumblr.com", "blogspot.com", "wordpress.com")
 BLOCKED_DOMAINS = SOCIAL_DOMAINS + BLOG_DOMAINS
-GAME_WIKI_DOMAINS = ("fandom.com", "gamepedia.com", "wikia.org")
+QUALITY_SOURCES = ("fandom.com", "gamepedia.com", "wikipedia.org", "wikia.org")
 
 BLOCKED_EXTENSIONS = (".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".zip", ".rar", ".7z", ".apk", ".exe")
 BAD_PATH_KEYWORDS = ("/tag/", "/tags/", "/category/", "/search", "?s=", "/login", "/signup", "/account", "/privacy",
                      "/terms")
 
-# Universal contamination blockers (works for any universe)
-UNIVERSAL_CONTAMINATION_TERMS = [
-    # Comics/Marvel contamination
-    "marvel", "agents of shield", "mcu", "bullseye", "poindexter", "comics", "comic",
-    "superhero", "avengers", "x-men",
-    # Sci-fi contamination
-    "star wars", "star trek", "warhammer", "dungeons and dragons", "d&d",
-    "world of warcraft", "wow", "mechwarrior",
-    # Other games contamination
-    "league of legends", "overwatch", "fortnite", "minecraft", "roblox"
+# -------------------------------------------------------------------
+# UNIVERSAL CONTAMINATION DETECTION (AUTOMATIC LEARNING)
+# -------------------------------------------------------------------
+
+# Common contamination patterns that appear across ALL domains
+COMMON_CONTAMINATION_PATTERNS = [
+    # Social media/marketing spam
+    "click here", "buy now", "subscribe", "follow us", "like share",
+    # E-commerce
+    "shop now", "discount", "sale", "free shipping",
+    # Low-quality content
+    "lorem ipsum", "dummy text", "placeholder", "coming soon",
+    # Adult content indicators
+    "xxx", "porn", "sex", "nude"
 ]
 
 
-# -------------------------------------------------------------------
-# SMART UNIVERSE DETECTION & ADAPTATION
-# -------------------------------------------------------------------
+def _extract_meaningful_terms(query: str) -> list:
+    """Extract meaningful terms that represent the core topic"""
+    # Remove very common words but keep context
+    common_words = {"the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by", "is", "are", "was",
+                    "were"}
 
-def _extract_core_query_terms(query: str) -> list:
-    """Extract the essential terms that define what we're looking for"""
-    # Remove generic terms
-    generic_terms = {"wiki", "lore", "universe", "fandom", "page", "the", "and", "is", "in", "to", "of", "it"}
-
-    # Extract words
+    # Extract words and clean them
     words = re.findall(r'\w+', query.lower())
-    core_terms = [w for w in words if len(w) > 2 and w not in generic_terms]
+    meaningful_terms = [w for w in words if len(w) > 2 and w not in common_words]
 
-    return core_terms
-
-
-def _detect_primary_universe(query: str) -> str:
-    """Smart universe detection based on query context"""
-    query_lower = query.lower()
-
-    # Look for universe indicators in the query
-    universe_indicators = {
-        "stalker": ["stalker", "s.t.a.l.k.e.r", "zone", "anomaly", "pripyat"],
-        "fallout": ["fallout", "vault", "vault-tec", "nuka"],
-        "scp": ["scp", "foundation", "anomalous", "containment"],
-        "metro": ["metro", "station", "reich", "hansa"]
-    }
-
-    # Score each universe
-    universe_scores = {}
-    for universe, indicators in universe_indicators.items():
-        score = sum(1 for indicator in indicators if indicator in query_lower)
-        if score > 0:
-            universe_scores[universe] = score
-
-    # Return highest scoring universe, or "general" if none
-    if universe_scores:
-        return max(universe_scores, key=universe_scores.get)
-
-    return "general"
+    return meaningful_terms
 
 
-def _is_content_relevant(text: str, title: str, query_terms: list, primary_universe: str) -> tuple[bool, float]:
-    """
-    Smart relevance detection that works for any universe
-    Returns (is_relevant, confidence_score)
-    """
-    if not query_terms:
-        return True, 1.0
+def _calculate_similarity_score(text: str, target_terms: list) -> float:
+    """Calculate how relevant text is to target terms (0.0 to 1.0)"""
+    if not target_terms:
+        return 1.0
 
     text_lower = text.lower()
-    title_lower = title.lower()
+    matches = 0
+    total_weight = 0
 
-    # Check for contamination first
-    contamination_score = 0
-    for contaminant in UNIVERSAL_CONTAMINATION_TERMS:
-        if contaminant in text_lower:
-            # But allow if it's actually about our primary universe
-            universe_indicators = {
-                "stalker": ["stalker", "zone", "anomaly", "artifact"],
-                "fallout": ["fallout", "vault", "nuka", "wasteland"],
-                "scp": ["scp", "foundation", "containment"],
-                "metro": ["metro", "station", "reich"]
-            }
+    for term in target_terms:
+        term_weight = len(term)  # Longer terms are more specific
+        total_weight += term_weight
 
-            # If we have a primary universe, check if content relates to it
-            if primary_universe in universe_indicators:
-                universe_terms = universe_indicators[primary_universe]
-                if not any(term in text_lower for term in universe_terms):
-                    contamination_score += 1
-            else:
-                contamination_score += 1
-
-    # If heavily contaminated, reject
-    if contamination_score > 2:
-        return False, 0.0
-
-    # Calculate relevance score based on query terms
-    hits = 0
-    total_terms = len(query_terms)
-
-    for term in query_terms:
-        # Title matches worth more
-        if term in title_lower:
-            hits += 2
-        elif term in text_lower:
-            hits += 1
+        # Count occurrences (title matches worth more)
+        occurrences = text_lower.count(term.lower())
+        matches += occurrences * term_weight
 
     # Normalize score
-    max_possible = total_terms * 2  # Title weight
-    relevance_score = min(hits / max_possible, 1.0) if max_possible > 0 else 1.0
+    if total_weight == 0:
+        return 1.0
 
-    # Apply contamination penalty
-    final_score = max(relevance_score - (contamination_score * 0.1), 0.0)
-
-    # Minimum threshold for relevance
-    is_relevant = final_score >= 0.15
-
-    return is_relevant, final_score
+    # Cap at 1.0 but allow higher scores for very relevant content
+    return min(matches / total_weight, 1.0)
 
 
-def _looks_like_quality_source(url: str, title: str, snippet: str) -> bool:
-    """Universal quality source detection"""
+def _detect_contamination(text: str, title: str) -> tuple[bool, float]:
+    """
+    Universal contamination detection
+    Returns (is_contaminated, contamination_score)
+    """
+    combined_text = (title + " " + text).lower()
+
+    # Check for common contamination patterns
+    contamination_score = 0
+
+    for pattern in COMMON_CONTAMINATION_PATTERNS:
+        if pattern in combined_text:
+            contamination_score += 1
+
+    # Check for excessive commercial language
+    commercial_words = ["buy", "sell", "price", "cost", "deal", "offer", "coupon"]
+    commercial_count = sum(1 for word in commercial_words if word in combined_text)
+    contamination_score += commercial_count * 0.5
+
+    # High contamination score means likely spam/irrelevant
+    is_contaminated = contamination_score > 2.0
+
+    return is_contaminated, contamination_score
+
+
+def _is_quality_source(url: str, title: str, snippet: str) -> bool:
+    """Universal quality source detection without universe bias"""
     parsed = urlparse(url)
     domain = parsed.netloc.lower()
     path = parsed.path.lower()
 
     # Basic blocking
-    if any(bad in domain for bad in BLOCKED_DOMAINS): return False
-    if any(path.endswith(ext) for ext in BLOCKED_EXTENSIONS): return False
-    if any(bad in path for bad in BAD_PATH_KEYWORDS): return False
-    if len(snippet.split()) < 5: return False
+    if any(bad in domain for bad in BLOCKED_DOMAINS):
+        return False
+    if any(path.endswith(ext) for ext in BLOCKED_EXTENSIONS):
+        return False
+    if any(bad in path for bad in BAD_PATH_KEYWORDS):
+        return False
+    if len(snippet.split()) < 3:  # Very short snippets
+        return False
 
-    # Prefer quality sources
-    quality_indicators = GAME_WIKI_DOMAINS + ("wikipedia.org",)
-    if any(quality_domain in domain for quality_domain in quality_indicators):
+    # Prefer known quality sources
+    if any(quality_domain in domain for quality_domain in QUALITY_SOURCES):
         return True
 
-    # Accept other sources if they seem legitimate
-    return True
+    # Accept other sources if they have decent titles/snippets
+    return len(title) > 10 and len(snippet) > 50
 
 
 # -------------------------------------------------------------------
@@ -193,17 +163,18 @@ def _google_search_page(query: str, start: int, num: int = GOOGLE_RESULTS_PER_PA
 
     print(f"   🔑 Using key: {creds['key'][:8]}...")
 
-    # Smart query construction
-    if "fandom" in query.lower():
-        search_query = query  # Already specific
-    else:
-        search_query = f"site:fandom.com OR site:wikipedia.org {query}"
+    # Universal search strategy - ALWAYS search in English for best sources
+    search_query = f"site:fandom.com OR site:wikipedia.org OR site:gamepedia.com {query}"
 
-    params = {"key": creds["key"], "cx": creds["cx"], "q": search_query, "num": num, "start": start}
-    if lang == "ru":
-        params["lr"] = "lang_ru"
-    else:
-        params["lr"] = "lang_en"
+    # Always search in English regardless of output language
+    params = {
+        "key": creds["key"],
+        "cx": creds["cx"],
+        "q": search_query,
+        "num": num,
+        "start": start,
+        "lr": "lang_en"  # FIXED: Always search in English for consistent quality sources
+    }
 
     try:
         r = requests.get(search_url, params=params, timeout=10)
@@ -236,114 +207,104 @@ def get_deep_research(query: str, lang: str = "en", max_results: int = 3) -> str
     if not _GOOGLE_KEY_PAIRS:
         return "Error: No Google API keys configured."
 
-    # Extract core query terms and detect universe
-    query_terms = _extract_core_query_terms(query)
-    primary_universe = _detect_primary_universe(query)
-
-    print(f"   🎯 Core Terms: {query_terms}")
-    print(f"   🎮 Primary Universe: {primary_universe}")
+    # Extract meaningful terms from query
+    target_terms = _extract_meaningful_terms(query)
+    print(f"   🎯 Target Terms: {target_terms}")
 
     combined_context = ""
     valid_count = 0
     seen_urls = set()
 
-    # Try multiple search strategies
-    search_queries = [
-        f"site:fandom.com {query}",  # Fandom first
-        query,  # General search
-        f"{query} lore wiki"  # Alternative format
-    ]
-
-    for search_query in search_queries:
+    for page_idx in range(MAX_GOOGLE_PAGES):
         if valid_count >= max_results: break
 
-        for page_idx in range(MAX_GOOGLE_PAGES):
+        items = _google_search_page(query, start=(page_idx * GOOGLE_RESULTS_PER_PAGE) + 1, lang=lang)
+        if not items: break
+
+        for item in items:
             if valid_count >= max_results: break
 
-            items = _google_search_page(search_query, start=(page_idx * GOOGLE_RESULTS_PER_PAGE) + 1, lang=lang)
-            if not items:
-                if search_query != search_queries[-1]:  # Not the last strategy
-                    continue
-                else:
-                    break
+            title = (item.get("title") or "").strip()
+            link = (item.get("link") or "").strip()
+            snippet = (item.get("snippet") or "").strip()
 
-            for item in items:
-                if valid_count >= max_results: break
+            if not link or link in seen_urls: continue
+            seen_urls.add(link)
 
-                title = (item.get("title") or "").strip()
-                link = (item.get("link") or "").strip()
-                snippet = (item.get("snippet") or "").strip()
+            # Quality source check (universe-neutral)
+            if not _is_quality_source(link, title, snippet):
+                print(f"      ❌ Low quality source: {title}")
+                continue
 
-                if not link or link in seen_urls: continue
-                seen_urls.add(link)
+            # Contamination check (universal)
+            is_contaminated, contam_score = _detect_contamination(snippet, title)
+            if is_contaminated:
+                print(f"      ❌ Contaminated content: {title} (Score: {contam_score:.1f})")
+                continue
 
-                # Quality source check
-                if not _looks_like_quality_source(link, title, snippet):
-                    print(f"      ❌ Low quality source: {title}")
-                    continue
+            # Relevance check based on target terms
+            similarity_score = _calculate_similarity_score(title + " " + snippet, target_terms)
 
-                # Smart relevance check
-                is_relevant, score = _is_content_relevant(snippet, title, query_terms, primary_universe)
+            # Exact term matches get priority
+            exact_matches = sum(1 for term in target_terms if term.lower() in (title + " " + snippet).lower())
+            has_exact_match = exact_matches > 0
 
-                # Special handling for exact matches
-                exact_match = any(term.lower() in title.lower() for term in query_terms)
+            if has_exact_match or similarity_score >= 0.1:
+                print(f"   👉 Checking: {title} (Similarity: {similarity_score:.2f})")
+            else:
+                print(f"      ❌ Low similarity: {title} (Score: {similarity_score:.2f})")
+                continue
 
-                if exact_match and score >= 0.1:
-                    print(f"   👉 Checking EXACT MATCH: {title} (Score: {score:.2f})...")
-                elif is_relevant:
-                    print(f"   👉 Checking: {title} (Score: {score:.2f})...")
-                else:
-                    print(f"      ❌ Irrelevant: {title} (Score: {score:.2f})")
-                    continue
+            try:
+                downloaded = trafilatura.fetch_url(link)
+                text = None
+                if downloaded:
+                    text = trafilatura.extract(
+                        downloaded,
+                        include_comments=False,
+                        include_tables=False,
+                        include_links=False,
+                        favor_recall=False,
+                        deduplicate=True,
+                    )
 
-                try:
-                    downloaded = trafilatura.fetch_url(link)
-                    text = None
-                    if downloaded:
-                        text = trafilatura.extract(
-                            downloaded,
-                            include_comments=False,
-                            include_tables=False,
-                            include_links=False,
-                            favor_recall=False,
-                            deduplicate=True,
-                        )
+                if text:
+                    # Final quality check on full content
+                    clean_text = _sanitize_for_tts(text, lang)
 
-                    if text:
-                        # Final relevance check on full content
-                        clean_text = _sanitize_for_tts(text, lang)
-                        is_content_relevant_final, content_score = _is_content_relevant(
-                            clean_text[:5000], title, query_terms, primary_universe
-                        )
+                    # Check contamination on full text
+                    is_contaminated_full, _ = _detect_contamination(clean_text[:1000], title)
+                    if is_contaminated_full:
+                        print(f"      ⚠️ Full content contaminated")
+                        continue
 
-                        # Accept if it's relevant or an exact match
-                        if is_content_relevant_final or exact_match:
-                            # Truncate with better preservation
-                            if len(clean_text) > MAX_ARTICLE_CHARS:
-                                clean_text = clean_text[:MAX_ARTICLE_CHARS]
-                                print(f"      ✅ Scraped & Trimmed: {len(clean_text)} chars")
-                            else:
-                                print(f"      ✅ Scraped Full: {len(clean_text)} chars")
+                    # Check relevance on full content
+                    full_similarity = _calculate_similarity_score(clean_text[:5000], target_terms)
 
-                            combined_context += f"\nSOURCE: {title}\nURL: {link}\nCONTENT:\n{clean_text}\n"
-                            valid_count += 1
+                    if has_exact_match or full_similarity >= 0.05:  # Very lenient
+                        # Truncate with better preservation
+                        if len(clean_text) > MAX_ARTICLE_CHARS:
+                            clean_text = clean_text[:MAX_ARTICLE_CHARS]
+                            print(f"      ✅ Scraped & Trimmed: {len(clean_text)} chars")
                         else:
-                            print(f"      ⚠️ Content not relevant (Score: {content_score:.2f})")
+                            print(f"      ✅ Scraped Full: {len(clean_text)} chars")
+
+                        combined_context += f"\nSOURCE: {title}\nURL: {link}\nCONTENT:\n{clean_text}\n"
+                        valid_count += 1
                     else:
-                        # Use snippet for exact matches
-                        if exact_match and score >= 0.3:
-                            print("      ⚠️ No text extracted, using high-quality snippet")
-                            clean_snippet = _sanitize_for_tts(snippet, lang)
-                            combined_context += f"\nSOURCE: {title}\nURL: {link}\nSNIPPET:\n{clean_snippet}\n"
-                            valid_count += 1
-                        else:
-                            print("      ⚠️ Low-quality result, skipping")
+                        print(f"      ⚠️ Full content not relevant (Score: {full_similarity:.2f})")
+                else:
+                    # Use snippet for exact matches
+                    if has_exact_match and similarity_score >= 0.2:
+                        print("      ⚠️ No text extracted, using high-quality snippet")
+                        clean_snippet = _sanitize_for_tts(snippet, lang)
+                        combined_context += f"\nSOURCE: {title}\nURL: {link}\nSNIPPET:\n{clean_snippet}\n"
+                        valid_count += 1
+                    else:
+                        print("      ⚠️ Low-quality result, skipping")
 
-                except Exception as e:
-                    print(f"      ⚠️ Error: {e}")
-
-        if valid_count > 0:
-            break  # Success with this search strategy
+            except Exception as e:
+                print(f"      ⚠️ Error: {e}")
 
     if valid_count == 0:
         print("   ℹ️  No relevant sources found. Providing fallback context.")

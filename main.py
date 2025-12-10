@@ -259,7 +259,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
       - Bad: "The Freedoms" -> Good: "Freedom".
     - **General:** DO NOT invent names ("The Factory" -> "Jupiter Plant").
     - **General:** DO NOT combine words ("Monolith Bunker" -> "Monolith Control Center").
-
+    
     ✅ VALID SUBJECT TYPES:
 
     [[ IF S.T.A.L.K.E.R. ]]
@@ -279,7 +279,15 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     STRICT RULES:
     - **SUBJECT NAME:** Must be the EXACT English header from the Fandom Wiki.
     - **TITLE:** Clickbait in {language}.
-    - **YOUTUBE QUERY:** Visual keywords only.
+    - **YOUTUBE QUERY:** Provide a search query that will produce cinematic or lore-rich footage of the subject.
+  - Avoid raw gameplay unless it shows meaningful interactions or cinematic moments.
+  - Include keywords like 'cinematic', 'cutscene', 'animation', 'lore', 'ambient', or '4k'.
+  - Example good queries:
+      * "stalker monolith cinematic lore 4k"
+      * "stalker bandits cinematic NPC 4k"
+      * "stalker duty faction ambient cinematic"
+      
+      - The video should ideally show characters, faction behavior, or iconic moments, not just free-roaming player gameplay.
     - **MUSIC QUERY:** Specific OST/Instrumental.
 
     Return JSON ONLY:
@@ -351,7 +359,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
     # 1. SCRIPT
     script, context_used = generate_dynamic_script(
-        topic=SUBJECT,
+        topic=TOPIC,
         research_query=GOOGLE_QUERY,
         language=LANGUAGE
     )
@@ -370,6 +378,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
         print(f"   Script Preview: {script[:200]}...")
         return  # STOP HERE - don't proceed to expensive operations
 
+    print(script)
     print("✅ Script passed all validations.")
 
     # 2. GAMEPLAY / CINEMATICS
