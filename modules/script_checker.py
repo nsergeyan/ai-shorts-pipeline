@@ -17,15 +17,15 @@ def validate_script_format(script: str, language: str) -> tuple[bool, str]:
     word_count = len(script.split())
 
     if language == "ru":
-        if not (100 <= word_count <= 130):
-            return False, f"Russian script should be 100-130 words, got {word_count}"
+        if not (90 <= word_count <= 130):
+            return False, f"Russian script should be 110-140 words, got {word_count}"
 
         # For Russian: Check for Arabic numerals (0-9) - THESE BREAK ELEVENLABS
         if re.search(r'\d', script):
             return False, "Russian script contains Arabic numerals (0-9) which break ElevenLabs"
 
     elif language == "es":
-        if not (120 <= word_count <= 140):
+        if not (90 <= word_count <= 130):
             return False, f"Spanish script should be 120-140 words, got {word_count}"
 
     else:  # English

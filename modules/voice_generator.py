@@ -7,7 +7,7 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_9136a8b2de1e2147c477a6f2414c8c8392cb634bd0e4a3bb"
+    "sk_f26b695da7fd338f8bcd217fc539405fb1549c6ba81b4c99"
 ]
 
 if not ELEVENLABS_API_KEYS:
@@ -49,7 +49,7 @@ def _try_generate_with_key(
             "style": 0.6,
             "use_speaker_boost": True
         }
-        latency_opt = None
+        latency_opt = "1"
 
     elif lang == "es":
         # SPANISH SETTINGS (similar to Russian: slower/higher quality)
@@ -60,18 +60,18 @@ def _try_generate_with_key(
             "style": 0.6,
             "use_speaker_boost": True
         }
-        latency_opt = None
+        latency_opt = "1"
 
     else:
         # DEFAULT TO ENGLISH SETTINGS
         model_id = "eleven_turbo_v2_5"
         voice_settings = {
-            "stability": 0.45,
-            "similarity_boost": 0.85,
-            "style": 0.9,
+            "stability": 0.7,
+            "similarity_boost": 0.7,
+            "style": 0.6,
             "use_speaker_boost": True
         }
-        latency_opt = "3"
+        latency_opt = "1"
 
     try:
         cleaned_text = clean_text_for_speech(script_text)
