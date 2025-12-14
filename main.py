@@ -328,7 +328,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
     TOPIC = idea_data['topic']
     SUBJECT = idea_data['specific_subject']
 
-    # --- 🛑 PYTHON FORCED GOOGLE SEARCH ---
+    # ---  PYTHON FORCED GOOGLE SEARCH ---
     # We do NOT trust the AI to write the google query. We build it ourselves.
     # This ensures we always search: "Fallout Universe Deathclaw wiki lore" (English)
     GOOGLE_QUERY = f"{niche_name} {SUBJECT} wiki lore"
