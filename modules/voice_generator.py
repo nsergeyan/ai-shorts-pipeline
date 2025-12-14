@@ -7,7 +7,8 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_f26b695da7fd338f8bcd217fc539405fb1549c6ba81b4c99"
+    "sk_031bf3ab1ed8c024047b0095f6f16b7d23d3cee78a543bbb",
+    "sk_15d5ab3262e73a912bde5645a65cdf284d5c1ee6bd0d5ffd"
 ]
 
 if not ELEVENLABS_API_KEYS:
@@ -123,3 +124,34 @@ def generate_voice(
         print("⏭️ Switching key...")
 
     raise RuntimeError("All ElevenLabs keys failed.")
+
+
+
+if __name__ == "__main__":
+    SUBJECT = "api key test"
+    VOICE_NAME = "hamid"
+    LANGUAGE = "en"
+
+    script = "Hello. This is a very small test to check if the ElevenLabs API key works."
+
+    audio_filename = f"narration_{SUBJECT.replace(' ', '_')}.mp3"
+
+    print("🧪 Starting ElevenLabs test...\n")
+
+    try:
+        audio_path = generate_voice(
+            script_text=script,
+            filename=audio_filename,
+            voice=VOICE_NAME,
+            lang=LANGUAGE
+        )
+
+        if os.path.exists(audio_path) and os.path.getsize(audio_path) > 0:
+            print("\n✅ TEST PASSED")
+            print(f"🎧 Audio file created: {audio_path}")
+        else:
+            print("\n❌ TEST FAILED: File missing or empty")
+
+    except Exception as e:
+        print("\n❌ TEST FAILED WITH ERROR")
+        print(e)
