@@ -26,10 +26,9 @@ except ImportError as e:
 # ==============================================================================
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
-LANGUAGE = "en"
-
+LANGUAGE = "ru"
 MODEL_NAME = "gemma2:27b"
-MUSIC_VOLUME = 0.04
+MUSIC_VOLUME = 0.02
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
@@ -53,14 +52,13 @@ USE_YOUTUBE_DUPLICATE_CHECK = True
 
 # --- NICHE SELECTOR ---
 if LANGUAGE == "ru":
-    MY_NICHES = ["SCP Foundation", "Metro 2033 Universe", "S.T.A.L.K.E.R. Universe", "Fallout Universe",
-                 "Resident Evil Universe"]
+    MY_NICHES = ["SCP Foundation", "Metro 2033 Universe", "S.T.A.L.K.E.R. Universe", "Fallout Universe","Attack on Titan"]
     VOICE_KEY = "Molodoy"
 elif LANGUAGE == "es":
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "Resident Evil Universe"]
+    MY_NICHES = ["SCP Foundation", "Fallout Universe","Attack on Titan"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe"]
+    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -203,7 +201,7 @@ def check_duplicate_topic(topic: str, existing_topics: set) -> bool:
 # ==============================================================================
 
 def generate_idea_from_niche(broad_niche, language="ru"):
-    print(f"\n🧠 PRODUCER ({MODEL_NAME}): Analyzing '{broad_niche}'...")
+    print(f"\nPRODUCER ({MODEL_NAME}): Analyzing '{broad_niche}'...")
 
     # Get existing topics to avoid duplicates
     existing_topics = get_existing_topics_by_language(language)
@@ -214,91 +212,88 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 
     if existing_topics_str and USE_YOUTUBE_DUPLICATE_CHECK:
         avoidance_section = f"""
-    🚫 AVOID THESE ALREADY COVERED TOPICS IN {language.upper()} CHANNEL:
-    {existing_topics_str}
+AVOID THESE ALREADY COVERED TOPICS IN {language.upper()} CHANNEL:
+{existing_topics_str}
 
-    CRITICAL RULE: DO NOT PICK ANYTHING FROM THE ABOVE TOPICS.
-    """
+CRITICAL RULE: DO NOT PICK ANYTHING FROM THE ABOVE TOPICS.
+"""
     else:
         avoidance_section = ""
 
-    # --- ⚖️ STRATEGIC CONTENT MIX ---
+    # Strategic content tiers
     tiers = [
-        "🏛️ FRANCHISE PILLARS (The absolute face of the franchise, viral icons)",
-        "⭐ CORE NARRATIVE STAPLES (less popular characters, or topics)",
-        "🧊 ESOTERIC LORE & DEEP CUTS (Hidden experiments, disturbing backstories, obscure items, least popular characters)"
+        "FRANCHISE PILLARS (The most iconic subjects)",
+        "CORE NARRATIVE STAPLES (Less popular characters/topics)",
+        "ESOTERIC LORE & DEEP CUTS (Hidden details, obscure items, least popular characters)"
     ]
     selected_tier = random.choices(tiers, weights=[0.10, 0.60, 0.30], k=1)[0]
-    print(f"🎲 Content Strategy: {selected_tier}")
+    print(f"Content Strategy: {selected_tier}")
 
-    # --- 🚫 DYNAMIC EXCLUSION LOGIC ---
+    # Dynamic exclusion logic
     if "FRANCHISE PILLARS" in selected_tier:
-        exclusion_instruction = "Pick the ABSOLUTE MOST FAMOUS icons. (e.g., SCP-173, Vault Boy, Artyom, Nemesis, etc...)."
+        exclusion_instruction = "Pick the most famous icons (e.g., SCP-173, Vault Boy, Artyom, Nemesis)."
     elif "CORE NARRATIVE" in selected_tier:
-        exclusion_instruction = "Pick beloved characters/factions, but **EXCLUDE** the top mascots. (e.g., Pick Dr. Bright, Sin Faction, Brotherhood of Steel... but DO NOT pick SCP-173, etc..)."
+        exclusion_instruction = "Pick beloved characters/factions, but exclude the top mascots (e.g., Dr. Bright, Brotherhood of Steel)."
     elif "ESOTERIC LORE" in selected_tier:
-        exclusion_instruction = "Pick unknown/hidden details. **ABSOLUTELY NO** popular characters. (e.g., Pick SCP-5000, Vault 11, The Dark Ones' Origin, etc...)."
+        exclusion_instruction = "Pick unknown or hidden details. Absolutely no popular characters (e.g., SCP-5000, Vault 11)."
 
     prompt = f"""
-    Role: Wiki Librarian & Content Strategist.
-    Universe: "{broad_niche}"
-    Language: "{language}"
-    Strategy: {selected_tier}
+Role: Wiki Librarian & Content Strategist
+Universe: "{broad_niche}"
+Language: "{language}"
+Strategy: {selected_tier}
 
-    TASK:
-    1. Analyze the universe based on the Strategy.
-    2. Apply Selection Rule: 👉 **{exclusion_instruction}**
-    3. Pick a **REAL, CANONICAL** subject matching the rule.
-    Avoidance : {avoidance_section}
-    4. CRITICAL: Ensure this topic is NOT in the avoided list above.
+TASK:
+1. Analyze the universe based on the Strategy.
+2. Apply Selection Rule: {exclusion_instruction}
+3. Pick a REAL, CANONICAL subject matching the rule.
+Avoidance: {avoidance_section}
+4. Ensure this topic is NOT in the avoided list above.
 
-    ❌ HALLUCINATION & NAMING CHECK (CRITICAL):
-    - **S.T.A.L.K.E.R.:** Faction names are SINGULAR. 
-      - Bad: "The Sinners" -> Good: "Sin".
-      - Bad: "The Mercs" -> Good: "Mercenaries".
-      - Bad: "The Freedoms" -> Good: "Freedom".
-    - **General:** DO NOT invent names ("The Factory" -> "Jupiter Plant").
-    - **General:** DO NOT combine words ("Monolith Bunker" -> "Monolith Control Center").
-    
-    ✅ VALID SUBJECT TYPES:
+HALLUCINATION & NAMING CHECK:
+- Do not invent names or combine words.
+- Keep faction/character names exactly as in official wikis.
 
-    [[ IF S.T.A.L.K.E.R. ]]
-    - Factions (Sin, Duty, Freedom, Monolith, Clear Sky).
-    - Mutants (Bloodsucker, Controller, Burer).
-    - Labs (X-18, X-16).
+VALID SUBJECT TYPES:
 
-    [[ IF METRO 2033 ]]
-    - Stations (Polis, D6), Monsters (Librarian, Demon), Factions (Hansa, Red Line).
+Attack on Titan:
+- Characters, history, theories, some lore
 
-    [[ IF SCP FOUNDATION ]]
-    - SCPs (Objects), Sites (Site-19), GOIs (GOC, Serpent's Hand).
+S.T.A.L.K.E.R.:
+- Factions, mutants, labs, theories, some lore
 
-    [[ IF FALLOUT ]]
-    - Vaults (11, 22, 108), Factions (Enclave), Creatures (Cazador).
+Metro 2033:
+- Stations, monsters, factions, theories, some lore
 
-    STRICT RULES:
-    - **SUBJECT NAME:** Must be the EXACT English header from the Fandom Wiki.
-    - **TITLE:** Clickbait in {language}.
-    - **YOUTUBE QUERY:** Provide a search query that will produce cinematic or lore-rich footage of the subject.
-  - Avoid raw gameplay unless it shows meaningful interactions or cinematic moments.
-  - Include keywords like 'cinematic', 'cutscene', 'animation', 'lore', 'ambient', or '4k'.
-  - Example good queries:
-      * "stalker monolith cinematic lore 4k"
-      * "stalker bandits cinematic NPC 4k"
-      * "stalker duty faction ambient cinematic"
-      
-      - The video should ideally show characters, faction behavior, or iconic moments, not just free-roaming player gameplay.
-    - **MUSIC QUERY:** Specific OST/Instrumental.
+SCP Foundation:
+- SCPs, sites, GOIs, theories, some lore
 
-    Return JSON ONLY:
-    {{
-        "topic": "Title in {language}",
-        "specific_subject": "Exact English Wiki Name",
-        "youtube_query": "INSERT_VISUAL_QUERY_HERE",
-        "music_mood": "INSERT_SPECIFIC_MUSIC_QUERY_HERE",
-        "voice_name": "{VOICE_KEY}"
-    }}
-    """
+Fallout:
+- Vaults, factions, creatures, theories, some lore
+
+STRICT RULES:
+- SUBJECT NAME must match the exact English wiki header
+- TITLE should be clickbait in {language}
+- YOUTUBE QUERY: Must produce cinematic or lore-rich footage
+- MUSIC QUERY: Specific OST or instrumental from that universe  OR just a good background music 
+
+HALLUCINATION & NAMING CHECK:
+- Do not invent names or combine words.
+- Keep faction/character names exactly as in official wikis.
+- TRANSLITERATION RULE: use established Russian names. 
+  (e.g., "Khan" in English MUST be "Хан" in Russian, NOT "Хэн").
+- FACTION CHECK: Do not add the word "Clan" or "Faction" unless the wiki explicitly lists it as one. 
+  (e.g., Khan is a person, Hansa is a faction).
+  
+Return JSON ONLY:
+{{
+    "topic": "Title in {language}",
+    "specific_subject": "Exact English Wiki Name",
+    "youtube_query": "INSERT_VISUAL_QUERY_HERE",
+    "music_mood": "INSERT_SPECIFIC_MUSIC_QUERY_HERE",
+    "voice_name": "{VOICE_KEY}"
+}}
+"""
 
     try:
         response = requests.post(
@@ -312,11 +307,13 @@ def generate_idea_from_niche(broad_niche, language="ru"):
             },
             timeout=120
         )
-        if response.status_code != 200: return None
+        if response.status_code != 200:
+            return None
         return json.loads(response.json().get("response", ""))
     except Exception as e:
-        print(f"❌ AI Error: {e}")
+        print(f"AI Error: {e}")
         return None
+
 
 
 # ==============================================================================
@@ -459,10 +456,11 @@ if __name__ == "__main__":
 
     # Keep trying until we successfully create one video
     videos_created = 0
-    max_attempts = 10  # Prevent infinite loops
+    max_attempts = 25  # Prevent infinite loops
     attempts = 0
 
-    while videos_created < 1 and attempts < max_attempts:
+    # Change this line (approx. line 290):
+    while videos_created < 5 and attempts < max_attempts:  # Increased attempts since validation might fail
         attempts += 1
         print(f"\n=== 🎬 ATTEMPT {attempts}/{max_attempts} ===")
 

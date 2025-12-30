@@ -52,18 +52,16 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         ТВОЯ ЦЕЛЬ: Рассказать историю или факт про: {topic}.
         
         ВАЖНЕЙШЕЕ ПРАВИЛО - ЗАПРЕТ НА ЦИФРЫ:
-    ########################################
     НИ ОДНОЙ АРАБСКОЙ ЦИФРЫ (0-9) НИКОГДА!
     Все числа ТОЛЬКО словами по-русски!
-    ########################################
     
     Примеры ПРАВИЛЬНО:
     - "Эс Си Пи сто семьдесят три" 
     - "тысяча девятьсот девяносто первый"
     
     Примеры НЕПРАВИЛЬНО:
-    - "Эс Си Пи 173" ❌
-    - "1991 год" ❌
+    - "Эс Си Пи 173" 
+    - "1991 год" 
         ДАННЫЕ:
         {context[:10000]}
 
@@ -87,6 +85,16 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         2. **Без клише и вступлений**
         3. **Один сплошной абзац**
         4. **Если в данных нет информации о "{topic}" - СКАЖИ ЭТО ЧЕТКО**
+        5. СЛОВАРНЫЙ ЗАПАС (VOCABULARY):
+            Длина слов: Старайтесь избегать слов длиннее 3–4 слогов. Длинные причастия (например, «приближающийся») часто вызывают цифровой шум или «заикание».
+            
+            Уровень сложности: Ориентируйтесь на уровень 5–6 класса.
+            Атмосфера: Вместо сложных терминов используйте базовые, «первобытные» слова: кровь, прах, тень, страх, кость, тьма, жар.
+            
+            Примеры адаптации:
+            Плохо (Слишком сложно): «От колоссального гиганта исходило невыносимое тепловое излучение». (Слишком много слогов, ИИ может запнуться).
+            
+            Хорошо (Просто и мрачно): «Жар от гиганта был таким сильным, что плавил
 
         Пример правильного формата:
         ПЛОХО: "В бункере сто восемь скрывался жуткий секрет..."
@@ -139,6 +147,11 @@ def generate_dynamic_script(topic: str, research_query: str, language: str = "en
         3. **TONE:** Storyteller / Lore Keeper. Not a YouTuber.
         4. **LENGTH:** STRICTLY 90-100 WORDS.
         5. **FORMAT:** One single paragraph block.
+        6. **VOCABULARY:** Use "Simple but Dark" language. 
+           - Avoid words with more than 3 syllables where possible. 
+           - Aim for a 7th-grade reading level, but keep the atmosphere heavy and serious.
+           - *Bad:* "The heat was emanating from the giant."
+           - *Good:* "The heat coming off the giant was enough to melt stone."
 
         Script:
         """
