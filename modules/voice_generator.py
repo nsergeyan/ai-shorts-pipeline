@@ -7,8 +7,7 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_031bf3ab1ed8c024047b0095f6f16b7d23d3cee78a543bbb",
-    "sk_15d5ab3262e73a912bde5645a65cdf284d5c1ee6bd0d5ffd"
+    "sk_19c7ad513c93c5424e48a2fecc03337929ed777c54cc9e84"
 ]
 
 if not ELEVENLABS_API_KEYS:
@@ -45,9 +44,9 @@ def _try_generate_with_key(
         # RUSSIAN SETTINGS
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.5,
-            "similarity_boost": 0.6,
-            "style": 0.6,
+            "stability": 0.8,
+            "similarity_boost": 0.7,
+            "style": 0.5,
             "use_speaker_boost": True
         }
         latency_opt = "1"
@@ -56,20 +55,20 @@ def _try_generate_with_key(
         # SPANISH SETTINGS (similar to Russian: slower/higher quality)
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.5,
+            "stability": 0.6,
             "similarity_boost": 0.7,
-            "style": 0.6,
+            "style": 0.5,
             "use_speaker_boost": True
         }
         latency_opt = "1"
 
     else:
         # DEFAULT TO ENGLISH SETTINGS
-        model_id = "eleven_turbo_v2_5"
+        model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.7,
-            "similarity_boost": 0.7,
-            "style": 0.6,
+            "stability": 0.75,
+            "similarity_boost": 0.8,
+            "style": 0.35,
             "use_speaker_boost": True
         }
         latency_opt = "1"
@@ -129,11 +128,10 @@ def generate_voice(
 
 if __name__ == "__main__":
     SUBJECT = "api key test"
-    VOICE_NAME = "hamid"
-    LANGUAGE = "en"
+    VOICE_NAME = "Molodoy"
+    LANGUAGE = "ru"
 
-    script = "Hello. This is a very small test to check if the ElevenLabs API key works."
-
+    script = "Это было беспрецедентное нападение. Хаос распространялся, пока дыхание титана извергало ужасающий, сернистый туман. Каждый разведчик ощущал давление приближающейся тени."
     audio_filename = f"narration_{SUBJECT.replace(' ', '_')}.mp3"
 
     print("🧪 Starting ElevenLabs test...\n")
