@@ -1,160 +1,155 @@
-import requests
 import re
-from modules.web_search import get_deep_research
+import os
+from google import genai
+from google.genai import types
 
-# MODEL
-OLLAMA_MODEL = "gemma2:27b"
+# ==============================================================================
+# 1. CONFIGURATION
+# ==============================================================================
 
+GEMINI_API_KEY = "AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I"
+#all keys
+#AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
+#AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+#AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
+
+
+# SWITCH TO 2.5 FLASH: High quota, very stable
+GEMINI_MODEL = "gemini-2.5-flash"
+
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def clean_script_output(text: str) -> str:
-    if not text: return ""
+    """Clean and format the script output for text-to-speech."""
+    if not text:
+        return ""
     text = re.sub(r'^\s*["`]{3,}\s*', '', text)
     text = re.sub(r'\s*["`]{3,}\s*$', '', text)
     text = text.replace("**", "").replace("##", "").replace("Title:", "")
-    text = re.sub(r'^(Here is|Sure,|In this video|Based on).*?(\n|$)', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'^(Here is|Sure,|In this video|Based on|Narrative script|According to).*?(\n|$)', '', text, flags=re.IGNORECASE)
     text = re.sub(r'[^\w\s,.\-!?()"\':;@%]', '', text)
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     return " ".join(lines)
 
-
-def _ollama_generate(prompt: str, temperature: float) -> str:
+def _gemini_generate(prompt: str, temperature: float = 0.7) -> str:
+    """Calls Gemini 2.5 Flash with Grounding to fix 'Invisible Watcher' knowledge."""
     try:
-        resp = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": temperature,
-                    "num_ctx": 8192
-                }
-            },
-            timeout=240
+        google_search_tool = types.Tool(
+            google_search =types.GoogleSearch()
         )
-        return clean_script_output(resp.json().get("response", ""))
+
+        config = types.GenerateContentConfig(
+            temperature=temperature,
+            tools=[google_search_tool],
+            max_output_tokens=5000,
+        )
+
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=config
+        )
+
+        if response and response.text:
+            return clean_script_output(response.text)
+        else:
+            return ""
+
     except Exception as e:
-        print(f"⚠️ Error: {e}")
+        if "429" in str(e):
+            print("⚠️ Rate Limit Hit! Wait a moment and try again.")
+        else:
+            print(f"⚠️ Gemini API Error: {e}")
         return ""
 
 
-def generate_dynamic_script(topic: str, research_query: str, language: str = "en") -> str:
-    print(f"🧠 Researching '{research_query}'...")
-    context = get_deep_research(research_query, lang="en", max_results=2)
-    if not context or len(context) < 100:
-        context = "No details found."
-
+def generate_dynamic_script(topic: str, language: str = "en") -> str:
+    """
+    Injected with your detailed prompts for Russian, Spanish, and English.
+    """
     print(f"✍️ Writing Narrative Script for '{topic}' ({language})...")
 
-    # ======================= RUSSIAN MODE (DIRECT STORYTELLING) ==========================
+    # ======================= RUSSIAN MODE (DETAILED) ==========================
     if language == "ru":
         prompt = f"""
-        ТВОЯ ЦЕЛЬ: Рассказать историю или факт про: {topic}.
-        
-        ВАЖНЕЙШЕЕ ПРАВИЛО - ЗАПРЕТ НА ЦИФРЫ:
-    НИ ОДНОЙ АРАБСКОЙ ЦИФРЫ (0-9) НИКОГДА!
-    Все числа ТОЛЬКО словами по-русски!
-    
-    Примеры ПРАВИЛЬНО:
-    - "Эс Си Пи сто семьдесят три" 
-    - "тысяча девятьсот девяносто первый"
-    
-    Примеры НЕПРАВИЛЬНО:
-    - "Эс Си Пи 173" 
-    - "1991 год" 
-        ДАННЫЕ:
-        {context[:10000]}
+        КОНТЕКСТ: Ты — аналитик лора. Твой стиль — логика, факты и разоблачение мифов. Ты не кричишь, ты объясняешь суть.
+        ТЕМА: {topic}
 
-        РОЛЬ:
-        Ты — профессиональный диктор TikTok-роликов для русскоязычной аудитории.
-        **ОБЪЕМ: СТРОГО 130-160 СЛОВ**
+        ЗАДАЧА: Написать текст сценария СТРОГО от ста тридцати до ста сорока пяти слов. (Это пятьдесят пять секунд речи).
 
-        ВАЖНО - ПЕРЕВОД И ТРАНСЛИТЕРАЦИЯ:
-        - Все английские названия переводи или транслитерируй на русский:
-          * "Vault 108" → «Бункер сто восемь» или «Волт сто восемь»
-          * "SCP-173" → «Эс Си Пи сто семьдесят три»
-          * "Monolith" → «Монолит»
-          * "Stalker" → «Сталкер»
-          * "Foundation" → «Фонд»
-        - Все числа пиши словами по-русски:
-          * 1991 → «тысяча девятьсот девяносто первый»
-          * 2077 → «две тысячи семьдесят седьмой»
+        ПЛАН СЦЕНАРИЯ (ОБЯЗАТЕЛЬНО):
+        1. ЛОГИЧЕСКИЙ КРЮЧОК: Начни с вопроса "Почему персонаж не сделал [действие]?" или "А вы знали настоящий смысл [события]?". Никаких "Йо" и "Всем привет".
+        2. ПЕРВЫЙ АРГУМЕНТ: Дай глубокий факт из сюжета, который всё объясняет.
+        3. ИРОНИЯ ИЛИ ДЕТАЛЬ: Расскажи о моменте, который фанаты обычно пропускают (используй имена!). 
+        4. ФИНАЛЬНАЯ УГРОЗА: Закончи фразой о последствиях или силе героя.
 
-        ОСНОВНЫЕ ПРАВИЛА:
-        1. **ГОВОРИ ТОЛЬКО О: {topic}**
-        2. **Без клише и вступлений**
-        3. **Один сплошной абзац**
-        4. **Если в данных нет информации о "{topic}" - СКАЖИ ЭТО ЧЕТКО**
-        5. СЛОВАРНЫЙ ЗАПАС (VOCABULARY):
-            Длина слов: Старайтесь избегать слов длиннее 3–4 слогов. Длинные причастия (например, «приближающийся») часто вызывают цифровой шум или «заикание».
-            
-            Уровень сложности: Ориентируйтесь на уровень 5–6 класса.
-            Атмосфера: Вместо сложных терминов используйте базовые, «первобытные» слова: кровь, прах, тень, страх, кость, тьма, жар.
-            
-            Примеры адаптации:
-            Плохо (Слишком сложно): «От колоссального гиганта исходило невыносимое тепловое излучение». (Слишком много слогов, ИИ может запнуться).
-            
-            Хорошо (Просто и мрачно): «Жар от гиганта был таким сильным, что плавил
+        СТРОГИЕ ПРАВИЛА:
+        - НИКАКИХ ЦИФР: Пиши всё только буквами (вместо "100" пиши "сотня", вместо "2000" пиши "две тысячи").
+        - ДЛИНА СЛОВ: Не более двенадцати символов.
+        - СТИЛЬ: Трезвый, аналитический, энергичный. Без "кринжа" и пустых восторгов.
+        - ФОРМАТ: Один сплошной текст без списков.
 
-        Пример правильного формата:
-        ПЛОХО: "В бункере сто восемь скрывался жуткий секрет..."
-        ХОРОШО: "В подземном комплексе под номером сто восемь проводились мрачные эксперименты..."
-        
-        **ОБЪЕМ: СТРОГО 130-160 СЛОВ**
-        Текст сценария (Русский):
+        ПРИМЕР ДЛЯ ПОДРАЖАНИЯ:
+        "Почему Марлия не отправила весь флот на Парадиз? Казалось бы, один удар и война окончена. Но авторы продумали всё до мелочей. Во-первых, остров защищали тысячи спящих титанов. Ирония в том, что Марлия сама их создала, чтобы запереть врагов. В итоге эти монстры стали живым щитом для Элдийцев. Корабли просто не смогли бы подойти близко. Многие считают это ляпом, но это был холодный расчет Зика. Он знал, что прямая атака раскроет их планы всему миру. К тому же, никто не понимал истинной мощи короля стен. Один неверный шаг и начался бы великий гул земли. Марлия не могла так рисковать своей репутацией и флотом. А как бы поступили вы на месте их генералов?"
+
+        Напиши Текст сценария (На русском языке):
         """
-        # Slightly higher temp allows for better sentence structure diversity
-        script = _ollama_generate(prompt, temperature=0.75)
+        return _gemini_generate(prompt, temperature=0.7)
 
-    # ======================= SPANISH MODE (DIRECT STORYTELLING) ==========================
+    # ======================= SPANISH MODE (DETAILED) ==========================
     elif language == "es":
         prompt = f"""
         OBJETIVO: Narrar una historia inmersiva y oscura sobre: {topic}.
 
-        DATOS:
-        {context[:20000]}
-
         REGLAS ANTI-CLICHÉ:
-        1. **NO USES FRASES DE RELLENO:** 
-           - PROHIBIDO empezar con "¿Sabías que...?", "Mucha gente ignora...", "Te contaré la historia de...".
+        1. **NO USES FRASES DE RELLENO:** - PROHIBIDO empezar con "¿Sabías que...?", "Mucha gente ignora...".
            - Empieza DIRECTAMENTE con la acción, la atmósfera o el dato crudo.
         2. **EJEMPLO DE ESTILO:**
-           - *Mal:* "¿Sabías que Nemesis persigue a los protagonistas?"
-           - *Bien:* "Creado con el único propósito de eliminar a los supervivientes, Nemesis representa la cúspide del armamento bioorgánico, una fuerza imparable que no conoce el miedo ni el dolor."
+           - *Bien:* "Creado con el único propósito de eliminar a los supervivientes, Nemesis representa la cúspide del armamento bioorgánico..."
         3. **TONO:** Narrador de misterio o terror. Serio, profundo y elegante.
         4. **LONGITUD:** ESTRICTAMENTE 110-140 PALABRAS.
         5. **FORMATO:** Un solo párrafo.
 
         Guion (Español):
         """
-        script = _ollama_generate(prompt, temperature=0.75)
+        return _gemini_generate(prompt, temperature=0.6)
 
-    # ======================= ENGLISH MODE (DIRECT STORYTELLING) ==========================
+    # ======================= ENGLISH MODE (DETAILED) ==========================
     else:
         prompt = f"""
-        TARGET: Tell a compelling narrative about {topic}.
+        CONTEXT: You are a lore analyst. Your style is logic, facts, and debunking myths. You don’t shout; you explain the core essence.
+        TOPIC: {topic}
 
-        DATA:
-        {context[:20000]}
+        TASK: Write a script text STRICTLY between one hundred thirty and one hundred forty-five words. (This equals fifty-five seconds of speech).
 
-        STYLE RULES (NO CLICKBAIT):
-        1. **BAN THE HOOKS:** 
-           - DO NOT start with "Did you know", "Most people miss", "Here is a fact".
-           - Just start telling the story immediately.
-        2. **DIRECT NARRATIVE:** 
-           - *Bad:* "Let me tell you about Artyom's childhood."
-           - *Good:* "Artyom was born just days before the bombs fell, making him one of the last children of the old world."
-        3. **TONE:** Storyteller / Lore Keeper. Not a YouTuber.
-        4. **LENGTH:** STRICTLY 90-100 WORDS.
-        5. **FORMAT:** One single paragraph block.
-        6. **VOCABULARY:** Use "Simple but Dark" language. 
-           - Avoid words with more than 3 syllables where possible. 
-           - Aim for a 7th-grade reading level, but keep the atmosphere heavy and serious.
-           - *Bad:* "The heat was emanating from the giant."
-           - *Good:* "The heat coming off the giant was enough to melt stone."
+        SCRIPT PLAN (MANDATORY):
+        1. LOGICAL HOOK: Start with the question "Why didn't the character do [action]?" or "Did you know the real meaning of [event]?". No "Yo" or "Hello everyone."
+        2. FIRST ARGUMENT: Provide a deep plot-based fact that explains everything.
+        3. IRONY OR DETAIL: Mention a moment fans usually overlook (use names!). 
+        4. FINAL THREAT: End with a phrase about the consequences or the hero's power.
 
-        Script:
+        STRICT RULES:
+        - NO NUMERALS: Write everything only in letters (instead of "100" write "one hundred", instead of "2000" write "two thousand").
+        - WORD LENGTH: No more than twelve characters per word.
+        - STYLE: Sober, analytical, energetic. No "cringe" or empty excitement.
+        - FORMAT: One continuous block of text without lists.
+
+        ROLE MODEL EXAMPLE:
+        "Why did Marley not send the entire fleet to Paradis? It would seem one strike and the war is over. But the authors thought through every detail. First, the island was guarded by thousands of sleeping titans. The irony is that Marley created them to lock the enemies away. In the end, these monsters became a living shield for Eldians. Ships simply could not get close. Many consider this a plot hole, but it was Zeke's cold calculation. He knew a direct attack would reveal their plans to the world. Besides, no one understood the true power of the wall king. One wrong step and the great rumbling would begin. Marley could not risk their reputation and fleet like that. How would you have acted in place of their generals?"
+
+        Write the script text (In English):
         """
-        script = _ollama_generate(prompt, temperature=0.75)
+        return _gemini_generate(prompt, temperature=0.6)
 
-    return script, context[:20000]
+if __name__ == "__main__":
+    print("\n--- RUNNING STABLE 2.5 FLASH GENERATOR ---")
+    # This topic will now work because of Grounding
+    test_topic = "Invisible Watchers in Metro 2035, who is their leader?"
+    result = generate_dynamic_script(test_topic, "en")
+
+    if result:
+        print("-" * 30)
+        print(f"✅ Final Script:\n{result}")
+        print("-" * 30)
+    else:
+        print("❌ Failed to generate script.")

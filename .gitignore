@@ -1,6 +1,3 @@
 .venv/
 __pycache__/
 *.pyc
-youtube_topics_cache_es.txt
-youtube_topics_cache_ru.txt
-youtube_topics_cache_en.txt

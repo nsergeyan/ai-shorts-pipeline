@@ -44,9 +44,9 @@ def _try_generate_with_key(
         # RUSSIAN SETTINGS
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.8,
-            "similarity_boost": 0.7,
-            "style": 0.5,
+            "stability": 0.4,
+            "similarity_boost": 0.75,
+            "style": 0.8,
             "use_speaker_boost": True
         }
         latency_opt = "1"
@@ -66,9 +66,9 @@ def _try_generate_with_key(
         # DEFAULT TO ENGLISH SETTINGS
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.75,
-            "similarity_boost": 0.8,
-            "style": 0.35,
+            "stability": 0.45,
+            "similarity_boost": 0.85,
+            "style": 0.75,
             "use_speaker_boost": True
         }
         latency_opt = "1"

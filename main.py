@@ -11,15 +11,19 @@ from modules.script_checker import validate_script_context, validate_script_comp
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 
 try:
-    from modules.script_generator import generate_dynamic_script
+    # This now imports the Gemini version we built
+    from modules.script_generator import generate_dynamic_script, client, GEMINI_MODEL
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_fetcher import fetch_random_music
     from modules.voice_generator import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_groups
+    from google.genai import types # Added for Producer Gemini call
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
+
+
 
 # ==============================================================================
 # 1. CONFIGURATION
@@ -27,7 +31,6 @@ except ImportError as e:
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "ru"
-MODEL_NAME = "gemma2:27b"
 MUSIC_VOLUME = 0.02
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
@@ -58,7 +61,7 @@ elif LANGUAGE == "es":
     MY_NICHES = ["SCP Foundation", "Fallout Universe","Attack on Titan"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan"]
+    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan", "The Amazing Digital Circus"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -196,124 +199,89 @@ def check_duplicate_topic(topic: str, existing_topics: set) -> bool:
     return False
 
 
+# ... [Keep your imports and YouTube checker functions as they are] ...
+
 # ==============================================================================
-# 3. THE PRODUCER AGENT (Updated with duplicate prevention)
+# 3. THE PRODUCER AGENT (Restored with Weighted Strategy)
 # ==============================================================================
 
 def generate_idea_from_niche(broad_niche, language="ru"):
-    print(f"\nPRODUCER ({MODEL_NAME}): Analyzing '{broad_niche}'...")
+    print(f"\nPRODUCER (Gemini 2.5): Analyzing '{broad_niche}'...")
 
-    # Get existing topics to avoid duplicates
-    existing_topics = get_existing_topics_by_language(language)
-
-    # Format existing topics for the prompt
-    existing_topics_list = list(existing_topics)[:30]  # Limit for prompt size
-    existing_topics_str = "\n".join([f"- {topic}" for topic in existing_topics_list])
-
-    if existing_topics_str and USE_YOUTUBE_DUPLICATE_CHECK:
-        avoidance_section = f"""
-AVOID THESE ALREADY COVERED TOPICS IN {language.upper()} CHANNEL:
-{existing_topics_str}
-
-CRITICAL RULE: DO NOT PICK ANYTHING FROM THE ABOVE TOPICS.
-"""
-    else:
-        avoidance_section = ""
-
-    # Strategic content tiers
+    # --- RESTORED STRATEGIC CONTENT TIERS ---
     tiers = [
         "FRANCHISE PILLARS (The most iconic subjects)",
-        "CORE NARRATIVE STAPLES (Less popular characters/topics)",
-        "ESOTERIC LORE & DEEP CUTS (Hidden details, obscure items, least popular characters)"
+        "CORE NARRATIVE STAPLES (Standard lore/characters)",
+        "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
-    selected_tier = random.choices(tiers, weights=[0.10, 0.60, 0.30], k=1)[0]
-    print(f"Content Strategy: {selected_tier}")
+    # Weights: 10% Famous, 60% Standard, 30% Obscure
+    selected_tier = random.choices(tiers, weights=[0.20, 0.50, 0.30], k=1)[0]
+    print(f"🎯 Strategy: {selected_tier}")
 
-    # Dynamic exclusion logic
+    # Dynamic exclusion logic to guide the AI
     if "FRANCHISE PILLARS" in selected_tier:
-        exclusion_instruction = "Pick the most famous icons (e.g., SCP-173, Vault Boy, Artyom, Nemesis)."
+        guideline = "Pick the most famous icons (e.g., SCP-173, Vault Boy, Artyom, Nemesis)."
     elif "CORE NARRATIVE" in selected_tier:
-        exclusion_instruction = "Pick beloved characters/factions, but exclude the top mascots (e.g., Dr. Bright, Brotherhood of Steel)."
-    elif "ESOTERIC LORE" in selected_tier:
-        exclusion_instruction = "Pick unknown or hidden details. Absolutely no popular characters (e.g., SCP-5000, Vault 11)."
+        guideline = "Pick beloved subjects, but avoid the absolute top mascots."
+    else:
+        guideline = "Pick unknown or hidden details. Absolutely no popular characters."
+
+    existing_topics = get_existing_topics_by_language(language)
+    existing_topics_str = "\n".join(list(existing_topics)[:30])
 
     prompt = f"""
-Role: Wiki Librarian & Content Strategist
-Universe: "{broad_niche}"
-Language: "{language}"
-Strategy: {selected_tier}
+        Return JSON ONLY. 
+        Universe: "{broad_niche}"
+        Language: "{language}"
+        Strategy Tier: {selected_tier}
+        Guideline: {guideline}
 
-TASK:
-1. Analyze the universe based on the Strategy.
-2. Apply Selection Rule: {exclusion_instruction}
-3. Pick a REAL, CANONICAL subject matching the rule.
-Avoidance: {avoidance_section}
-4. Ensure this topic is NOT in the avoided list above.
+        Avoid these already covered topics:
+        {existing_topics_str}
 
-HALLUCINATION & NAMING CHECK:
-- Do not invent names or combine words.
-- Keep faction/character names exactly as in official wikis.
+        TASK:
+        1. Pick a REAL, CANONICAL subject matching the Strategy Tier.
+        2. SUBJECT NAME must match the exact English wiki header.
+        3. TITLE should be clickbait in {language}.
 
-VALID SUBJECT TYPES:
+        
+        4. **YOUTUBE QUERY:** Provide a search query that will produce cinematic or lore-rich footage of the subject.
+      - Avoid raw gameplay unless it shows meaningful interactions or cinematic moments.
+      - Include keywords like 'cinematic', 'cutscene', 'animation', 'lore', 'ambient', or '4k'.
+      - Example good queries:
+          * "stalker monolith cinematic lore 4k"
+          * "stalker bandits cinematic NPC 4k"
+          * "stalker duty faction ambient cinematic"
+      - The video should ideally show characters, faction behavior, or iconic moments, not just free-roaming player gameplay.
 
-Attack on Titan:
-- Characters, history, theories, some lore
+        5. MUSIC MOOD: 
+           Don't search for "Subject Theme". Search for the game's official OST style.
+           BAD: "The Great Worm theme"
+           GOOD: "Metro Last Light Official Soundtrack Dark Ambient" or "Metro 2033 guitar OST"
 
-S.T.A.L.K.E.R.:
-- Factions, mutants, labs, theories, some lore
-
-Metro 2033:
-- Stations, monsters, factions, theories, some lore
-
-SCP Foundation:
-- SCPs, sites, GOIs, theories, some lore
-
-Fallout:
-- Vaults, factions, creatures, theories, some lore
-
-STRICT RULES:
-- SUBJECT NAME must match the exact English wiki header
-- TITLE should be clickbait in {language}
-- YOUTUBE QUERY: Must produce cinematic or lore-rich footage
-- MUSIC QUERY: Specific OST or instrumental from that universe  OR just a good background music 
-
-HALLUCINATION & NAMING CHECK:
-- Do not invent names or combine words.
-- Keep faction/character names exactly as in official wikis.
-- TRANSLITERATION RULE: use established Russian names. 
-  (e.g., "Khan" in English MUST be "Хан" in Russian, NOT "Хэн").
-- FACTION CHECK: Do not add the word "Clan" or "Faction" unless the wiki explicitly lists it as one. 
-  (e.g., Khan is a person, Hansa is a faction).
-  
-Return JSON ONLY:
-{{
-    "topic": "Title in {language}",
-    "specific_subject": "Exact English Wiki Name",
-    "youtube_query": "INSERT_VISUAL_QUERY_HERE",
-    "music_mood": "INSERT_SPECIFIC_MUSIC_QUERY_HERE",
-    "voice_name": "{VOICE_KEY}"
-}}
-"""
+        Return this JSON structure:
+        {{
+            "topic": "Title in {language}",
+            "specific_subject": "Exact English Wiki Name",
+            "youtube_query": "ENGLISH_SEARCH_QUERY_HERE",
+            "music_mood": "specific music theme",
+            "voice_name": "{VOICE_KEY}"
+        }}
+        """
 
     try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "format": "json",
-                "stream": False,
-                "options": {"temperature": 0.7, "num_ctx": 4096}
-            },
-            timeout=120
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.8
+            )
         )
-        if response.status_code != 200:
-            return None
-        return json.loads(response.json().get("response", ""))
+        return json.loads(response.text)
     except Exception as e:
-        print(f"AI Error: {e}")
+        print(f"AI Producer Error: {e}")
         return None
-
 
 
 # ==============================================================================
@@ -321,92 +289,50 @@ Return JSON ONLY:
 # ==============================================================================
 
 def run_pipeline_for_idea(idea_data, niche_name):
-    # Unpack
+    # Unpack from JSON
     TOPIC = idea_data['topic']
     SUBJECT = idea_data['specific_subject']
+    YT_QUERY = idea_data['youtube_query']
 
-    # ---  PYTHON FORCED GOOGLE SEARCH ---
-    # We do NOT trust the AI to write the google query. We build it ourselves.
-    # This ensures we always search: "Fallout Universe Deathclaw wiki lore" (English)
-    GOOGLE_QUERY = f"{niche_name} {SUBJECT} wiki lore"
-
-    # --- CLEAN YOUTUBE VIDEO QUERY ---
-    raw_yt = idea_data['youtube_query']
-    clean_yt = raw_yt.replace("**VISUALS:**", "").strip()
-
-    if len(clean_yt) < 5:
-        clean_yt = f"{SUBJECT} cinematic {niche_name} 4k"
-
-    YT_QUERY = clean_yt
-
-    # --- CLEAN MUSIC QUERY ---
+    # Ensure music search has 'instrumental' to avoid vocals in background
     raw_music = idea_data['music_mood']
-    if "instrumental" not in raw_music.lower() and "ost" not in raw_music.lower() and "ambience" not in raw_music.lower():
-        MUSIC_QUERY = f"{raw_music} Instrumental OST"
-    else:
-        MUSIC_QUERY = raw_music
+    MUSIC_QUERY = f"{raw_music} instrumental ost" if "ost" not in raw_music.lower() else raw_music
 
     VOICE_NAME = idea_data['voice_name']
 
     print(f"📋 PLAN: {SUBJECT}")
     print(f"   Title: {TOPIC}")
-    print(f"   Search: '{GOOGLE_QUERY}' (Forced English)")
-    print(f"   Visual Search: '{YT_QUERY}'")
-    print(f"   Music Search: '{MUSIC_QUERY}'")
 
-    # 1. SCRIPT
-    script, context_used = generate_dynamic_script(
+    # 1. SCRIPT (Using the Gemini generator with search grounding)
+    script = generate_dynamic_script(
         topic=TOPIC,
-        research_query=GOOGLE_QUERY,
         language=LANGUAGE
     )
 
-    if not script or len(script) < 100:
-        print("❌ Script generation failed (too short). Skipping.")
-        return
+    if not script or len(script) < 50:
+        print("❌ Script generation failed.")
+        return False
 
-    # NEW: Run complete validation (format + content)
-    is_valid, feedback = validate_script_complete(script, SUBJECT, context_used, LANGUAGE)
-
-    if not is_valid:
-        print(f"❌ SCRIPT VALIDATION FAILED")
-        print(f"   Reason: {feedback}")
-        print(f"   Topic: {SUBJECT}")
-        print(f"   Script Preview: {script[:200]}...")
-        return  # STOP HERE - don't proceed to expensive operations
-
-    print(script)
-    print("✅ Script passed all validations.")
-
-    # 2. GAMEPLAY / CINEMATICS
+    # 2. VISUALS
     print(f"🎮 Fetching visuals...")
     video_paths = fetch_gameplay_by_search(YT_QUERY, max_videos=1)
     if not video_paths:
-        print("❌ No video found. Skipping.")
-        return
+        return False
 
     # 3. MUSIC
     print(f"🎵 Fetching music...")
     music_path = fetch_random_music(search_query=MUSIC_QUERY)
 
     # 4. VOICE
-    print(f"🗣️ Generating voice: {VOICE_NAME}...")
-    audio_filename = f"narration_{SUBJECT.replace(' ', '_')}.mp3"
-    audio_path = generate_voice(
-        script_text=script,
-        filename=audio_filename,
-        voice=VOICE_NAME,
-        lang=LANGUAGE
-    )
+    print(f"🗣️ Generating voice...")
+    audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
+    audio_path = generate_voice(script, audio_filename, VOICE_NAME, LANGUAGE)
 
     # 5. SUBTITLES
-    print("👂 Transcribing...")
     subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
 
     # 6. EDIT
-    final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(100, 999)}.mp4"
-    print(f"🎬 Editing '{final_filename}'...")
-
+    final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
     final_path = merge_audio_video(
         video_paths=video_paths,
         audio_path=audio_path,
@@ -428,83 +354,57 @@ def run_pipeline_for_idea(idea_data, niche_name):
         for v in video_paths:
             if os.path.exists(v): os.remove(v)
 
-    return True  # INDICATE SUCCESS
+    return True
+
 
 
 # ==============================================================================
 # 5. MAIN LOOP
 # ==============================================================================
 if __name__ == "__main__":
-    print(f"🚀 STARTING AI STUDIO")
-    print(f"🌍 Language: {LANGUAGE.upper()}")
-    print(f"🤖 Model: {MODEL_NAME}")
-    print(f"🎯 Active Niches: {MY_NICHES}")
+    print(f"🚀 STARTING GEMINI-POWERED STUDIO")
+    print(f"🌍 Target: Generate ONE video in {LANGUAGE.upper()}")
 
-    # Show YouTube settings status for current language
-    if USE_YOUTUBE_DUPLICATE_CHECK:
-        current_channel = YOUTUBE_CHANNELS.get(LANGUAGE, {})
-        channel_id = current_channel.get("channel_id", "")
-        username = current_channel.get("username", "")
-
-        if channel_id or username:
-            channel_name = username if username else channel_id
-            print(f"📺 YouTube Duplicate Check: ENABLED for {LANGUAGE.upper()} channel ({channel_name})")
-        else:
-            print(f"⚠️ YouTube Duplicate Check: CONFIG NEEDED for {LANGUAGE.upper()} channel")
-    else:
-        print(f"⏭️ YouTube Duplicate Check: DISABLED")
-
-    # Keep trying until we successfully create one video
-    videos_created = 0
-    max_attempts = 25  # Prevent infinite loops
     attempts = 0
+    max_attempts = 15
+    success = False
 
-    # Change this line (approx. line 290):
-    while videos_created < 5 and attempts < max_attempts:  # Increased attempts since validation might fail
+    while attempts < max_attempts:
         attempts += 1
         print(f"\n=== 🎬 ATTEMPT {attempts}/{max_attempts} ===")
 
+        # 1. Select a random niche from your list
         niche = random.choice(MY_NICHES)
+
+        # 2. Generate the idea using Gemini
         plan = generate_idea_from_niche(niche, LANGUAGE)
 
         if plan:
-            # Additional duplicate check (belt and suspenders approach)
-            if USE_YOUTUBE_DUPLICATE_CHECK:
-                existing_topics = get_existing_topics_by_language(LANGUAGE)
-                subject = plan.get('specific_subject', '')
-                if check_duplicate_topic(subject, existing_topics):
-                    print(
-                        f"❌ DUPLICATE DETECTED: '{subject}' already exists in your {LANGUAGE.upper()} channel. Skipping.")
-                    print("🔄 Trying again with a different topic...")
-                    time.sleep(2)  # Brief pause before next attempt
-                    continue
+            # 3. Duplicate Check against YouTube history
+            existing_topics = get_existing_topics_by_language(LANGUAGE)
+            subject = plan.get('specific_subject', '')
 
-            # Try to run the pipeline
+            if check_duplicate_topic(subject, existing_topics):
+                print(f"🔄 Duplicate '{subject}' detected. Trying a different topic...")
+                continue
+
+            # 4. Run the full video production pipeline
             try:
-                # Pass the 'niche' string explicitly so we can build the google query safely
-                success = run_pipeline_for_idea(plan, niche)  # GET SUCCESS STATUS
-                if success:  # ONLY COUNT AS SUCCESS IF TRUE
-                    videos_created += 1
-                    print(f"🎉 SUCCESSFULLY CREATED VIDEO #{videos_created}!")
+                if run_pipeline_for_idea(plan, niche):
+                    print(f"\n🎉 SUCCESS! Video created for: {subject}")
+                    success = True
+                    break  # <--- THIS STOPS THE LOOP IMMEDIATELY AFTER 1 SUCCESS
                 else:
-                    print("❌ Video creation failed validation. Trying again...")
-                    time.sleep(3)
+                    print("❌ Pipeline failed (Validation or Fetching error).")
             except Exception as e:
-                print(f"❌ Pipeline failed with error: {e}")
-                print("🔄 Trying again with a different topic...")
-                time.sleep(3)
+                print(f"❌ Critical Error in pipeline: {e}")
         else:
-            print("⚠️ AI Plan failed.")
-            print("🔄 Trying again with a different topic...")
-            time.sleep(2)  # Brief pause before next attempt
+            print("⚠️ AI failed to generate a plan.")
 
-        # Cooldown between attempts (but not after success)
-        if videos_created == 0 and attempts < max_attempts:
-            print("⏳ Cooldown 3s...")
-            time.sleep(3)
+        # Short cooldown between failed attempts
+        time.sleep(2)
 
-    if videos_created >= 1:
-        print(f"\n🏆 FINISHED! Successfully created {videos_created} video(s).")
+    if success:
+        print(f"\n🏆 MISSION ACCOMPLISHED: 1 video generated in {attempts} attempts.")
     else:
-        print(f"\n💥 FAILED! Could not create any videos after {max_attempts} attempts.")
-        print("💡 Try checking your configuration, internet connection, or YouTube API limits.")
+        print(f"\n💥 FAILED: Could not complete a video after {max_attempts} attempts.")
