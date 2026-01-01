@@ -183,8 +183,8 @@ def merge_audio_video(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    # 1. Load Clips
-    raw_clips = [VideoFileClip(p) for p in video_paths]
+    # 1. Load Clips and MUTE them immediately
+    raw_clips = [VideoFileClip(p).without_audio() for p in video_paths]
 
     # 2. Vertical Crop
     if vertical:
