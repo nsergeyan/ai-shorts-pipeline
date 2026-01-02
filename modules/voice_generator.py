@@ -55,9 +55,9 @@ def _try_generate_with_key(
         # SPANISH SETTINGS (similar to Russian: slower/higher quality)
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.6,
-            "similarity_boost": 0.7,
-            "style": 0.5,
+            "stability": 0.55,
+            "similarity_boost": 0.75,
+            "style": 0.4,
             "use_speaker_boost": True
         }
         latency_opt = "1"
@@ -68,7 +68,7 @@ def _try_generate_with_key(
         voice_settings = {
             "stability": 0.45,
             "similarity_boost": 0.85,
-            "style": 0.75,
+            "style": 0.7,
             "use_speaker_boost": True
         }
         latency_opt = "1"

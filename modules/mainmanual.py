@@ -5,30 +5,31 @@ import requests
 import json
 import time
 
-from modules.script_checker import validate_script_context, validate_script_complete
-
 # --- ADD MODULES PATH ---
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 
 try:
-    # This now imports the Gemini version we built
-    from modules.script_generator import generate_dynamic_script, client, GEMINI_MODEL
+    from modules.script_generator import (
+        generate_dynamic_script,
+        call_gemini_with_retry,
+        GEMINI_MODEL,
+        types,
+        client
+    )
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_fetcher import fetch_random_music
     from modules.voice_generator import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_groups
-    from google.genai import types  # Added for Producer Gemini call
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
-
 # ==============================================================================
 # 1. CONFIGURATION
 # ==============================================================================
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
-LANGUAGE = "ru"
+LANGUAGE = "en"
 MUSIC_VOLUME = 0.02
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
@@ -54,13 +55,13 @@ USE_YOUTUBE_DUPLICATE_CHECK = True
 # --- NICHE SELECTOR ---
 if LANGUAGE == "ru":
     MY_NICHES = ["SCP Foundation", "Metro 2033 Universe", "S.T.A.L.K.E.R. Universe", "Fallout Universe",
-                 "Attack on Titan", "The Amazing Digital Circus"]
+                 "Attack on Titan", "The Amazing Digital Circus", "Ancient History", "One-Punch Man", "Jujutsu Kaisen"]
     VOICE_KEY = "Molodoy"
 elif LANGUAGE == "es":
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "Attack on Titan"]
+    MY_NICHES = ["SCP Foundation", "Fallout Universe", "Attack on Titan", "One-Punch Man", "Jujutsu Kaisen"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan"]
+    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan", "One-Punch Man", "Jujutsu Kaisen"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -198,8 +199,6 @@ def check_duplicate_topic(topic: str, existing_topics: set) -> bool:
     return False
 
 
-# ... [Keep your imports and YouTube checker functions as they are] ...
-
 # ==============================================================================
 # 3. THE PRODUCER AGENT (Restored with Weighted Strategy)
 # ==============================================================================
@@ -213,8 +212,8 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         "CORE NARRATIVE STAPLES (Standard lore/characters)",
         "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
-    # Weights: 20% Famous, 60% Standard, 30% Obscure
-    selected_tier = random.choices(tiers, weights=[0.33, 0.33, 0.33], k=1)[0]
+
+    selected_tier = random.choices(tiers, weights=[0.5, 0.4, 0.1], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
@@ -260,7 +259,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         5. MUSIC MOOD: 
            Don't search for "Subject Theme". Search for the game's official OST style.
            BAD: "The Great Worm theme"
-           GOOD: "Metro Last Light Official Soundtrack Dark Ambient" or "Metro 2033 guitar OST"
+           GOOD: "Metro Last Light Official Soundtrack  Ambient" or "Metro 2033 guitar OST"
 
         Return this JSON structure:
         {{
@@ -271,20 +270,18 @@ def generate_idea_from_niche(broad_niche, language="ru"):
             "voice_name": "{VOICE_KEY}"
         }}
         """
+    config = types.GenerateContentConfig(
+        response_mime_type="application/json",
+        temperature=0.7
+    )
 
-    try:
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=0.8
-            )
-        )
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"AI Producer Error: {e}")
-        return None
+    response = call_gemini_with_retry(prompt, config)
+    if response and response.text:
+        try:
+            return json.loads(response.text)
+        except Exception as e:
+            print(f"AI Producer JSON Error: {e}")
+    return None
 
 
 # ==============================================================================
@@ -360,12 +357,20 @@ def run_pipeline_for_idea(idea_data, niche_name):
         for v in video_paths:
             if os.path.exists(v): os.remove(v)
 
+        cache_file = f"youtube_topics_cache_{LANGUAGE}.txt"
+        if os.path.exists(cache_file):
+            os.remove(cache_file)
+            print(f"🗑️ Cleaned up YouTube cache: {cache_file}")
+
+        global existing_topics_cache
+        existing_topics_cache.clear()
+
     return True
 
 
 if __name__ == "__main__":
     # FORCE the test niche
-    niche = "Attack on Titan"
+    niche = "Jujutsu Kaisen"
 
     print(f"🎬 TESTING NEW NICHE: {niche}")
     plan = generate_idea_from_niche(niche, LANGUAGE)
