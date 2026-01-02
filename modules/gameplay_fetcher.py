@@ -67,6 +67,7 @@ def _pick_existing_gameplay() -> Optional[str]:
 def fetch_gameplay_by_search(search_query: str, max_videos: int = 1) -> list[str]:
     """
     Search YouTube and download ONLY the first 5 minutes of the result.
+    Excludes YouTube Shorts (videos under 60 seconds).
     """
     os.makedirs(GAMEPLAY_DIR, exist_ok=True)
     print(f"\n🔎 Searching YouTube for: \"{search_query}\"")
@@ -74,19 +75,34 @@ def fetch_gameplay_by_search(search_query: str, max_videos: int = 1) -> list[str
     # 1. Search metadata
     try:
         with yt_dlp.YoutubeDL(_make_opts(skip_download=True)) as ydl:
-            info = ydl.extract_info(f"ytsearch{max_videos}:{search_query}", download=False)
+            info = ydl.extract_info(f"ytsearch{max_videos * 2}:{search_query}", download=False)  # Get more to filter
     except Exception as e:
         print(f"❌ Search failed: {e}")
         return []
 
     entries = info.get("entries", []) or []
+
+    # Filter out Shorts (duration < 60 seconds) and unavailable videos
+    filtered_entries = []
+    for entry in entries:
+        if not entry:
+            continue
+        duration = entry.get("duration", 0)
+        if duration and duration >= 60:  # At least 1 minute
+            filtered_entries.append(entry)
+        if len(filtered_entries) >= max_videos:
+            break
+
+    if not filtered_entries:
+        print("❌ No suitable videos found (Shorts filtered out)")
+        return []
+
     paths = []
 
     # 2. Download (Hard limited to 5 mins via FFmpeg)
-    # We pass "00:00-05:00" to trigger the external_downloader logic above
     try:
         with yt_dlp.YoutubeDL(_make_opts(skip_download=False, download_start_end="00:00-05:00")) as ydl:
-            for e in entries:
+            for e in filtered_entries:
                 title = _safe_title(e.get("title", "untitled"))
                 print(f"⬇️  Downloading (Hard limit: 5 mins): {title}")
 
