@@ -30,7 +30,7 @@ except ImportError as e:
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.02
+MUSIC_VOLUME = 0.025
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
@@ -54,14 +54,13 @@ USE_YOUTUBE_DUPLICATE_CHECK = True
 
 # --- NICHE SELECTOR ---
 if LANGUAGE == "ru":
-    MY_NICHES = ["SCP Foundation", "Metro 2033 Universe", "S.T.A.L.K.E.R. Universe", "Fallout Universe",
-                 "Attack on Titan", "The Amazing Digital Circus", "Ancient History", "One-Punch Man", "Jujutsu Kaisen"]
+    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
     VOICE_KEY = "Molodoy"
 elif LANGUAGE == "es":
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "Attack on Titan", "One-Punch Man", "Jujutsu Kaisen"]
+    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["SCP Foundation", "Fallout Universe", "S.T.A.L.K.E.R. Universe", "Attack on Titan", "One-Punch Man", "Jujutsu Kaisen"]
+    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -213,12 +212,12 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
 
-    selected_tier = random.choices(tiers, weights=[0.5, 0.4, 0.1], k=1)[0]
+    selected_tier = random.choices(tiers, weights=[0.3, 0.3, 0.5], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
     if "FRANCHISE PILLARS" in selected_tier:
-        guideline = "Pick the most famous icons (e.g., SCP-173, Vault Boy, Artyom, Nemesis)."
+        guideline = "Pick the most famous icons (e.g., Vault Boy, Artyom, Nemesis)."
     elif "CORE NARRATIVE" in selected_tier:
         guideline = "Pick beloved subjects, but avoid the absolute top mascots."
     else:
@@ -236,6 +235,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 
         Avoid these already covered topics:
         {existing_topics_str}
+        Everything has to be in ENGLISH!
 
        TASK:
     1. SUBJECT: Choose a character or location or theory.
@@ -243,29 +243,56 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     3. FORBIDDEN WORDS: "Wildest", "Funny", "Best", "Top 10", "Moments", "Get ready".
     
     TITLE EXAMPLES:
+    
+    STRICT RULE: Do not summarize the basic plot or provide common-knowledge character motivations (e.g., 'Thorfinn changed because Askeladd died'(vinland saga)).
     - "The Human Kinger: Who Was He Before the Mask?"
     - "Who are the red line form metro 2033"
     - "What is the monolith from stalker"
+    - If the topic is "Simple interesting space theories(universe)" -> Make a videos like what will happen if a person goes to black hole, etc. Make it simple for a typical tiktok watcher.
+       Perfect script for perfect topic:
+       How powerful is Gojo Satoru? Well, powerful enough that Jujutsu Kaisen’s creator actually hates Gojo for it. First, there’s Gojo’s Infinity. Essentially, the closer you get to Gojo, the slower your movements are. You’ll slowly approach Gojo, but you’ll never be able to touch him. Next, you have Limitless, which allows Gojo to distort and manipulate the space around him at will. For example, Reversed Limitless Red gives Gojo the ability to repel, while Lapse Blue is the opposite; it’s essentially a black hole. Combining the two gives you Hollow Purple, which will erase its target from existence. All of this, combined with Gojo’s Six Eyes, allows him to keep his brain refreshed at all times, preventing burnout.
+       
+       Another perfect script for perfect topic:
+       Have you ever wondered why Geto betrayed Gojo and turned evil in Jujutsu Kaisen? Let me explain. Well, Geto didn't wake up one day and decide to destroy the world; the world destroyed him first. He used to be the perfect sorcerer: protect the weak, save the helpless, and carry the burden without complaint. That was his whole identity. But everything snapped when Riko died in front of him. What hurt wasn't just Toji killing her; it was the crowd of non-sorcerers celebrating her death like it was entertainment—the same people he swore his life to protect. After that, every mission felt heavier. He kept swallowing curses, absorbing the vomit-tasting negativity humans created, and slowly he began to hate the people he was protecting. Then Yuki told him the truth that broke whatever sanity he had left: non-sorcerers are the source of curses. Sorcerers keep dying because of people who don't even care, and that's when Geto's belief flipped. He didn't want to save non-sorcerers anymore; he wanted a world where sorcerers didn't have to suffer for them. Haibara's death pushed him off the edge completely. On his next mission, he wiped out an entire village of 112 non-sorcerers just to rescue two sorcerer girls, and from that moment, Geto wasn't a protector anymore.
+       
         3. TITLE should be  in {language}.
-
+        
 
         4. YOUTUBE QUERY: !!! IMPORTANT !!!
-           Search for OFFICIAL EPISODE CLIPS. 
-           Avoid words like "Lore", "Secrets", or "Theory" in the query.
-           GOOD: "The Amazing Digital Circus Episode 1 kinger scene "
-           BAD: "kinger digital lake lore"
-           Avoid quering youtube shorts, try to find a video that is more then 60 seconds.
+           GOAL: Find high-quality, scenes that focuses on characters and atmosphere. Avoid UI, HUD, and player-controlled movement. Try to get from official sources. SO WE DONT HAVE ANY COPYRIGHT PROBLEMS FROM OTHER YOUTUBERS.
+            1. SEARCH STRATEGY:
+            
+            NEVER use words like: "Mission", "Gameplay", "Playthrough", "Walkthrough".
+            
+            ALWAYS use words like: "Cutscene", "Official Clip", episode, "scene", etc...
+            
+            2. CHARACTER FOCUS (The "NPC" Rule):
+            
+            To find specific character (like gojo satoru or fallout characters), search for the character's name + "Scenes" or "Moments".
+            
+            Example: "satoru gojo speach jjk scene"
+            
+            Example: "fallout brotherhood of steel NPC idle cinematic 4K"
+            
+            If it is about fallout universe use only visuals from the movie fallout.
+            
+            If it is about space(universe) search for images,animations,footages of universe, no explanations or ifnormative videos just universe.
 
         5. MUSIC MOOD: 
            Don't search for "Subject Theme". Search for the game's official OST style.
            BAD: "The Great Worm theme"
-           GOOD: "Metro Last Light Official Soundtrack  Ambient" or "Metro 2033 guitar OST"
+           GOOD: "Metro Last Light Official Soundtrack  Ambient" or "Hazbin hotel soundtrack instrumental no lyrics" etc...
+           Don't use a music from Interstellar.
 
         Return this JSON structure:
         {{
             "topic": "Title in {language}",
             "specific_subject": "Exact English Wiki Name",
-            "youtube_query": "ENGLISH_SEARCH_QUERY_HERE",
+            "youtube_queries": [
+        "PRIMARY_QUERY_Youtube",
+        "BACKUP_QUERY1_Youtube",
+        "BACKUP_QUERY2_Youtube"
+    ],
             "music_mood": "specific music theme",
             "voice_name": "{VOICE_KEY}"
         }}
@@ -287,12 +314,15 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 # ==============================================================================
 # 4. THE PIPELINE
 # ==============================================================================
-
 def run_pipeline_for_idea(idea_data, niche_name):
     # Unpack from JSON
     TOPIC = idea_data['topic']
     SUBJECT = idea_data['specific_subject']
-    YT_QUERY = idea_data['youtube_query']
+    YOUTUBE_QUERIES = idea_data.get('youtube_queries', [])
+
+    # Ensure we have a list of queries
+    if isinstance(YOUTUBE_QUERIES, str):
+        YOUTUBE_QUERIES = [YOUTUBE_QUERIES]
 
     # Ensure music search has 'instrumental' to avoid vocals in background
     raw_music = idea_data['music_mood']
@@ -302,7 +332,6 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
     print(f"📋 PLAN: {SUBJECT}")
     print(f"   Title: {TOPIC}")
-
 
     contextual_topic = f"{TOPIC} inside the universe of {niche_name}"
 
@@ -316,10 +345,19 @@ def run_pipeline_for_idea(idea_data, niche_name):
         print("❌ Script generation failed.")
         return False
 
-    # 2. VISUALS
+    # 2. VISUALS - with query rotation and video tracking
     print(f"🎮 Fetching visuals...")
-    video_paths = fetch_gameplay_by_search(YT_QUERY, max_videos=1)
+    used_video_ids = set()  # Track used videos to avoid repeats
+
+    video_paths = fetch_gameplay_by_search(
+        search_queries=YOUTUBE_QUERIES,
+        max_videos=1,
+        retry_searches=10,
+        used_video_ids=used_video_ids
+    )
+
     if not video_paths:
+        print("⚠️ Skipping due to lack of usable visuals.")
         return False
 
     # 3. MUSIC
@@ -332,10 +370,14 @@ def run_pipeline_for_idea(idea_data, niche_name):
     audio_path = generate_voice(script, audio_filename, VOICE_NAME, LANGUAGE)
 
     # 5. SUBTITLES
+    print(f"📝 Generating subtitles...")
     subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
+    print(f"✅ Generated {len(subtitle_data) if subtitle_data else 0} subtitle chunks")
 
     # 6. EDIT
     final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
+    print(f"🎬 Starting video editing...")
+
     final_path = merge_audio_video(
         video_paths=video_paths,
         audio_path=audio_path,
@@ -370,10 +412,8 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
 if __name__ == "__main__":
     # FORCE the test niche
-    niche = "Jujutsu Kaisen"
-
+    niche =  "Jujutsu Kaisen"
     print(f"🎬 TESTING NEW NICHE: {niche}")
     plan = generate_idea_from_niche(niche, LANGUAGE)
-
     if plan:
         run_pipeline_for_idea(plan, niche)

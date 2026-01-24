@@ -10,12 +10,16 @@ import moviepy.config as mp_config
 
 if sys.platform == "darwin":
     possible_paths = [
+        "/opt/homebrew/bin/magick",
+        "/usr/local/bin/magick",
         "/opt/homebrew/bin/convert",
         "/usr/local/bin/convert",
     ]
     for p in possible_paths:
         if os.path.exists(p):
-            mp_config.change_settings({"IMAGEMAGICK_BINARY": p})
+            # Prefer magick over convert
+            binary = p if "magick" in p else p
+            mp_config.change_settings({"IMAGEMAGICK_BINARY": binary})
             break
 
 from moviepy.editor import (
@@ -127,7 +131,7 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
 def _make_subtitle_clips(subtitles_data, video_size, position="center"):
     w_vid, h_vid = video_size
     clips = []
-    fontsize = int(h_vid * 0.08)
+    fontsize = int(h_vid * 0.06)
 
     if position == 'bottom':
         pos_arg = ('center', int(h_vid * 0.75))
@@ -137,7 +141,7 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
     else:
         pos_arg = ('center', 'center')
 
-    font_name = "Impact"
+    font_path = "/System/Library/Fonts/Arial.ttf"
 
     for start, end, txt in subtitles_data:
         dur = end - start
@@ -147,7 +151,7 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
             txt.upper(),
             fontsize=fontsize,
             color='white',
-            font=font_name,
+            font=font_path,
             method='caption',
             size=(int(w_vid * 0.75), None),
             stroke_color='black',
@@ -169,7 +173,7 @@ def merge_audio_video(
         target_w: int = 1080,
         target_h: int = 1920,
         shorts_cap: bool = True,
-        cap_seconds: float = 59.0,
+        cap_seconds: float = 82,
         music_path: Optional[str] = None,
         music_volume: float = 0.01,
         subtitles_data: Optional[list] = None,
