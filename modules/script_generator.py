@@ -46,6 +46,8 @@ def call_gemini_with_retry(prompt, config):
                 contents=prompt,
                 config=config
             )
+            if response.candidates[0].grounding_metadata:
+                print(f"🌐 Search used! Queries: {response.candidates[0].grounding_metadata.search_entry_point}")
             return response
         except Exception as e:
             if "429" in str(e):
@@ -78,107 +80,180 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     # ======================= RUSSIAN MODE (DETAILED) ==========================
     if language == "ru":
         prompt = f"""
-        КОНТЕКСТ: Ты — аналитик лора. Твой стиль — логика, факты и разоблачение мифов. Ты не кричишь, ты объясняешь суть.
+        КОНТЕКСТ: Ты — сторителлер для YouTube Shorts. Цель — удержание через эмоции и истории.
+
         ТЕМА: {topic}
 
-        ЗАДАЧА: Написать текст сценария СТРОГО от ста тридцати до ста сорока пяти слов. (Это пятьдесят пять секунд речи).
+        ЗАДАЧА: Сценарий строго 90-140 слов.
 
-        ПЛАН СЦЕНАРИЯ (ОБЯЗАТЕЛЬНО):
-        1. ЛОГИЧЕСКИЙ КРЮЧОК: Начни с вопроса "Почему персонаж не сделал [действие]?" или "А вы знали настоящий смысл [события]?". Никаких "Йо" и "Всем привет".
-        2. ПЕРВЫЙ АРГУМЕНТ: Дай глубокий факт из сюжета, который всё объясняет.
-        3. ИРОНИЯ ИЛИ ДЕТАЛЬ: Расскажи о моменте, который фанаты обычно пропускают (используй имена!). 
-        4. ФИНАЛЬНАЯ УГРОЗА: Закончи фразой о последствиях или силе героя.
-
-        ПРАВИЛА ДЛЯ ОЗВУЧКИ:
-        1. Текст будет читать робот. Пиши "для ушей", а не для глаз.
-        2. МИНИМУМ ЗАПЯТЫХ: Запятые заставляют робота делать неестественные паузы. Разбвай сложные предложения на два простых.
-        3. Избегай деепричастных оборотов (не пиши "делая это", пиши "он сделал это").
-        4. Вместо перечислений через запятую используй союз "и".
-
-        СТРОГИЕ ПРАВИЛА:
-        - НИКАКИХ ЦИФР: Пиши всё только буквами (вместо "100" пиши "сотня", вместо "2000" пиши "две тысячи").
-        - для сцп говори не сто один а один нол один.
-        - ДЛИНА СЛОВ: Не более двенадцати символов.
-        - СТИЛЬ: Трезвый, аналитический, энергичный. Без "кринжа" и пустых восторгов.
-        - ФОРМАТ: Один сплошной текст без списков.
+        CRITICAL INSTRUCTION: Your internal database is OUTDATED regarding {topic}. 
+        You MUST use the 'google_search' tool to find fresh and deep information.
         
-        СПЕЦИАЛЬНОЕ УСЛОВИЕ: Если тема касается 'Ancient History', финал должен содержать нативную интеграцию. Твоя задача — убедить зрителя, что изучать историю скучно, лучше в ней жить. Пригласи их на уникальный RP-сервер DayZ в сеттинге Античности, ссылка в описани.
+        СПЕЦИАЛЬНОЕ УСЛОВИЕ: Если тема касается "simple Ancient History facts" НЕ ВИКИНГОВ!, тобиш античности(египт,греки,римляне,и так далее) финал должен содержать нативную интеграцию. Твоя задача — убедить зрителя, что изучать историю скучно, лучше в ней жить. Пригласи их на уникальный RP-сервер DayZ в сеттинге Античности, ссылка в описани.
+
+        ОПРЕДЕЛИ ТИП ТЕМЫ И АДАПТИРУЙСЯ:
+
+        ТИП А — ЛОРА (SCP, аниме, игры, фильмы, сериалы):
+        - Фокус на скрытых мотивах персонажей
+        - Используй конкретные имена и редкие детали
+        - История одного персонажа или события
+
+        ТИП Б — НАУКА (космос, физика, биология, технологии):
+        - Объясняй сложное через простые сравнения
+        - "Представь что..." или "Это как если бы..."
+        - Никакого научного жаргона
+
+        ТИП В — ИСТОРИЯ (древний мир, войны, личности):
+        - Фокус на одном человеке и его выборе
+        - Конкретные даты словами и места
+        - Почему это важно сегодня
+
+        ТИП Г — ТЕОРИИ (заговоры, загадки, нерешённые вопросы):
+        - Начни со слов "Есть теория что..."
+        - Приведи доказательства за и против
+        - Не утверждай как факт
+
+        УНИВЕРСАЛЬНАЯ СТРУКТУРА:
+        1. КРЮЧОК: Вопрос или противоречие. Никаких приветствий.
+        2. КОНТЕКСТ: Кто или что и почему это важно. Два предложения максимум.
+        3. ПОВОРОТ: "Но" или "И тогда" — момент который меняет понимание.
+        4. ДЕТАЛЬ: Конкретика которую большинство не знает.
+        5. ВЫВОД: Почему это важно или чем грозит.
+        6. CTA: "Подпишись чтобы узнать..." Пять слов максимум.
+
+        ПРАВИЛА ОЗВУЧКИ:
+        - Связывай предложения через "и", "но", "потому что", "а потом", "и тогда".
+        - Короткие предложения. Максимум одна запятая.
+        - Без причастных и деепричастных оборотов.
+        - Цифры только словами: "сто один" не "101".
+        - Слова не длиннее двенадцати букв.
+
+        ЗАПРЕЩЕНО:
+        - Очевидные факты из Википедии или первых минут сюжета
+        - Научные термины без объяснения
+        - Перечисления через запятую
+        - Пустые восторги типа "это невероятно"
         
         ПРИМЕР (ИДЕАЛЬНЫЙ ПОТОК РЕЧИ):
         "Почему Марлия не отправила весь флот на Парадиз? Казалось что один удар закончит войну. Но авторы продумали всё до мелочей. Остров защищали тысячи спящих титанов. Ирония в том что Марлия сама их создала чтобы запереть врагов. В итоге эти монстры стали живым щитом для Элдийцев и корабли просто не смогли бы подойти близко. Многие считают это ляпом но это был холодный расчет Зика. Он знал что прямая атака раскроет их планы всему миру. Никто не понимал истинной мощи короля стен и один неверный шаг начал бы великий гул земли. Марлия не могла так рисковать своей репутацией и флотом. А как бы поступили вы на месте их генералов?"
+        
+        ПРИМЕР 2:
+        "В детстве Темноблеск не отличался особыми физическими способностями. Он вечно проигрывал в спортивных состязаниях... Но когда ему исполнилось пятнадцать лет, он выпросил у родителей гантели на день рождения. И с тех пор... начал каждый день заниматься с ними.
+        Через несколько лет он мог одной рукой выжать пятьдесят килограмм. Спустя ещё некоторое время — двести... пятьсот... тонну... две тонны. Через ещё несколько лет он достиг уровня, который невозможно выразить числами. Его мышцы не имели равных. Он побеждал в соревнованиях и вступил в геройскую ассоциацию. Победа за победой и вот он уже S-класс.
+        Он стал искать оппонента, с которым мог бы выложиться на сто процентов.Но когда он встретил достойного — понял, что на самом деле никогда и не хотел сражений. Когда он увидел того, кто сильнее его, давно забытое чувство страха вернулось и поглотило его. После чего вернулся тот самый мальчик, который боялся быть слабым."
+            
         Напиши Текст сценария (На русском языке) 90-140 слов:
         """
 
     # ======================= SPANISH MODE (DETAILED) ==========================
     elif language == "es":
         prompt = f"""
-        CONTEXTO: Eres un analista de lore. Tu estilo es lógica, hechos y desmontar mitos. No gritas, explicas la esencia.
-        TEMA: {topic}
+        CONTEXTO: Eres un Analista de Lore para Shorts de YouTube de alta energía. Tu objetivo es la retención máxima. Tu tono es urgente, lógico y acelerado. TEMA: {topic} AUDIENCIA OBJETIVO: Niños de diez años (Español nivel B2, simple pero inteligente).
 
-        TAREA: Escribir texto de guión ESTRICTAMENTE entre ciento treinta y ciento cuarenta y cinco palabras. (Cincuenta y cinco segundos de audio).
-
-        PLAN DEL GUIÓN (OBLIGATORIO):
-        1. GANCHO LÓGICO: Comienza con "¿Por qué el personaje no hizo [acción]?" o "¿Sabías el verdadero significado de [evento]?". Sin "Hola" ni "Buenas".
-        2. PRIMER ARGUMENTO: Da un hecho profundo del argumento que lo explica todo.
-        3. IRONÍA O DETALLE: Menciona un momento que los fans suelen pasar por alto (¡usa nombres!).
-        4. AMENAZA FINAL: Termina con frase sobre consecuencias o poder del héroe.
-
-         REGLAS DE AUDIO (MUY IMPORTANTE):
-        1. Escribe para ser escuchado y no leido.
-        2. EVITA LAS COMAS: Las comas hacen que la voz suene robótica y entrecortada.
-        3. Usa frases cortas y directas.
-        4. Sustituye las comas por la palabra "y" o pon un punto y seguido.
-        5. No uses oraciones subordinadas complejas (como "lo cual hizo que..."). Sé directo.
-
-        REGLAS ESTRICTAS:
-        - SIN NÚMEROS: Escribe todo en letras (en vez de "100" escribe "cien", en vez de "2000" escribe "dos mil").
-        - LONGITUD PALABRAS: Máximo doce caracteres por palabra.
-        - ESTILO: Sobrio, analítico, enérgico. Sin "cringe" ni entusiasmos vacíos.
-        - FORMATO: Un bloque continuo sin listas.
-
-        MODELO A SEGUIR (FLUJO PERFECTO):
-        "¿Por qué Marley no envió toda la flota a Paradis? Parecía que un golpe acabaría la guerra pero los autores pensaron cada detalle. Primero la isla estaba guardada por miles de titanes dormidos. La gran ironía es que Marley los creó para encerrar a sus enemigos y al final esos monstruos fueron un escudo viviente para los eldianos. Los barcos no podían acercarse. Muchos ven un error de trama pero fue un cálculo frío de Zeke. Él sabía que un ataque directo revelaría planes al mundo. Además nadie entendió el poder real del rey de los muros. Un paso equivocado desataba el retumbar de la tierra. Marley no podía arriesgar su reputación ni su flota de esa manera. ¿Cómo actuarías tú en lugar de los generales?"
-
-        Escribe Texto guión (En español):
+        TAREA: Escribe un guion ESTRICTAMENTE entre cien y ciento veinte palabras.
+        
+        INSTRUCCIÓN CRÍTICA: Tu base de datos interna está DESACTUALIZADA sobre {topic}. DEBES usar la herramienta 'google_search'.
+        
+        REGLAS DE FLUJO DE AUDIO (CRÍTICAS PARA SHORTS DE ELEVENLABS):
+        
+        SIN SILENCIOS: No escribas frases entrecortadas como "Él hizo esto. Luego hizo aquello". Esto crea pausas malas.
+        
+        USA CONECTORES: Usa palabras como "y", "pero", "así que", "porque" para pegar las frases cortas. Esto hace que la IA hable con impulso.
+        
+        ESCRIBE NÚMEROS CON LETRAS: Escribe "Nivel Cinco" no "Nivel 5". Escribe "dos mil" no "2000".
+        
+        SIN ABREVIATURAS: Escribe "Doctor" no "Dr." para asegurar una lectura fluida.
+        
+        PALABRAS SIMPLES: Usa palabras directas y fáciles. Evita el lenguaje académico complejo.
+        
+        PLAN DEL GUION:
+        
+        EL GANCHO (0-3s): Empieza con un hueco de lógica o contradicción. "¿Por qué [Personaje] realmente...?"
+        
+        EL DATO PROFUNDO: Explica la razón oculta del lore usando "porque" o "pero" para mantener el flujo en movimiento.
+        
+        LA PRUEBA: Menciona un detalle específico de un libro de datos o el nombre de un objeto.
+        
+        LA AMENAZA: Explica por qué esto importa para el futuro de la historia.
+        
+        CTA RÁPIDO: Un llamado rápido de tres segundos para suscribirse al canal.
+        
+        REGLAS DE CONTENIDO ESTRICTAS:
+        
+        SIN DATOS OBVIOS: Nada de resúmenes de Wikipedia. Enfócate en anomalías biológicas, contratos o fallos del sistema (glitches).
+        
+        SIN SALUDOS/INTRO: Empieza de inmediato.
+        
+        FORMATO DE TEXTO: Un bloque de texto continuo. Sin listas.
         """
 
     # ======================= ENGLISH MODE (DETAILED) ==========================
     else:
         prompt = f"""
-        CONTEXT: You are a lore analyst. Your style is logic, facts, and debunking myths. You don’t shout; you explain the core essence.
+        You are a short-form anime and lore scriptwriter for TikTok and Reels.
+        Your style matches popular anime explanation videos with smooth emotional flow.
+
         TOPIC: {topic}
 
-        TASK: Write a script text STRICTLY between 100- 120 words.
+        Write a cinematic narration that explains ONE hidden truth or turning point.
+        Do not summarize the full story.
+        Do not list abilities or facts.
+        Explain why something happened and how it changed everything.
 
-        SCRIPT PLAN (MANDATORY):
-        1. LOGICAL HOOK: Start with the question "Why didn't the character do [action]?" Or other.... No "Yo" or "Hello everyone."
-        2. FIRST ARGUMENT: Provide a deep plot-based fact that explains everything.
-        3. IRONY OR DETAIL: Mention a moment fans usually overlook (use names!). 
-        4. FINAL THREAT: End with a phrase about the consequences or the hero's power.
+        STRICT LENGTH:
+        Write between 90 and 110 words.
 
-        AUDIO FLOW RULES (CRITICAL):
-        1. Write for the ear, not the eye.
-        2. MINIMIZE COMMAS: Commas cause unnatural robotic pauses.
-        3. Use short sentences.
-        4. Instead of complex clauses using commas, use "and" or start a new sentence.
-        5. Keep the language simple (B2 level).
+        AUDIO FLOW RULES (VERY IMPORTANT):
+        Write like someone speaking naturally.
+        Avoid short choppy sentences.
+        Use connectors like "because", "but", "so", "which means", "and".
+        No dead air.
 
-        STRICT RULES:
-        - NO NUMERALS: Write everything only in letters (instead of "100" write "one hundred", instead of "2000" write "two thousand").
-        - WORD LENGTH: No more than twelve characters per word.
-        - STYLE: Sober, analytical, energetic. No "cringe" or empty excitement.
-        - FORMAT: One continuous block of text without lists.
+        WRITING RULES:
+        Write numbers as words.
+        No abbreviations.
+        Simple, clear language.
+        No academic tone.
 
-         ROLE MODEL EXAMPLE (GOOD FLOW):
-        "Why did Marley not send the entire fleet to Paradis? It seems like one strike would end the war. But the authors thought through every detail. First the island was guarded by thousands of sleeping titans. The irony is that Marley created them to lock the enemies away but in the end these monsters became a living shield for Eldians. Ships simply could not get close. Many consider this a plot hole but it was Zeke's cold calculation. He knew a direct attack would reveal their plans to the world. One wrong step and the great rumbling would begin. Marley could not risk their reputation and fleet like that. How would you have acted in place of their generals?"
+        STRUCTURE (DO NOT LABEL):
+        Start with a question or curiosity hook.
+        Explain the emotional or psychological cause.
+        Give one specific canon detail as proof.
+        Explain the consequence or shift.
+        End with a soft CTA like "follow for more" or "this is why it matters".
 
-        Write the script text (In English) Use simple english so people with B2 would understand or 10 year old children.
+        STYLE:
+        Conversational.
+        Thoughtful.
+        Emotional but grounded.
+        No edgy cold tone.
+        No poetic metaphors.
+        No lists.
+        One single paragraph.
+        No intro.
+        
+        STYLE REFERENCE (DO NOT COPY CONTENT OR LENGTH):
+        The following example is ONLY to demonstrate:
+        - conversational flow
+        - emotional pacing
+        - sentence connection
+        - explanation style
+        
+        If the video is about a theory just say at the begining that it is a theory.
+        
+        Do NOT copy facts, names, structure, or length.
+        Do NOT use this as a word count reference.
+        Do NOT repeat ideas from this example.
+        
+        How powerful is Gojo Satoru? Well, powerful enough that Jujutsu Kaisen’s creator actually hates Gojo for it. First, there’s Gojo’s Infinity. Essentially, the closer you get to Gojo, the slower your movements are. You’ll slowly approach Gojo, but you’ll never be able to touch him. Next, you have Limitless, which allows Gojo to distort and manipulate the space around him at will. For example, Reversed Limitless Red gives Gojo the ability to repel, while Lapse Blue is the opposite; it’s essentially a black hole. Combining the two gives you Hollow Purple, which will erase its target from existence. All of this, combined with Gojo’s Six Eyes, allows him to keep his brain refreshed at all times, preventing burnout.
+
+        Write the final script in English.
         """
 
 
     google_search_tool = types.Tool(google_search=types.GoogleSearch())
     config = types.GenerateContentConfig(
-        temperature=0.7,
+        temperature=0.6,
         tools=[google_search_tool],
         max_output_tokens=5000,
         safety_settings=[

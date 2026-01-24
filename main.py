@@ -31,7 +31,7 @@ except ImportError as e:
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "ru"
-MUSIC_VOLUME = 0.01
+MUSIC_VOLUME = 0.02
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
