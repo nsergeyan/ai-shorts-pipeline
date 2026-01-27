@@ -136,7 +136,7 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
     if position == 'bottom':
         pos_arg = ('center', int(h_vid * 0.75))
     elif position == 'top':
-        margin_from_top = int(h_vid * 0.08)
+        margin_from_top = int(h_vid * 0.12)
         pos_arg = ('center', margin_from_top)
     else:
         pos_arg = ('center', 'center')

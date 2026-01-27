@@ -60,7 +60,7 @@ elif LANGUAGE == "es":
     MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man"]
+    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting science theories related to universe", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -212,19 +212,19 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
 
-    selected_tier = random.choices(tiers, weights=[0.3, 0.3, 0.5], k=1)[0]
+    selected_tier = random.choices(tiers, weights=[0.3, 0.3, 0.3], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
     if "FRANCHISE PILLARS" in selected_tier:
-        guideline = "Pick the most famous icons (e.g., Vault Boy, Artyom, Nemesis)."
+        guideline = "Pick the most famous icons (e.g., Gojo, Thorfin, Sukuna)."
     elif "CORE NARRATIVE" in selected_tier:
         guideline = "Pick beloved subjects, but avoid the absolute top mascots."
     else:
         guideline = "Pick unknown or hidden details. Absolutely no popular characters."
 
     existing_topics = get_existing_topics_by_language(language)
-    existing_topics_str = "\n".join(list(existing_topics)[:30])
+    existing_topics_str = "\n".join(list(existing_topics))
 
     prompt = f"""
         Return JSON ONLY. 
@@ -236,6 +236,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         Avoid these already covered topics:
         {existing_topics_str}
         Everything has to be in ENGLISH!
+        If you think you need more information about the topic you can use the 'google_search' tool to find fresh and deep information.
 
        TASK:
     1. SUBJECT: Choose a character or location or theory.
@@ -245,9 +246,9 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     TITLE EXAMPLES:
     
     STRICT RULE: Do not summarize the basic plot or provide common-knowledge character motivations (e.g., 'Thorfinn changed because Askeladd died'(vinland saga)).
-    - "The Human Kinger: Who Was He Before the Mask?"
-    - "Who are the red line form metro 2033"
-    - "What is the monolith from stalker"
+    - "The Fallen One: Who Was Sukuna Before He Became a Curse?"
+    - "What is the Culling Game? Kenjaku’s Master Plan Explained"
+    - "Who Were the Jomsvikings? The Real-Life Legends Behind the Anime Vinland Saga"
     - If the topic is "Simple interesting space theories(universe)" -> Make a videos like what will happen if a person goes to black hole, etc. Make it simple for a typical tiktok watcher.
        Perfect script for perfect topic:
        How powerful is Gojo Satoru? Well, powerful enough that Jujutsu Kaisen’s creator actually hates Gojo for it. First, there’s Gojo’s Infinity. Essentially, the closer you get to Gojo, the slower your movements are. You’ll slowly approach Gojo, but you’ll never be able to touch him. Next, you have Limitless, which allows Gojo to distort and manipulate the space around him at will. For example, Reversed Limitless Red gives Gojo the ability to repel, while Lapse Blue is the opposite; it’s essentially a black hole. Combining the two gives you Hollow Purple, which will erase its target from existence. All of this, combined with Gojo’s Six Eyes, allows him to keep his brain refreshed at all times, preventing burnout.
@@ -299,7 +300,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         """
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
-        temperature=0.7
+        temperature=0.8
     )
 
     response = call_gemini_with_retry(prompt, config)
