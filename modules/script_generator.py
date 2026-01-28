@@ -190,70 +190,44 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     # ======================= ENGLISH MODE (DETAILED) ==========================
     else:
         prompt = f"""
-        You are a short-form anime and lore scriptwriter for TikTok and Reels.
-        Your style matches popular anime explanation videos with smooth emotional flow.
+                You are a viral short-form scriptwriter for TikTok/Reels.
+                Your niche is explaining hidden lore, backstory, or theories about movies, anime, games, or pop culture.
 
-        TOPIC: {topic}
+                TOPIC: {topic}
 
-        Write a cinematic narration that explains ONE hidden truth or turning point.
-        Do not summarize the full story.
-        Do not list abilities or facts.
-        Explain why something happened and how it changed everything.
+                YOUR GOAL:
+                Use your Google Search tool to find ONE specific, interesting detail or "hidden truth" about this topic.
+                Then, explain it to the audience like you are talking to a friend at a lunch table.
 
-        STRICT LENGTH:
-        Write between 90 and 110 words.
+                CRITICAL TONE RULES (ANTI-POETRY):
+                1. NO "flowery" writing. Do not use words like: "profound," "tapestry," "symphony," "realm," "testament," "burden," "essence," "dance," or "mere."
+                2. If a sentence sounds dramatic or like a movie trailer, DELETE IT.
+                3. Use CONTRACTIONS. (Say "didn't" instead of "did not", "it's" instead of "it is").
+                4. Write exactly how people speak. Use connectors like: "actually," "turns out," "basically," "so," "and that's why."
+                5. Keep sentences simple (B1 English level). If an 11-year-old wouldn't understand it, rewrite it.
 
-        AUDIO FLOW RULES (VERY IMPORTANT):
-        Write like someone speaking naturally.
-        Avoid short choppy sentences.
-        Use connectors like "because", "but", "so", "which means", "and".
-        No dead air.
+                FORMATTING RULES:
+                - Total Length: 90 to 110 words.
+                - No emojis. No hashtags. No scene descriptions.
+                
+                DO NOT MAKE A VIDEO ABOUT OBVIOUS FACTS THAT EVERY FAN KNOWS! People will hate me because i do useless videos...
+                STRUCTURE:
+                1. The Hook: A direct question or statement challenging what people usually think.
+                2. The "Why": Explain the logic or the cause using the fact you found via Google Search.
+                3. The Proof: Mention a specific scene, chapter, or event as evidence.
+                4. The Shift: How this changes the way we see the character/story.
+                5. Outro: A casual closing line + "Follow for more."
 
-        WRITING RULES:
-        Write numbers as words.
-        No abbreviations.
-        Simple, clear language.
-        No academic tone.
+                STYLE REFERENCE (Use this tone, do not copy the text):
+                "Everyone thinks Batman doesn't kill just because of his moral code. But actually, there's a darker reason. In the comics, Bruce admits that if he starts, he won't be able to stop. He knows he's just as crazy as the Joker, he just focuses it differently. That one time he almost killed the Joker, he was terrified of himself, not the clown. So his rule isn't about being a hero; it's a safety mechanism for everyone else. Basically, he's protecting the world from himself. Follow for more deep dives."
 
-        STRUCTURE (DO NOT LABEL):
-        Start with a question or curiosity hook.
-        Explain the emotional or psychological cause.
-        Give one specific canon detail as proof.
-        Explain the consequence or shift.
-        End with a soft CTA like "follow for more" or "this is why it matters".
-
-        STYLE:
-        Conversational.
-        Thoughtful.
-        Emotional but grounded.
-        No edgy cold tone.
-        No poetic metaphors.
-        No lists.
-        One single paragraph.
-        No intro.
-        
-        STYLE REFERENCE (DO NOT COPY CONTENT OR LENGTH):
-        The following example is ONLY to demonstrate:
-        - conversational flow
-        - emotional pacing
-        - sentence connection
-        - explanation style
-        
-        If the video is about a theory just say at the begining that it is a theory.
-        
-        Do NOT copy facts, names, structure, or length.
-        Do NOT use this as a word count reference.
-        Do NOT repeat ideas from this example.
-        
-        How powerful is Gojo Satoru? Well, powerful enough that Jujutsu Kaisen’s creator actually hates Gojo for it. First, there’s Gojo’s Infinity. Essentially, the closer you get to Gojo, the slower your movements are. You’ll slowly approach Gojo, but you’ll never be able to touch him. Next, you have Limitless, which allows Gojo to distort and manipulate the space around him at will. For example, Reversed Limitless Red gives Gojo the ability to repel, while Lapse Blue is the opposite; it’s essentially a black hole. Combining the two gives you Hollow Purple, which will erase its target from existence. All of this, combined with Gojo’s Six Eyes, allows him to keep his brain refreshed at all times, preventing burnout.
-
-        Write the final script in English.
-        """
+                NOW, generate the script for: {topic}
+                """
 
 
     google_search_tool = types.Tool(google_search=types.GoogleSearch())
     config = types.GenerateContentConfig(
-        temperature=0.6,
+        temperature=0.3,
         tools=[google_search_tool],
         max_output_tokens=5000,
         safety_settings=[

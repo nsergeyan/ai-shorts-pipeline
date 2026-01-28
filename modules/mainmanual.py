@@ -30,7 +30,7 @@ except ImportError as e:
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.025
+MUSIC_VOLUME = 0.02
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
@@ -227,77 +227,139 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     existing_topics_str = "\n".join(list(existing_topics))
 
     prompt = f"""
-        Return JSON ONLY. 
-        Universe: "{broad_niche}"
-        Language: "{language}"
-        Strategy Tier: {selected_tier}
-        Guideline: {guideline}
+    YOU MUST RETURN VALID JSON ONLY.
+    NO explanations. NO markdown. NO extra text.
 
-        Avoid these already covered topics:
-        {existing_topics_str}
-        Everything has to be in ENGLISH!
-        If you think you need more information about the topic you can use the 'google_search' tool to find fresh and deep information.
+    GLOBAL SETTINGS
+    - Universe: "{broad_niche}"
+    - Output Language: "{language}"
+    - Strategy Tier: {selected_tier}
+    - Guideline: {guideline}
+    - ALL OUTPUT MUST BE IN ENGLISH (except the TITLE language rule below).
 
-       TASK:
-    1. SUBJECT: Choose a character or location or theory.
-    2. THEME: Focus ONLY on origins, psychological theories, or historical mysteries, interesting facts, lore..
-    3. FORBIDDEN WORDS: "Wildest", "Funny", "Best", "Top 10", "Moments", "Get ready".
-    
-    TITLE EXAMPLES:
-    
-    STRICT RULE: Do not summarize the basic plot or provide common-knowledge character motivations (e.g., 'Thorfinn changed because Askeladd died'(vinland saga)).
+    AVOID DUPLICATION
+    Do NOT generate topics similar to or overlapping with the following:
+    {existing_topics_str}
+
+    RESEARCH RULE
+    If information feels shallow or outdated, you MAY use the google_search tool to fetch deeper or fresher context.
+
+    ────────────────────
+    TASK DEFINITION
+    ────────────────────
+
+    1. SUBJECT SELECTION
+    Choose ONE:
+    - A character
+    - A location
+    - A historical event
+    - A theory (fictional or real)
+
+    2. THEME RESTRICTIONS (VERY IMPORTANT)
+    Focus ONLY on:
+    - Origins
+    - Psychological analysis
+    - Hidden lore
+    - Historical mysteries
+    - Lesser-known facts or implications
+
+    ❌ DO NOT:
+    - Summarize the basic plot
+    - Explain obvious motivations
+    - Retell well-known story beats
+
+    Example of what NOT to do:
+    ❌ "Thorfinn changed because Askeladd died."
+
+    3. FORBIDDEN WORDS (TITLE + SCRIPT IDEAS)
+    Never use:
+    "Wildest", "Funny", "Best", "Top 10", "Moments", "Get ready"
+
+    ────────────────────
+    TITLE GUIDELINES
+    ────────────────────
+
+    - Title MUST be written in {language}
+    - Title must feel documentary-style, mysterious, or analytical
+    - No clickbait lists
+    - No recap framing
+
+    GOOD EXAMPLES:
     - "The Fallen One: Who Was Sukuna Before He Became a Curse?"
-    - "What is the Culling Game? Kenjaku’s Master Plan Explained"
-    - "Who Were the Jomsvikings? The Real-Life Legends Behind the Anime Vinland Saga"
-    - If the topic is "Simple interesting space theories(universe)" -> Make a videos like what will happen if a person goes to black hole, etc. Make it simple for a typical tiktok watcher.
-       Perfect script for perfect topic:
-       How powerful is Gojo Satoru? Well, powerful enough that Jujutsu Kaisen’s creator actually hates Gojo for it. First, there’s Gojo’s Infinity. Essentially, the closer you get to Gojo, the slower your movements are. You’ll slowly approach Gojo, but you’ll never be able to touch him. Next, you have Limitless, which allows Gojo to distort and manipulate the space around him at will. For example, Reversed Limitless Red gives Gojo the ability to repel, while Lapse Blue is the opposite; it’s essentially a black hole. Combining the two gives you Hollow Purple, which will erase its target from existence. All of this, combined with Gojo’s Six Eyes, allows him to keep his brain refreshed at all times, preventing burnout.
-       
-       Another perfect script for perfect topic:
-       Have you ever wondered why Geto betrayed Gojo and turned evil in Jujutsu Kaisen? Let me explain. Well, Geto didn't wake up one day and decide to destroy the world; the world destroyed him first. He used to be the perfect sorcerer: protect the weak, save the helpless, and carry the burden without complaint. That was his whole identity. But everything snapped when Riko died in front of him. What hurt wasn't just Toji killing her; it was the crowd of non-sorcerers celebrating her death like it was entertainment—the same people he swore his life to protect. After that, every mission felt heavier. He kept swallowing curses, absorbing the vomit-tasting negativity humans created, and slowly he began to hate the people he was protecting. Then Yuki told him the truth that broke whatever sanity he had left: non-sorcerers are the source of curses. Sorcerers keep dying because of people who don't even care, and that's when Geto's belief flipped. He didn't want to save non-sorcerers anymore; he wanted a world where sorcerers didn't have to suffer for them. Haibara's death pushed him off the edge completely. On his next mission, he wiped out an entire village of 112 non-sorcerers just to rescue two sorcerer girls, and from that moment, Geto wasn't a protector anymore.
-       
-        3. TITLE should be  in {language}.
-        
+    - "What Is the Culling Game? Kenjaku’s True Endgame"
+    - "Who Were the Jomsvikings? The Real Legends Behind Vinland Saga"
 
-        4. YOUTUBE QUERY: !!! IMPORTANT !!!
-           GOAL: Find high-quality, scenes that focuses on characters and atmosphere. Avoid UI, HUD, and player-controlled movement. Try to get from official sources. SO WE DONT HAVE ANY COPYRIGHT PROBLEMS FROM OTHER YOUTUBERS.
-            1. SEARCH STRATEGY:
-            
-            NEVER use words like: "Mission", "Gameplay", "Playthrough", "Walkthrough".
-            
-            ALWAYS use words like: "Cutscene", "Official Clip", episode, "scene", etc...
-            
-            2. CHARACTER FOCUS (The "NPC" Rule):
-            
-            To find specific character (like gojo satoru or fallout characters), search for the character's name + "Scenes" or "Moments".
-            
-            Example: "satoru gojo speach jjk scene"
-            
-            Example: "fallout brotherhood of steel NPC idle cinematic 4K"
-            
-            If it is about fallout universe use only visuals from the movie fallout.
-            
-            If it is about space(universe) search for images,animations,footages of universe, no explanations or ifnormative videos just universe.
+    SPECIAL CASE — SPACE / UNIVERSE TOPICS:
+    If the topic is about space or cosmic theories:
+    - Frame it as a simple but fascinating thought experiment
+    - Make it understandable for a TikTok audience
+    Example:
+    "What Happens to a Human If They Fall Into a Black Hole?"
 
-        5. MUSIC MOOD: 
-           Don't search for "Subject Theme". Search for the game's official OST style.
-           BAD: "The Great Worm theme"
-           GOOD: "Metro Last Light Official Soundtrack  Ambient" or "Hazbin hotel soundtrack instrumental no lyrics" etc...
-           Don't use a music from Interstellar.
+    ────────────────────
+    YOUTUBE SEARCH QUERIES (CRITICAL)
+    ────────────────────
 
-        Return this JSON structure:
-        {{
-            "topic": "Title in {language}",
-            "specific_subject": "Exact English Wiki Name",
-            "youtube_queries": [
-        "PRIMARY_QUERY_Youtube",
-        "BACKUP_QUERY1_Youtube",
-        "BACKUP_QUERY2_Youtube"
-    ],
-            "music_mood": "specific music theme",
-            "voice_name": "{VOICE_KEY}"
-        }}
-        """
+    GOAL:
+    Find high-quality visuals focused on atmosphere, characters, or cinematic scenes.
+    Avoid UI, HUD, gameplay, or YouTuber edits.
+    Prefer official sources to minimize copyright risk.
+
+    SEARCH RULES:
+    ❌ NEVER use:
+    "Gameplay", "Mission", "Walkthrough", "Playthrough"
+
+    ✅ ALWAYS prefer:
+    "Cutscene", "Official Clip", "Scene", "Episode", "Cinematic"
+
+    CHARACTER SEARCH RULE (NPC RULE):
+    Use:
+    [Character Name] + "scene" OR "moments"
+
+    Examples:
+    - "Satoru Gojo speech jjk scene"
+    - "Fallout Brotherhood of Steel cinematic 4K"
+
+    UNIVERSE-SPECIFIC RULES:
+    - Fallout → ONLY visuals from the Fallout TV series
+    - Space topics → animations, space footage, cosmic visuals
+      ❌ No explanations or educational narration videos
+
+    ────────────────────
+    MUSIC MOOD RULES
+    ────────────────────
+
+    - Search for OFFICIAL OST styles only
+    - Prefer ambient or instrumental
+    - No lyrical tracks
+    - NEVER use music from Interstellar
+
+    BAD:
+    "The Great Worm Theme"
+
+    GOOD:
+    - "Metro Last Light Official Soundtrack Ambient"
+    - "Hazbin Hotel OST instrumental no lyrics"
+
+    ────────────────────
+    OUTPUT FORMAT (STRICT)
+    ────────────────────
+
+    Return EXACTLY this JSON structure:
+
+    {{
+      "topic": "Title in {language}",
+      "specific_subject": "Exact English Wikipedia title",
+      "youtube_queries": [
+        "PRIMARY_QUERY",
+        "BACKUP_QUERY_1",
+        "BACKUP_QUERY_2"
+      ],
+      "music_mood": "specific OST style or vibe",
+      "voice_name": "{VOICE_KEY}"
+    }}
+    """
+
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         temperature=0.8
@@ -345,7 +407,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
     if not script or len(script) < 50:
         print("❌ Script generation failed.")
         return False
-
+    print(script)
     # 2. VISUALS - with query rotation and video tracking
     print(f"🎮 Fetching visuals...")
     used_video_ids = set()  # Track used videos to avoid repeats
