@@ -8,6 +8,15 @@ from typing import List, Union, Optional
 # ---------------------------------------------------------
 import moviepy.config as mp_config
 
+
+import re
+
+CYRILLIC_RE = re.compile(r'[\u0400-\u04FF]')
+
+def contains_cyrillic(text: str) -> bool:
+    return bool(CYRILLIC_RE.search(text))
+
+
 if sys.platform == "darwin":
     possible_paths = [
         "/opt/homebrew/bin/magick",
@@ -141,11 +150,14 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
     else:
         pos_arg = ('center', 'center')
 
-    font_path = "/System/Library/Fonts/Arial.ttf"
-
+    FONT_EN = "/System/Library/Fonts/Arial.ttf"
+    FONT_RU = "/opt/homebrew/share/fonts/dejavu/DejaVuSans.ttf"
     for start, end, txt in subtitles_data:
         dur = end - start
-        if dur <= 0: continue
+        if dur <= 0:
+            continue
+
+        font_path = FONT_RU if contains_cyrillic(txt) else FONT_EN
 
         txt_clip = TextClip(
             txt.upper(),
@@ -159,7 +171,13 @@ def _make_subtitle_clips(subtitles_data, video_size, position="center"):
             align='center'
         )
 
-        txt_clip = txt_clip.set_start(start).set_duration(dur).set_position(pos_arg)
+        txt_clip = (
+            txt_clip
+            .set_start(start)
+            .set_duration(dur)
+            .set_position(pos_arg)
+        )
+
         clips.append(txt_clip)
 
     return clips

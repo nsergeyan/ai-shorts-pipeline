@@ -30,7 +30,7 @@ except ImportError as e:
 
 # 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.02
+MUSIC_VOLUME = 0.025
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
@@ -60,7 +60,7 @@ elif LANGUAGE == "es":
     MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
     VOICE_KEY = "spanish_guy"
 else:  # English
-    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting science theories related to universe", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man"]
+    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple popular Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting science theories related to universe", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man", "Demon Slayer"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -212,7 +212,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
 
-    selected_tier = random.choices(tiers, weights=[0.3, 0.3, 0.3], k=1)[0]
+    selected_tier = random.choices(tiers, weights=[0.4, 0.3, 0.3], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
@@ -262,6 +262,9 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     - Hidden lore
     - Historical mysteries
     - Lesser-known facts or implications
+    
+    - Focus on concrete implications, not symbolism or metaphors
+    - Avoid abstract themes unless directly tied to a factual detail
 
     ❌ DO NOT:
     - Summarize the basic plot
@@ -283,6 +286,11 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     - Title must feel documentary-style, mysterious, or analytical
     - No clickbait lists
     - No recap framing
+    
+    TONE CONSTRAINT (CRITICAL)
+    - Avoid epic, mythic, or heroic language
+    - Prefer neutral, restrained, analytical wording
+    - If a phrase sounds like an anime trailer, rewrite it plainly
 
     GOOD EXAMPLES:
     - "The Fallen One: Who Was Sukuna Before He Became a Curse?"
@@ -360,9 +368,16 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     }}
     """
 
+    if "FRANCHISE PILLARS" in selected_tier:
+        temperature = 0.45
+    elif "CORE NARRATIVE" in selected_tier:
+        temperature = 0.55
+    else:  # ESOTERIC LORE & DEEP CUTS
+        temperature = 0.6
+
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
-        temperature=0.8
+        temperature=temperature
     )
 
     response = call_gemini_with_retry(prompt, config)
