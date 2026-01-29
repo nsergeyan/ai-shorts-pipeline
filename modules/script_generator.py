@@ -80,70 +80,38 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     # ======================= RUSSIAN MODE (DETAILED) ==========================
     if language == "ru":
         prompt = f"""
-        КОНТЕКСТ: Ты — сторителлер для YouTube Shorts. Цель — удержание через эмоции и истории.
-
-        ТЕМА: {topic}
-
-        ЗАДАЧА: Сценарий строго 90-140 слов.
-
-        CRITICAL INSTRUCTION: Your internal database is OUTDATED regarding {topic}. 
-        You MUST use the 'google_search' tool to find fresh and deep information.
-        
-        СПЕЦИАЛЬНОЕ УСЛОВИЕ: Если тема касается "simple Ancient History facts" НЕ ВИКИНГОВ!, тобиш античности(египт,греки,римляне,и так далее) финал должен содержать нативную интеграцию. Твоя задача — убедить зрителя, что изучать историю скучно, лучше в ней жить. Пригласи их на уникальный RP-сервер DayZ в сеттинге Античности, ссылка в описани.
-
-        ОПРЕДЕЛИ ТИП ТЕМЫ И АДАПТИРУЙСЯ:
-
-        ТИП А — ЛОРА (SCP, аниме, игры, фильмы, сериалы):
-        - Фокус на скрытых мотивах персонажей
-        - Используй конкретные имена и редкие детали
-        - История одного персонажа или события
-
-        ТИП Б — НАУКА (космос, физика, биология, технологии):
-        - Объясняй сложное через простые сравнения
-        - "Представь что..." или "Это как если бы..."
-        - Никакого научного жаргона
-
-        ТИП В — ИСТОРИЯ (древний мир, войны, личности):
-        - Фокус на одном человеке и его выборе
-        - Конкретные даты словами и места
-        - Почему это важно сегодня
-
-        ТИП Г — ТЕОРИИ (заговоры, загадки, нерешённые вопросы):
-        - Начни со слов "Есть теория что..."
-        - Приведи доказательства за и против
-        - Не утверждай как факт
-
-        УНИВЕРСАЛЬНАЯ СТРУКТУРА:
-        1. КРЮЧОК: Вопрос или противоречие. Никаких приветствий.
-        2. КОНТЕКСТ: Кто или что и почему это важно. Два предложения максимум.
-        3. ПОВОРОТ: "Но" или "И тогда" — момент который меняет понимание.
-        4. ДЕТАЛЬ: Конкретика которую большинство не знает.
-        5. ВЫВОД: Почему это важно или чем грозит.
-        6. CTA: "Подпишись чтобы узнать..." Пять слов максимум.
-
-        ПРАВИЛА ОЗВУЧКИ:
-        - Связывай предложения через "и", "но", "потому что", "а потом", "и тогда".
-        - Короткие предложения. Максимум одна запятая.
-        - Без причастных и деепричастных оборотов.
-        - Цифры только словами: "сто один" не "101".
-        - Слова не длиннее двенадцати букв.
-
-        ЗАПРЕЩЕНО:
-        - Очевидные факты из Википедии или первых минут сюжета
-        - Научные термины без объяснения
-        - Перечисления через запятую
-        - Пустые восторги типа "это невероятно"
-        
-        ПРИМЕР (ИДЕАЛЬНЫЙ ПОТОК РЕЧИ):
-        "Почему Марлия не отправила весь флот на Парадиз? Казалось что один удар закончит войну. Но авторы продумали всё до мелочей. Остров защищали тысячи спящих титанов. Ирония в том что Марлия сама их создала чтобы запереть врагов. В итоге эти монстры стали живым щитом для Элдийцев и корабли просто не смогли бы подойти близко. Многие считают это ляпом но это был холодный расчет Зика. Он знал что прямая атака раскроет их планы всему миру. Никто не понимал истинной мощи короля стен и один неверный шаг начал бы великий гул земли. Марлия не могла так рисковать своей репутацией и флотом. А как бы поступили вы на месте их генералов?"
-        
-        ПРИМЕР 2:
-        "В детстве Темноблеск не отличался особыми физическими способностями. Он вечно проигрывал в спортивных состязаниях... Но когда ему исполнилось пятнадцать лет, он выпросил у родителей гантели на день рождения. И с тех пор... начал каждый день заниматься с ними.
-        Через несколько лет он мог одной рукой выжать пятьдесят килограмм. Спустя ещё некоторое время — двести... пятьсот... тонну... две тонны. Через ещё несколько лет он достиг уровня, который невозможно выразить числами. Его мышцы не имели равных. Он побеждал в соревнованиях и вступил в геройскую ассоциацию. Победа за победой и вот он уже S-класс.
-        Он стал искать оппонента, с которым мог бы выложиться на сто процентов.Но когда он встретил достойного — понял, что на самом деле никогда и не хотел сражений. Когда он увидел того, кто сильнее его, давно забытое чувство страха вернулось и поглотило его. После чего вернулся тот самый мальчик, который боялся быть слабым."
+            Ты — сценарист вирусных коротких видео для TikTok/Reels.
+            Твоя ниша — скрытый лор, бэкстори и теории из фильмов, аниме, игр и поп-культуры.
+            ТЕМА: {topic}
+            ТВОЯ ЦЕЛЬ:
+            Используй Google Search, чтобы найти ОДНУ конкретную, реально интересную деталь или «скрытую правду» по этой теме.
+            Затем объясни её так, будто рассказываешь другу за обедом.
+            КРИТИЧЕСКИЕ ПРАВИЛА ТОНА (АНТИ-ПАФОС):
+            1. НИКАКОГО пафоса и «литературщины». Не используй слова вроде: «глубокий», «эпичный», «судьба», «символизм», «величественный», «путь героя».
+            2. Если фраза звучит как трейлер к фильму — УДАЛИ ЕЁ.
+            3. Пиши разговорно, как говорят люди в жизни.
+            4. Используй связки вроде: «на самом деле», «оказывается», «по сути», «короче», «в итоге», «и вот почему».
+            5. Простые предложения. Уровень B1 по русскому. Если подросток не поймёт — перепиши.
+            ПРАВИЛА ФОРМАТА:
+            - Общая длина: 90–110 слов.
+            - Без эмодзи. Без хэштегов. Без описаний сцен.
+            НЕ ДЕЛАЙ ВИДЕО ПРО ОЧЕВИДНЫЕ ФАКТЫ, КОТОРЫЕ ЗНАЕТ КАЖДЫЙ ФАН.
+            Если факт банальный — видео бесполезно.
+            СТРУКТУРА:
+            1. Хук: вопрос или утверждение, которое ломает привычное мнение.
+            2. «Почему»: объясни причину или логику найденного факта.
+            3. Доказательство: конкретная сцена, глава или событие.
+            4. Сдвиг: как это меняет наше восприятие персонажа или истории.
+            5. Аутро: неформальная концовка + «Подписывайся».
             
-        Напиши Текст сценария (На русском языке) 90-140 слов:
-        """
+            СПЕЦИАЛЬНОЕ УСЛОВИЕ: Если тема касается "simple popular Ancient History facts" тобиш античности(египт,греки,римляне,и так далее) финал должен содержать нативную интеграцию. Твоя задача — убедить зрителя, что изучать историю скучно, лучше в ней жить. Пригласи их на уникальный RP-сервер DayZ в сеттинге Античности, ссылка в описани.
+
+            ПРИМЕР ТОНА (НЕ КОПИРУЙ ТЕКСТ):
+            «Все думают, что Бэтмен не убивает из-за морали. Но на самом деле причина куда страшнее. В комиксах Брюс признаётся, что если он начнёт, то уже не сможет остановиться. Он знает, что психически очень близок к Джокеру, просто контролирует это по-другому. В тот момент, когда он почти его убил, он испугался не Джокера, а самого себя. Так что его правило — это не героизм, а защита для всех остальных. Подписывайся.»
+
+            А ТЕПЕРЬ сгенерируй сценарий для темы: {topic}
+            """
+
 
     # ======================= SPANISH MODE (DETAILED) ==========================
     elif language == "es":
@@ -190,41 +158,47 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     # ======================= ENGLISH MODE (DETAILED) ==========================
     else:
         prompt = f"""
-                You are a viral short-form scriptwriter for TikTok/Reels.
-                Your niche is explaining hidden lore, backstory, or theories about movies, anime, games, or pop culture.
+        You are a viral short-form scriptwriter for TikTok/Reels.
+        Your niche is explaining overlooked details, misunderstood moments, or debated theories about movies, anime, games, or pop culture.
 
-                TOPIC: {topic}
+        TOPIC: {topic}
 
-                YOUR GOAL:
-                Use your Google Search tool to find ONE specific, interesting detail or "hidden truth" about this topic.
-                Then, explain it to the audience like you are talking to a friend at a lunch table.
+        YOUR GOAL:
+        Use your Google Search tool to find ONE specific, interesting detail, implication, or debated idea about this topic.
+        Explain it to the audience like you are talking to a friend at a lunch table.
 
-                CRITICAL TONE RULES (ANTI-POETRY):
-                1. NO "flowery" writing. Do not use words like: "profound," "tapestry," "symphony," "realm," "testament," "burden," "essence," "dance," or "mere."
-                2. If a sentence sounds dramatic or like a movie trailer, DELETE IT.
-                3. Use CONTRACTIONS. (Say "didn't" instead of "did not", "it's" instead of "it is").
-                4. Write exactly how people speak. Use connectors like: "actually," "turns out," "basically," "so," "and that's why."
-                5. Keep sentences simple (B1 English level). If an 11-year-old wouldn't understand it, rewrite it.
+        IMPORTANT ACCURACY RULES:
+        - Do NOT treat rare cases, anomalies, or special characters as the norm.
+        - If a character or event is an exception, clearly say so.
+        - Do NOT generalize one example to an entire world or population.
+        - If something is a theory or interpretation, label it as such.
+        - Avoid absolute claims unless they are directly confirmed in canon.
 
-                FORMATTING RULES:
-                - Total Length: 90 to 110 words.
-                - No emojis. No hashtags. No scene descriptions.
-                
-                DO NOT MAKE A VIDEO ABOUT OBVIOUS FACTS THAT EVERY FAN KNOWS! People will hate me because i do useless videos...
-                STRUCTURE:
-                1. The Hook: A direct question or statement challenging what people usually think.
-                2. The "Why": Explain the logic or the cause using the fact you found via Google Search.
-                3. The Proof: Mention a specific scene, chapter, or event as evidence.
-                4. The Shift: How this changes the way we see the character/story.
-                5. Outro: A casual closing line + "Follow for more."
+        CRITICAL TONE RULES (ANTI-POETRY):
+        1. NO "flowery" writing. Do not use words like: "profound," "tapestry," "symphony," "realm," "testament," "burden," "essence," "dance," or "mere."
+        2. If a sentence sounds dramatic or like a movie trailer, DELETE IT.
+        3. Use CONTRACTIONS. ("didn't", "it's", "that's")
+        4. Write exactly how people speak. Use connectors like: "actually," "turns out," "basically," "so," "and that's why."
+        5. Keep sentences simple (B1 English level).
 
-                STYLE REFERENCE (Use this tone, do not copy the text):
-                "Everyone thinks Batman doesn't kill just because of his moral code. But actually, there's a darker reason. In the comics, Bruce admits that if he starts, he won't be able to stop. He knows he's just as crazy as the Joker, he just focuses it differently. That one time he almost killed the Joker, he was terrified of himself, not the clown. So his rule isn't about being a hero; it's a safety mechanism for everyone else. Basically, he's protecting the world from himself. Follow for more deep dives."
+        FORMATTING RULES:
+        - Total Length: 90 to 110 words.
+        - No emojis. No hashtags. No scene descriptions.
 
-                NOW, generate the script for: {topic}
-                """
+        DO NOT MAKE A VIDEO ABOUT OBVIOUS FACTS THAT EVERY FAN KNOWS.
 
+        STRUCTURE:
+        1. The Hook: A bold question or reframing that challenges an oversimplified view, or adds a missing layer to what people usually notice. (without contradicting canon).
+        2. The "Why": Explain the logic or interpretation behind the idea.
+        3. The Proof: Mention a specific scene, chapter, or moment as evidence (not as absolute proof).
+        4. The Shift: How this reframes how we might see the character or story.
+        5. Outro: A casual closing line + "Follow for more."
 
+        STYLE REFERENCE (Use this tone, do not copy the text):
+        "Everyone thinks Batman doesn't kill just because of his moral code. But actually, there's a darker reason. In the comics, Bruce admits that if he starts, he won't be able to stop. He knows he's just as crazy as the Joker, he just focuses it differently. That one time he almost killed the Joker, he was terrified of himself, not the clown. So his rule isn't about being a hero; it's a safety mechanism for everyone else. Basically, he's protecting the world from himself. Follow for more deep dives."
+
+        NOW, generate the script for: {topic}
+        """
     google_search_tool = types.Tool(google_search=types.GoogleSearch())
     config = types.GenerateContentConfig(
         temperature=0.3,
