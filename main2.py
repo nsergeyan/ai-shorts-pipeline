@@ -3,7 +3,6 @@ import random
 import sys
 import requests
 import json
-import time
 
 # --- ADD MODULES PATH ---
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
@@ -40,6 +39,7 @@ SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
 
+USE_YOUTUBE_DUPLICATE_CHECK = False
 USE_TIKTOK_DUPLICATE_CHECK = True
 
 TIKTOK_CHANNELS = {
@@ -62,11 +62,10 @@ YOUTUBE_CHANNELS = {
         "username": "PLAim-g1x"
     }
 }
-USE_YOUTUBE_DUPLICATE_CHECK = False
 
 # --- NICHE SELECTOR ---
 if LANGUAGE == "ru":
-    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man",
+    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple popular Ancient History facts", "One-Punch Man",
                  "simple interesting space facts(universe)", "Simple interesting space theories(universe)",
                  "Simple interesting facts about vikings", "Simple interesting football facts",
                  "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
@@ -83,7 +82,7 @@ else:  # English
                  "Simple interesting science theories related to universe", "Simple interesting facts about vikings",
                  "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen",
                  "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man",
-                 "Demon Slayer"]
+                 "Demon Slayer", "Invincible", "Frieren: Beyond Journey's End"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -234,7 +233,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
         "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
     ]
 
-    selected_tier = random.choices(tiers, weights=[0.4, 0.3, 0.3], k=1)[0]
+    selected_tier = random.choices(tiers, weights=[0.2, 0.4, 0.4], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
@@ -332,16 +331,30 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     ────────────────────
     YOUTUBE SEARCH QUERIES (CRITICAL)
     ────────────────────
-
-    GOAL:
-    Find high-quality visuals focused on atmosphere, characters, or cinematic scenes.
+     GOAL:
+    Find raw cinematic visuals only for background video.
+    No narration. No analysis. No commentary. No essays.
+    
+    STRICTLY AVOID SEARCH TERMS THAT ATTRACT EXPLANATIONS:
+    ❌ longevity
+    ❌ meaning
+    ❌ explained
+    ❌ symbolism
+    ❌ lore
+    ❌ analysis
+    ❌ philosophy
+    ❌ why
     Avoid UI, HUD, gameplay, or YouTuber edits.
+    
+    ALWAYS SEARCH FOR: 
+    Concrete story moments
+    Physical actions
+    Episode-specific scenes
+    Emotional beats shown on screen
     Prefer official sources to minimize copyright risk.
-
     SEARCH RULES:
     ❌ NEVER use:
     "Gameplay", "Mission", "Walkthrough", "Playthrough"
-
     ✅ ALWAYS prefer:
     "Cutscene", "Official Clip", "Scene", "Episode", "Cinematic"
 
@@ -349,10 +362,14 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     Use:
     [Character Name] + "scene" OR "moments"
 
-    Examples:
-    - "Satoru Gojo speech jjk scene"
-    - "Fallout Brotherhood of Steel cinematic 4K"
-
+    GOOD EXAMPLES (Frieren):
+    "Gojo Satoru scene jjk"
+    "Frieren Himmel funeral scene"
+    "Frieren remembering the past scene"
+    "Frieren episode 1 final scene"
+    "Frieren grave visit scene"
+    "Frieren silent walk scene"
+    
     UNIVERSE-SPECIFIC RULES:
     - Fallout → ONLY visuals from the Fallout TV series
     - Space topics → animations, space footage, cosmic visuals

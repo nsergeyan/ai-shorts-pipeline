@@ -2,7 +2,8 @@ import os
 import sys
 import random
 from typing import List, Union, Optional
-
+import uuid
+from PIL import Image, ImageDraw, ImageFont
 # ---------------------------------------------------------
 # 1. FIX: Auto-detect ImageMagick on macOS
 # ---------------------------------------------------------
@@ -10,6 +11,8 @@ import moviepy.config as mp_config
 
 
 import re
+
+from moviepy.video.VideoClip import ImageClip
 
 CYRILLIC_RE = re.compile(r'[\u0400-\u04FF]')
 
@@ -137,51 +140,79 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
     return processed
 
 
-def _make_subtitle_clips(subtitles_data, video_size, position="center"):
+def _create_text_image(text: str, video_size: tuple, font_path: str, fontsize: int):
+    w_vid, h_vid = video_size
+    img = Image.new('RGBA', (w_vid, h_vid), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    # Auto-scale: Shrink font if text is wider than 85% of screen
+    max_width = int(w_vid * 0.85)
+    current_fontsize = fontsize
+
+    while current_fontsize > 20:
+        font = ImageFont.truetype(font_path, current_fontsize)
+        bbox = draw.textbbox((0, 0), text, font=font)
+        tw = bbox[2] - bbox[0]
+        if tw <= max_width:
+            break
+        current_fontsize -= 5
+
+    font = ImageFont.truetype(font_path, current_fontsize)
+    bbox = draw.textbbox((0, 0), text, font=font)
+    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+
+    # Position at TOP (12% down)
+    x = (w_vid - tw) / 2
+    y = int(h_vid * 0.12)
+
+    # Draw Outline
+    for dx in range(-4, 5):
+        for dy in range(-4, 5):
+            draw.text((x + dx, y + dy), text, font=font, fill="black")
+
+    # Draw Main Text
+    draw.text((x, y), text, font=font, fill="white")
+
+    temp_path = f"temp_sub_{uuid.uuid4().hex}.png"
+    img.save(temp_path)
+    return temp_path
+
+
+def _make_subtitle_clips(subtitles_data, video_size, position="top"):
     w_vid, h_vid = video_size
     clips = []
     fontsize = int(h_vid * 0.06)
 
-    if position == 'bottom':
-        pos_arg = ('center', int(h_vid * 0.75))
-    elif position == 'top':
-        margin_from_top = int(h_vid * 0.12)
-        pos_arg = ('center', margin_from_top)
-    else:
-        pos_arg = ('center', 'center')
-
     FONT_EN = "/System/Library/Fonts/Arial.ttf"
     FONT_RU = "/opt/homebrew/share/fonts/dejavu/DejaVuSans.ttf"
+    if not os.path.exists(FONT_RU):
+        FONT_RU = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+
     for start, end, txt in subtitles_data:
         dur = end - start
-        if dur <= 0:
-            continue
+        if dur <= 0: continue
 
-        font_path = FONT_RU if contains_cyrillic(txt) else FONT_EN
-
-        txt_clip = TextClip(
-            txt.upper(),
-            fontsize=fontsize,
-            color='white',
-            font=font_path,
-            method='caption',
-            size=(int(w_vid * 0.75), None),
-            stroke_color='black',
-            stroke_width=4,
-            align='center'
-        )
-
-        txt_clip = (
-            txt_clip
-            .set_start(start)
-            .set_duration(dur)
-            .set_position(pos_arg)
-        )
+        if contains_cyrillic(txt):
+            # Use Pillow for Russian (Auto-scales and stays at TOP)
+            img_path = _create_text_image(txt.upper(), video_size, FONT_RU, fontsize)
+            txt_clip = ImageClip(img_path).set_start(start).set_duration(dur).set_position((0,0))
+        else:
+            # English uses standard MoviePy TextClip at TOP
+            pos_arg = ('center', int(h_vid * 0.12))
+            txt_clip = TextClip(
+                txt.upper(),
+                fontsize=fontsize,
+                color='white',
+                font=FONT_EN,
+                method='caption',
+                size=(int(w_vid * 0.85), None),
+                stroke_color='black',
+                stroke_width=4,
+                align='center'
+            ).set_start(start).set_duration(dur).set_position(pos_arg)
 
         clips.append(txt_clip)
-
     return clips
-
 
 def merge_audio_video(
         video_paths: Union[str, List[str]],

@@ -7,7 +7,7 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 ELEVENLABS_API_KEYS = [
-    "sk_1053525f401e778fd0dc70acbc96ee7ffe893caaa580c5fd"
+    "sk_c8339c458c9b24371a53c7d5636f139359c30f8b661796a7"
 ]
 
 if not ELEVENLABS_API_KEYS:
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     VOICE_NAME = "Molodoy"
     LANGUAGE = "ru"
 
-    script = "Это было беспрецедентное нападение. Хаос распространялся, пока дыхание титана извергало ужасающий, сернистый туман. Каждый разведчик ощущал давление приближающейся тени."
+    script = "Это было."
     audio_filename = f"narration_{SUBJECT.replace(' ', '_')}.mp3"
 
     print("🧪 Starting ElevenLabs test...\n")
