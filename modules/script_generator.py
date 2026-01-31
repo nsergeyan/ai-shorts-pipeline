@@ -93,7 +93,7 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
             4. Используй связки вроде: «на самом деле», «оказывается», «по сути», «короче», «в итоге», «и вот почему».
             5. Простые предложения. Уровень B1 по русскому. Если подросток не поймёт — перепиши.
             ПРАВИЛА ФОРМАТА:
-            - Общая длина: 90–110 слов.
+            - Общая длина: 50-80 слов.
             - Без эмодзи. Без хэштегов. Без описаний сцен.
             НЕ ДЕЛАЙ ВИДЕО ПРО ОЧЕВИДНЫЕ ФАКТЫ, КОТОРЫЕ ЗНАЕТ КАЖДЫЙ ФАН.
             Если факт банальный — видео бесполезно.
@@ -109,7 +109,7 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
             ПРИМЕР ТОНА (НЕ КОПИРУЙ ТЕКСТ):
             «Все думают, что Бэтмен не убивает из-за морали. Но на самом деле причина куда страшнее. В комиксах Брюс признаётся, что если он начнёт, то уже не сможет остановиться. Он знает, что психически очень близок к Джокеру, просто контролирует это по-другому. В тот момент, когда он почти его убил, он испугался не Джокера, а самого себя. Так что его правило — это не героизм, а защита для всех остальных. Подписывайся.»
 
-            А ТЕПЕРЬ сгенерируй сценарий для темы: {topic}
+            А ТЕПЕРЬ сгенерируй сценарий для темы 50-80 слов: {topic}
             """
 
 
@@ -159,13 +159,14 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     else:
         prompt = f"""
         You are a viral short-form scriptwriter for TikTok/Reels.
-        Your niche is explaining overlooked details, misunderstood moments, or debated theories about movies, anime, games, or pop culture.
+        Your niche is explaining overlooked details, misunderstood moments, or debated theories about movies, anime, games, history, science, or pop culture.
 
         TOPIC: {topic}
 
         YOUR GOAL:
         Use your Google Search tool to find ONE specific, interesting detail, implication, or debated idea about this topic.
         Explain it to the audience like you are talking to a friend at a lunch table.
+        Focus on insights that are **not obvious** or widely known to casual or hardcore fans.
 
         IMPORTANT ACCURACY RULES:
         - Do NOT treat rare cases, anomalies, or special characters as the norm.
@@ -173,6 +174,12 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
         - Do NOT generalize one example to an entire world or population.
         - If something is a theory or interpretation, label it as such.
         - Avoid absolute claims unless they are directly confirmed in canon.
+        
+        Global Factual Accuracy Rules
+        1.	Only use information explicitly stated in official sources (e.g., original books, films, games, interviews, or academic references).
+        2.	Do NOT infer, speculate, or interpret events, motives, or facts beyond what is documented.
+        3.	If a source is opinion, fan theory, or debate, clearly preface it with phrases like “Some people interpret…” or “According to some theories…”
+        4.	Avoid exaggeration or dramatic wording unless it is literally present in the official source.
 
         CRITICAL TONE RULES (ANTI-POETRY):
         1. NO "flowery" writing. Do not use words like: "profound," "tapestry," "symphony," "realm," "testament," "burden," "essence," "dance," or "mere."
@@ -192,11 +199,20 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
         2. The "Why": Explain the logic or interpretation behind the idea.
         3. The Proof: Mention a specific scene, chapter, or moment as evidence (not as absolute proof).
         4. The Shift: How this reframes how we might see the character or story.
-        5. Outro: A casual closing line + "Follow for more."
-
+        5. The Casual Reasoning Outro: A relaxed closing line followed by a CTA that gives them a reason to stay.
+        AI Direction for Outro (Choose one style below):
+        The "Vibe" Reason: "If you're still watching, it means we have the same taste in anime. Your FYP brought you here for a reason, so stick around and join us."
+        The "Daily Value" Reason: "I'm diving into [Anime Name] secrets like this every single day. Since you're already here, you might as well join the sorcerers so you don't miss the next one."
+        The "Don't Gamble" Reason: "TikTok might never show you my videos again if you scroll now. Don't let the algorithm win, follow and stay for the journey."
+        The "Safe Space" Reason: "It’s hard to find a community that actually gets [Anime Name]. You found us for a reason. Don't lose this side of TikTok follow for more."
+        
         STYLE REFERENCE (Use this tone, do not copy the text):
         "Everyone thinks Batman doesn't kill just because of his moral code. But actually, there's a darker reason. In the comics, Bruce admits that if he starts, he won't be able to stop. He knows he's just as crazy as the Joker, he just focuses it differently. That one time he almost killed the Joker, he was terrified of himself, not the clown. So his rule isn't about being a hero; it's a safety mechanism for everyone else. Basically, he's protecting the world from himself. Follow for more deep dives."
 
+
+        ADDITIONAL INSTRUCTION:
+        - Do NOT create scripts that only explain obvious facts or traits fans already know. Every script must provide a new perspective, consequence, insight, or thematic layer. Low-value “obvious” scripts like: 
+        "Inumaki is quiet because Cursed Speech is dangerous" are not acceptable.
         NOW, generate the script for: {topic}
         """
     google_search_tool = types.Tool(google_search=types.GoogleSearch())
