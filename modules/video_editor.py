@@ -3,6 +3,8 @@ import sys
 import random
 from typing import List, Union, Optional
 import uuid
+
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 # ---------------------------------------------------------
 # 1. FIX: Auto-detect ImageMagick on macOS
@@ -12,7 +14,8 @@ import moviepy.config as mp_config
 
 import re
 
-from moviepy.video.VideoClip import ImageClip
+from moviepy.audio.AudioClip import AudioClip
+from moviepy.video.VideoClip import ImageClip, ColorClip, VideoClip
 
 CYRILLIC_RE = re.compile(r'[\u0400-\u04FF]')
 
@@ -57,6 +60,57 @@ os.makedirs(FINAL_DIR, exist_ok=True)
 
 
 # ----------------------- Helper functions ----------------------- #
+def chroma_key_green_dominance(clip, threshold=45):
+    """
+    Proper MoviePy-compatible green-dominance chroma key.
+    Returns RGB clip + mask (no RGBA frames).
+    """
+
+    def make_rgb(frame):
+        return frame[:, :, :3]
+
+    def make_mask(frame):
+        frame = frame.astype(np.float32)
+        r = frame[:, :, 0]
+        g = frame[:, :, 1]
+        b = frame[:, :, 2]
+
+        # green dominance → transparent
+        mask = ~((g > r + threshold) & (g > b + threshold))
+
+        # MoviePy mask must be float 0..1
+        return mask.astype(np.float32)
+
+    rgb = clip.fl_image(make_rgb)
+
+    mask = VideoClip(
+        make_frame=lambda t: make_mask(clip.get_frame(t)),
+        ismask=True,
+        duration=clip.duration
+    ).set_fps(clip.fps)
+
+    return rgb.set_mask(mask)
+def load_cta_clip(
+    cta_path: str,
+    target_size: tuple,
+    duration: Optional[float] = None,
+    green_screen: bool = True
+):
+    cta = VideoFileClip(cta_path).without_audio()
+
+    # Resize CTA to match video
+    cta = cta.resize(height=int(target_size[1] * 0.5))
+    cta = cta.set_position(("center", "bottom"))
+
+    # Remove green background
+    if green_screen:
+        cta = chroma_key_green_dominance(cta, threshold=45)
+
+    if duration:
+        cta = cta.subclip(0, min(duration, cta.duration))
+
+    return cta
+
 
 def _make_vertical_9x16(clip, target_w=1080, target_h=1920, bg_color=(0, 0, 0)):
     w, h = clip.size
@@ -214,6 +268,7 @@ def _make_subtitle_clips(subtitles_data, video_size, position="top"):
         clips.append(txt_clip)
     return clips
 
+cta_path = "/Users/nareksergeyan/YOutuber/Green_Screen_Footage_for_Follow_Button_Boost_Your_Video_Engagement_1080P.mp4"
 def merge_audio_video(
         video_paths: Union[str, List[str]],
         audio_path: str,
@@ -227,6 +282,7 @@ def merge_audio_video(
         music_volume: float = 0.01,
         subtitles_data: Optional[list] = None,
         subtitles_position: str = "bottom",
+        cta_path=cta_path,
         subtitles_text: Optional[str] = None
 ):
     print("\n🎬  Starting Video Editor...")
@@ -244,11 +300,15 @@ def merge_audio_video(
         raw_clips = [_make_vertical_9x16(c, target_w, target_h) for c in raw_clips]
 
     # 3. Calculate Durations
+    CTA_DURATION = 8
     final_dur = voice_audio.duration
     if shorts_cap:
-        final_len = min(final_dur, cap_seconds)
+        max_voice_len = cap_seconds - CTA_DURATION
+        final_len = min(final_dur, max_voice_len)
+
         if final_len < final_dur:
             voice_audio = voice_audio.subclip(0, final_len)
+
         final_dur = final_len
 
     # 4. Trim/Concat Video (THIS CALLS THE RANDOM LOGIC)
@@ -260,6 +320,24 @@ def merge_audio_video(
         video = clips_ready[0]
 
     video = _loop_video_to_duration(video, final_dur)
+
+    # 4.5 CTA (OVERLAY LAST 8 SECONDS)
+    # 4.5 CTA (OVERLAY LAST 8 SECONDS)
+    if cta_path:
+        cta_clip = load_cta_clip(
+            cta_path=cta_path,
+            target_size=video.size,
+            duration=CTA_DURATION,
+            green_screen=True
+        ).set_start(final_dur - CTA_DURATION)
+
+        # Move CTA a bit up from bottom
+        cta_clip = cta_clip.set_position(("center", video.size[1] - cta_clip.h - 100))
+
+        video = CompositeVideoClip(
+            [video, cta_clip],
+            size=video.size
+        )
 
     # 5. Subtitles
     if subtitles_data:
@@ -305,3 +383,5 @@ def merge_audio_video(
 
     print(f"✅  Saved: {out_path}")
     return out_path
+
+
