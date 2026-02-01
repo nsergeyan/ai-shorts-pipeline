@@ -228,21 +228,34 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 
     # --- RESTORED STRATEGIC CONTENT TIERS ---
     tiers = [
-        "FRANCHISE PILLARS (The most iconic subjects)",
-        "CORE NARRATIVE STAPLES (Standard lore/characters)",
-        "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
+        "SURFACE CANON (Well-known facts, but with a narrow analytical angle)",
+        "SUBTEXT & MECHANICS (Rules, systems, implications fans overlook)",
+        "ARCHIVAL / LOST CONTEXT (Scrapped ideas, forgotten lore, external sources)"
     ]
 
-    selected_tier = random.choices(tiers, weights=[0.2, 0.4, 0.4], k=1)[0]
+    selected_tier = random.choices(tiers, weights=[0.15, 0.45, 0.4], k=1)[0]
     print(f"🎯 Strategy: {selected_tier}")
 
     # Dynamic exclusion logic to guide the AI
-    if "FRANCHISE PILLARS" in selected_tier:
-        guideline = "Pick the most famous icons (e.g., Gojo, Thorfin, Sukuna)."
-    elif "CORE NARRATIVE" in selected_tier:
-        guideline = "Pick beloved subjects, but avoid the absolute top mascots."
+    if "SURFACE CANON" in selected_tier:
+        guideline = (
+            "You MAY use a famous subject, "
+            "but the focus must be a single overlooked detail, "
+            "early-stage concept, or narrow unresolved question. "
+            "If the topic can be summarized from a wiki intro, reject it."
+        )
+    elif "SUBTEXT & MECHANICS" in selected_tier:
+        guideline = (
+            "Focus on rules, systems, psychological mechanics, "
+            "or causal chains that are rarely discussed explicitly. "
+            "Avoid character biographies."
+        )
     else:
-        guideline = "Pick unknown or hidden details. Absolutely no popular characters."
+        guideline = (
+            "Focus on forgotten, abandoned, or marginal material: "
+            "scrapped drafts, minor factions, offhand references, "
+            "or inconsistencies with implications."
+        )
 
     existing_topics = set()
 
@@ -275,7 +288,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 
     RESEARCH RULE
     If information feels shallow or outdated, you MAY use the google_search tool to fetch deeper or fresher context.
-
+    
     ────────────────────
     TASK DEFINITION
     ────────────────────
@@ -305,7 +318,8 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     ────────────────────
     TITLE GUIDELINES
     ────────────────────
-
+    - Assume the audience is already familiar with the universe
+    
     - Title MUST be written in {language}
     - Title must feel documentary-style, mysterious, or analytical
     - No clickbait lists
@@ -327,6 +341,14 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     - Make it understandable for a TikTok audience
     Example:
     "What Happens to a Human If They Fall Into a Black Hole?"
+    
+    example of a script that genereted a good tiktoker based on interesting topic/tytle: 
+    Most fans assume Mahito’s philosophy about the soul is something he developed himself.
+    But in the anime, his most famous idea — that the body is shaped by the soul — isn’t original at all.
+    He directly repeats a line from a fictional horror movie, Earthworm Man 3, which he watches while experimenting on humans. The idea comes from a doctor in the film, not from Mahito’s own reasoning.
+    That detail subtly changes how he should be read. Mahito isn’t presenting a coherent worldview — he’s borrowing a concept that sounds convincing and using it to justify his behavior.
+    Less a philosopher, more an immature curse clinging to borrowed language.
+    Seen that way, his obsession with the soul feels less profound — and more unstable.
 
     ────────────────────
     YOUTUBE SEARCH QUERIES (CRITICAL)
@@ -364,11 +386,7 @@ def generate_idea_from_niche(broad_niche, language="ru"):
 
     GOOD EXAMPLES (Frieren):
     "Gojo Satoru scene jjk"
-    "Frieren Himmel funeral scene"
-    "Frieren remembering the past scene"
-    "Frieren episode 1 final scene"
-    "Frieren grave visit scene"
-    "Frieren silent walk scene"
+    "Sukuna first apprentice scene jjk"
     
     UNIVERSE-SPECIFIC RULES:
     - Fallout → ONLY visuals from the Fallout TV series
@@ -537,7 +555,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
 if __name__ == "__main__":
     # FORCE the test niche
-    niche = "One-Punch Man"
+    niche = "the amazing digital circus"
     print(f"🎬 TESTING NEW NICHE: {niche}")
     plan = generate_idea_from_niche(niche, LANGUAGE)
     if plan:

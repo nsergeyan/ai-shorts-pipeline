@@ -201,6 +201,7 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
         4. The Shift: How this reframes how we might see the character or story.
         5. The Casual Reasoning Outro: A relaxed closing line followed by a CTA that gives them a reason to stay.
         AI Direction for Outro (Choose one style below):
+        THOSE ARE JUST EXAMPLES, CREATE CTA BASED ON THE CONTEXT AND THESE EXAMPLES!!!!!!
         The "Vibe" Reason: "If you're still watching, it means we have the same taste in anime. Your FYP brought you here for a reason, so stick around and join us."
         The "Daily Value" Reason: "I'm diving into [Anime Name] secrets like this every single day. Since you're already here, you might as well join the sorcerers so you don't miss the next one."
         The "Don't Gamble" Reason: "TikTok might never show you my videos again if you scroll now. Don't let the algorithm win, follow and stay for the journey."
