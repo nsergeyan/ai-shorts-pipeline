@@ -189,7 +189,7 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
         5. Keep sentences simple (B1 English level).
 
         FORMATTING RULES:
-        - Total Length: 90 to 110 words.
+        - Total Length: 90-110 words.
         - No emojis. No hashtags. No scene descriptions.
 
         DO NOT MAKE A VIDEO ABOUT OBVIOUS FACTS THAT EVERY FAN KNOWS.
