@@ -82,7 +82,7 @@ else:  # English
                  "Simple interesting science theories related to universe", "Simple interesting facts about vikings",
                  "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen",
                  "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man",
-                 "Demon Slayer", "Invincible", "Frieren: Beyond Journey's End"]
+                 "Demon Slayer", "Invincible", "Frieren: Beyond Journey's End", "Murder Drones"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -537,7 +537,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
 if __name__ == "__main__":
     # FORCE the test niche
-    niche = "Jujutsu Kaisen"
+    niche = "One-Punch Man"
     print(f"🎬 TESTING NEW NICHE: {niche}")
     plan = generate_idea_from_niche(niche, LANGUAGE)
     if plan:
