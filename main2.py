@@ -82,7 +82,7 @@ else:  # English
                  "Simple interesting science theories related to universe", "Simple interesting facts about vikings",
                  "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen",
                  "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man",
-                 "Demon Slayer", "Invincible", "Frieren: Beyond Journey's End", "Murder Drones"]
+                 "Demon Slayer", "Invincible", "Frieren: Beyond Journey's End", "Murder Drones", "Hazbin Hotel", "Marvel"]
     VOICE_KEY = "hamid"
 
 # ==============================================================================
@@ -226,37 +226,6 @@ def check_duplicate_topic(topic: str, existing_topics: set) -> bool:
 def generate_idea_from_niche(broad_niche, language="ru"):
     print(f"\nPRODUCER (Gemini 2.5): Analyzing '{broad_niche}'...")
 
-    # --- RESTORED STRATEGIC CONTENT TIERS ---
-    tiers = [
-        "SURFACE CANON (Well-known facts, but with a narrow analytical angle)",
-        "SUBTEXT & MECHANICS (Rules, systems, implications fans overlook)",
-        "ARCHIVAL / LOST CONTEXT (Scrapped ideas, forgotten lore, external sources)"
-    ]
-
-    selected_tier = random.choices(tiers, weights=[0.15, 0.45, 0.4], k=1)[0]
-    print(f"🎯 Strategy: {selected_tier}")
-
-    # Dynamic exclusion logic to guide the AI
-    if "SURFACE CANON" in selected_tier:
-        guideline = (
-            "You MAY use a famous subject, "
-            "but the focus must be a single overlooked detail, "
-            "early-stage concept, or narrow unresolved question. "
-            "If the topic can be summarized from a wiki intro, reject it."
-        )
-    elif "SUBTEXT & MECHANICS" in selected_tier:
-        guideline = (
-            "Focus on rules, systems, psychological mechanics, "
-            "or causal chains that are rarely discussed explicitly. "
-            "Avoid character biographies."
-        )
-    else:
-        guideline = (
-            "Focus on forgotten, abandoned, or marginal material: "
-            "scrapped drafts, minor factions, offhand references, "
-            "or inconsistencies with implications."
-        )
-
     existing_topics = set()
 
     # YouTube
@@ -274,82 +243,71 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     prompt = f"""
     YOU MUST RETURN VALID JSON ONLY.
     NO explanations. NO markdown. NO extra text.
+     Use your Google Search tool to find ONE accurate information.
 
     GLOBAL SETTINGS
     - Universe: "{broad_niche}"
     - Output Language: "{language}"
-    - Strategy Tier: {selected_tier}
-    - Guideline: {guideline}
-    - ALL OUTPUT MUST BE IN ENGLISH (except the TITLE language rule below).
+    - ALL OUTPUT MUST BE IN ENGLISH
+    - TITLE MUST BE IN {language}
 
     AVOID DUPLICATION
-    Do NOT generate topics similar to or overlapping with the following:
+    Do NOT generate topics that overlap in subject, framing, or implication with:
     {existing_topics_str}
 
     RESEARCH RULE
-    If information feels shallow or outdated, you MAY use the google_search tool to fetch deeper or fresher context.
-    
+    If your knowledge feels shallow, incomplete, or outdated, you MAY use google_search to verify details.
+
     ────────────────────
     TASK DEFINITION
     ────────────────────
 
-    1. SUBJECT SELECTION
-    Choose ONE:
-    - A character
-    - A location
-    - A historical event
-    - A theory (fictional or real)
+    AUDIENCE ASSUMPTION
+    - Viewer finished the full series
+    - Viewer knows common fan theories
+    - Viewer is an active fan
 
-    2. THEME RESTRICTIONS (VERY IMPORTANT)
-    Focus ONLY on:
-    - Origins
-    - Psychological analysis
-    - Hidden lore
-    - Historical mysteries
-    - Lesser-known facts or implications
+    SUBJECT SELECTION
+    Choose EXACTLY ONE:
+    - A specific theory
+    - A specific character
+    - A specific location
+    - A specific historical event
+    - A single concrete story moment
+    - A news
 
-    - Focus on concrete implications, not symbolism or metaphors
-    - Avoid abstract themes unless directly tied to a factual detail
+    DO NOT choose:
+    - Broad concepts
+    - Boring ideas
+    - OBVIOUS FACTS
 
-    3. FORBIDDEN WORDS (TITLE + SCRIPT IDEAS)
+    THEME RESTRICTIONS (CRITICAL)
+    The topic MUST focus on at least ONE of:
+    - Origin details
+    - Hidden or easily-missed lore
+    - Historical uncertainty or contradiction
+    - Lesser-known factual implications
+    - Narrow, debated interpretations
+
+    The topic MUST:
+    - Be grounded in a concrete detail
+    - Change how a moment or character is read
+    - Be arguable among fans
+
+    FORBIDDEN TITLE WORDS
     Never use:
-    "Wildest", "Funny", "Best", "Top 10", "Moments", "Get ready"
+    "Wildest", "Funny", "Best", "Top", "Top 10", "Moments", "Get ready"
 
-    ────────────────────
-    TITLE GUIDELINES
-    ────────────────────
-    - Assume the audience is already familiar with the universe
+    TONE CONSTRAINT
+    - Neutral and analytical
+    - No epic, mythic, or heroic phrasing
+    - If it sounds like a trailer line, rewrite it plainly
+
+    GOOD TITLE EXAMPLES
+    - "Who Sukuna Was Before He Became a Curse"
+    - "What the Culling Game Was Actually Designed to Do"
     
-    - Title MUST be written in {language}
-    - Title must feel documentary-style, mysterious, or analytical
-    - No clickbait lists
-    - No recap framing
-
-    TONE CONSTRAINT (CRITICAL)
-    - Avoid epic, mythic, or heroic language
-    - Prefer neutral, restrained, analytical wording
-    - If a phrase sounds like an anime trailer, rewrite it plainly
-
-    GOOD EXAMPLES:
-    - "The Fallen One: Who Was Sukuna Before He Became a Curse?"
-    - "What Is the Culling Game? Kenjaku’s True Endgame"
-    - "Who Were the Jomsvikings? The Real Legends Behind Vinland Saga"
-
-    SPECIAL CASE — SPACE / UNIVERSE TOPICS:
-    If the topic is about space or cosmic theories:
-    - Frame it as a simple but fascinating thought experiment
-    - Make it understandable for a TikTok audience
-    Example:
-    "What Happens to a Human If They Fall Into a Black Hole?"
     
-    example of a script that genereted a good tiktoker based on interesting topic/tytle: 
-    Most fans assume Mahito’s philosophy about the soul is something he developed himself.
-    But in the anime, his most famous idea — that the body is shaped by the soul — isn’t original at all.
-    He directly repeats a line from a fictional horror movie, Earthworm Man 3, which he watches while experimenting on humans. The idea comes from a doctor in the film, not from Mahito’s own reasoning.
-    That detail subtly changes how he should be read. Mahito isn’t presenting a coherent worldview — he’s borrowing a concept that sounds convincing and using it to justify his behavior.
-    Less a philosopher, more an immature curse clinging to borrowed language.
-    Seen that way, his obsession with the soul feels less profound — and more unstable.
-
     ────────────────────
     YOUTUBE SEARCH QUERIES (CRITICAL)
     ────────────────────
@@ -427,19 +385,9 @@ def generate_idea_from_niche(broad_niche, language="ru"):
       "voice_name": "{VOICE_KEY}"
     }}
     """
-
-    if "FRANCHISE PILLARS" in selected_tier:
-        temperature = 0.45
-    elif "CORE NARRATIVE" in selected_tier:
-        temperature = 0.55
-    else:  # ESOTERIC LORE & DEEP CUTS
-        temperature = 0.6
-
     config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        temperature=temperature
+        temperature=0.55,
     )
-
     response = call_gemini_with_retry(prompt, config)
     if response and response.text:
         try:
@@ -555,7 +503,7 @@ def run_pipeline_for_idea(idea_data, niche_name):
 
 if __name__ == "__main__":
     # FORCE the test niche
-    niche = "the amazing digital circus"
+    niche = "Murder Drones"
     print(f"🎬 TESTING NEW NICHE: {niche}")
     plan = generate_idea_from_niche(niche, LANGUAGE)
     if plan:
