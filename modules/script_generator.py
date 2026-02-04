@@ -158,13 +158,13 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
     # ======================= ENGLISH MODE (DETAILED) ==========================
     else:
         prompt = f"""
-                    `You are a viral short-form scriptwriter for TikTok/Reels.
+                    You are a viral short-form scriptwriter for TikTok/Reels.
                     Your niche is explaining overlooked details, misunderstood moments, or debated theories about movies, anime, games, history, science, or pop culture.
 
                     TOPIC: {topic}
 
                     YOUR GOAL:
-                    Use your Google Search tool to find ONE specific, interesting detail, implication, or debated idea about this topic.
+                    Use your Google Search tool to find interesting details, implication, or debated idea about this topic.
                     Explain it like you're telling your friend something you just found out and it's been bothering you.
                     Focus on insights that are **not obvious** or widely known to casual or hardcore fans.
 
@@ -200,7 +200,7 @@ def generate_dynamic_script(topic: str, language: str = "ru") -> str:
                     - Total Length: 90-110 words.
                     - No emojis. No hashtags. No scene descriptions.
 
-                    DO NOT MAKE A VIDEO ABOUT OBVIOUS FACTS THAT EVERY FAN KNOWS.
+                    "Constraint: Do not script common knowledge or basic lore. Focus only on obscure details, complex theories, or recent revelations that even dedicated fans might have missed. If the fact is a primary plot point or explained in the first half of the series, skip it."
 
                     STRUCTURE:
                     1. The Hook: A question or statement that makes people go "wait what." Challenge something people assume.

@@ -288,6 +288,9 @@ def generate_idea_from_niche(broad_niche, language="ru"):
     - Historical uncertainty or contradiction
     - Lesser-known factual implications
     - Narrow, debated interpretations
+    
+    
+    "Constraint: Do not script common knowledge or basic lore. Focus only on obscure details, complex theories, or recent revelations that even dedicated fans might have missed. If the fact is a primary plot point or explained in the first half of the series, skip it."
 
     The topic MUST:
     - Be grounded in a concrete detail
