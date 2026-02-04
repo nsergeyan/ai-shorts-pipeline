@@ -1,21 +1,14 @@
 import os
 import random
 import sys
-import requests
 import json
+import itertools
 import time
 
 # --- ADD MODULES PATH ---
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 
 try:
-    from modules.script_generator import (
-        generate_dynamic_script,
-        call_gemini_with_retry,
-        GEMINI_MODEL,
-        types,
-        client
-    )
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_fetcher import fetch_random_music
     from modules.voice_generator import generate_voice
@@ -24,474 +17,102 @@ try:
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
+
 # ==============================================================================
 # 1. CONFIGURATION
 # ==============================================================================
 
-# 🌍 CHANGE THIS TO "ru", "en", or "es"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.025
+MUSIC_VOLUME = 0.03
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 
-# YouTube Settings
-YOUTUBE_CHANNEL_ID = "UCxgDwAsnx5YXO5GYkzdbQSg"
-YOUTUBE_CHANNELS = {
-    "ru": {
-        "channel_id": "UCy_AQ-qaxvnew5Cn52m20kg",
-        "username": "zabavnyi69"
-    },
-    "es": {
-        "channel_id": "UCQUwBh-0nwMZUOpTQxOuGew",
-        "username": "Seriohombre"
-    },
-    "en": {
-        "channel_id": "UCxgDwAsnx5YXO5GYkzdbQSg",
-        "username": "PLAim-g1x"
-    }
-}
-USE_YOUTUBE_DUPLICATE_CHECK = True
-
-# --- NICHE SELECTOR ---
-if LANGUAGE == "ru":
-    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
-    VOICE_KEY = "Molodoy"
-elif LANGUAGE == "es":
-    MY_NICHES = ["Fallout Universe", "Attack on Titan", "simple Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting space theories(universe)", "Simple interesting facts about vikings", "Simple interesting football facts", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga"]
-    VOICE_KEY = "spanish_guy"
-else:  # English
-    MY_NICHES = ["Fallout Universe", "simple interesting facts about Attack on Titan", "simple popular Ancient History facts", "One-Punch Man", "simple interesting space facts(universe)","Simple interesting science theories related to universe", "Simple interesting facts about vikings", "Simple interesting football facts", "simple interesting ufc facts", "Vinland Saga", "Jujutsu Kaisen", "the amazing digital circus", "simple mind blowing facts about animals", "Chainsaw Man", "Demon Slayer"]
-    VOICE_KEY = "hamid"
-
 # ==============================================================================
-# 2. YOUTUBE DUPLICATE CHECKER
+# 2. MANUAL INPUT SECTION
 # ==============================================================================
 
-# Cache for existing topics to avoid repeated API calls
-existing_topics_cache = {}
+# PASTE YOUR JSON HERE 👇
+MANUAL_DATA = { "topic": "The Real Purpose of the Culling Game Barriers", "specific_subject": "Jujutsu Kaisen", "youtube_queries": ["jjk tengen explaining scene" ], "music_mood": "Jujutsu Kaisen OST glitchy psychological tension", "voice_name": "Hamid", "script": "Wait, did you realize the Culling Game wasn't actually about finding a winner? Everyone assumes it’s a battle royale, but the barrier rules are way more sinister. Kenjaku didn't care who lived or died; he just needed the players to release massive amounts of cursed energy within those specific zones. The barriers weren't meant to keep people in, they were actually acting as a giant stomach. Basically, the constant fighting 'pre-digested' the players' energy to prep Japan for the merger. So every time a character won a fight, they were actually just helping Kenjaku cook the entire country. The whole tournament was just a giant grocery run for the end of the world. Follow for more." }
 
+# ==============================================================================
+# 3. THE PIPELINE
+# ==============================================================================
 
-def get_youtube_videos(channel_id: str = None, username: str = None, max_results: int = 50) -> list:
-    """Fetch video titles from YouTube channel"""
-    api_key = "AIzaSyBvnHzrnZ-rukkYvyf8kP9LvSABx3iCJwY"
-    if not api_key:
-        print("⚠️ YouTube API key not found. Skipping duplicate check.")
-        return []
-
+def run_manual_pipeline(data):
     try:
-        if channel_id:
-            url = "https://www.googleapis.com/youtube/v3/search"
-            params = {
-                'key': api_key,
-                'channelId': channel_id,
-                'part': 'snippet',
-                'maxResults': max_results,
-                'type': 'video',
-                'order': 'date'  # Get newest first
-            }
-        elif username:
-            # First get channel ID from username
-            url = "https://www.googleapis.com/youtube/v3/channels"
-            params = {
-                'key': api_key,
-                'forUsername': username,
-                'part': 'contentDetails'
-            }
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                items = response.json().get('items', [])
-                if items:
-                    channel_id = items[0]['id']
-                    url = "https://www.googleapis.com/youtube/v3/search"
-                    params = {
-                        'key': api_key,
-                        'channelId': channel_id,
-                        'part': 'snippet',
-                        'maxResults': max_results,
-                        'type': 'video',
-                        'order': 'date'
-                    }
-                else:
-                    return []
-            else:
-                return []
-        else:
-            return []
+        # 1. Unpack Data
+        TOPIC = data['topic']
+        SUBJECT = data['specific_subject']
+        YOUTUBE_QUERIES = data.get('youtube_queries', [])
+        MUSIC_QUERY = data.get('music_mood', 'ambient')
+        VOICE_NAME = data.get('voice_name', 'hamid')
+        SCRIPT_TEXT = data['script']
 
-        response = requests.get(url, params=params)
-        if response.status_code == 200:
-            videos = response.json().get('items', [])
-            titles = [video['snippet']['title'].lower() for video in videos]
-            return titles
-        return []
+        print(f"📋 PROCESSING MANUAL ORDER: {SUBJECT}")
+        print(f"   Script Length: {len(SCRIPT_TEXT)} chars")
+
+        # 2. VISUALS
+        print(f"🎮 Fetching visuals...")
+        video_paths = fetch_gameplay_by_search(
+            search_queries=YOUTUBE_QUERIES,
+            max_videos=1,
+            retry_searches=5,
+            used_video_ids=set()
+        )
+
+        if not video_paths:
+            print("❌ No visuals found. Check your YouTube queries.")
+            return False
+
+        # 3. MUSIC
+        print(f"🎵 Fetching music...")
+        music_path = fetch_random_music(search_query=MUSIC_QUERY)
+
+        # 4. VOICE
+        print(f"🗣️ Generating voice ({VOICE_NAME})...")
+        audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
+        audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
+
+        # 5. SUBTITLES
+        print(f"📝 Generating subtitles...")
+        subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
+
+        # 6. EDIT
+        final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
+        print(f"🎬 Starting video editing...")
+
+        final_path = merge_audio_video(
+            video_paths=video_paths,
+            audio_path=audio_path,
+            output_name=final_filename,
+            vertical=True,
+            shorts_cap=True,
+            music_path=music_path,
+            music_volume=MUSIC_VOLUME,
+            subtitles_data=subtitle_data,
+            subtitles_position=SUBTITLES_POSITION
+        )
+
+        print(f"\n✅ DONE! Saved to: {final_path}")
+
+        # 7. CLEANUP
+        if CLEANUP_FILES:
+            if os.path.exists(audio_path): os.remove(audio_path)
+            if music_path and os.path.exists(music_path): os.remove(music_path)
+            for v in video_paths:
+                if os.path.exists(v): os.remove(v)
+
+        return True
+
+    except KeyError as e:
+        print(f"❌ Missing Key in JSON: {e}")
     except Exception as e:
-        print(f"⚠️ YouTube API error: {e}")
-        return []
-
-
-def load_existing_topics(cache_file: str = "youtube_topics_cache.txt") -> set:
-    """Load cached topics from file"""
-    try:
-        if os.path.exists(cache_file):
-            with open(cache_file, 'r', encoding='utf-8') as f:
-                return set(line.strip().lower() for line in f.readlines() if line.strip())
-    except:
-        pass
-    return set()
-
-
-def save_existing_topics(topics: list, cache_file: str = "youtube_topics_cache.txt"):
-    """Save topics to cache file"""
-    try:
-        with open(cache_file, 'w', encoding='utf-8') as f:
-            for topic in topics:
-                f.write(f"{topic}\n")
-    except Exception as e:
-        print(f"⚠️ Failed to save topics cache: {e}")
-
-
-def get_existing_topics_by_language(language: str, force_refresh=False) -> set:
-    """Get existing topics for specific language channel"""
-    global existing_topics_cache
-
-    cache_key = f"topics_{language}"
-    if not force_refresh and cache_key in existing_topics_cache:
-        return existing_topics_cache[cache_key]
-
-    # Try loading from language-specific cache file
-    cache_file = f"youtube_topics_cache_{language}.txt"
-    cached_topics = load_existing_topics(cache_file)
-    if cached_topics and not force_refresh:
-        existing_topics_cache[cache_key] = cached_topics
-        return cached_topics
-
-    # If no cache, fetch from YouTube
-    if USE_YOUTUBE_DUPLICATE_CHECK:
-        channel_config = YOUTUBE_CHANNELS.get(language, {})
-        channel_id = channel_config.get("channel_id", "")
-        username = channel_config.get("username", "")
-
-        if channel_id or username:
-            youtube_titles = get_youtube_videos(
-                channel_id=channel_id if channel_id else None,
-                username=username if username else None,
-                max_results=100
-            )
-            topics_set = {title.lower() for title in youtube_titles}
-            existing_topics_cache[cache_key] = topics_set
-            save_existing_topics(list(topics_set), cache_file)  # Save to language-specific file
-            return topics_set
-
-    return set()
-
-
-def check_duplicate_topic(topic: str, existing_topics: set) -> bool:
-    """Check if topic already exists in YouTube content"""
-    if not existing_topics or not topic:
-        return False
-
-    topic_lower = topic.lower()
-    for existing_topic in existing_topics:
-        # Simple substring matching - can be enhanced with fuzzy matching
-        if topic_lower in existing_topic or existing_topic in topic_lower:
-            return True
-    return False
-
-
-# ==============================================================================
-# 3. THE PRODUCER AGENT (Restored with Weighted Strategy)
-# ==============================================================================
-
-def generate_idea_from_niche(broad_niche, language="ru"):
-    print(f"\nPRODUCER (Gemini 2.5): Analyzing '{broad_niche}'...")
-
-    # --- RESTORED STRATEGIC CONTENT TIERS ---
-    tiers = [
-        "FRANCHISE PILLARS (The most iconic subjects)",
-        "CORE NARRATIVE STAPLES (Standard lore/characters)",
-        "ESOTERIC LORE & DEEP CUTS (Obscure details, hidden lore)"
-    ]
-
-    selected_tier = random.choices(tiers, weights=[0.4, 0.3, 0.3], k=1)[0]
-    print(f"🎯 Strategy: {selected_tier}")
-
-    # Dynamic exclusion logic to guide the AI
-    if "FRANCHISE PILLARS" in selected_tier:
-        guideline = "Pick the most famous icons (e.g., Gojo, Thorfin, Sukuna)."
-    elif "CORE NARRATIVE" in selected_tier:
-        guideline = "Pick beloved subjects, but avoid the absolute top mascots."
-    else:
-        guideline = "Pick unknown or hidden details. Absolutely no popular characters."
-
-    existing_topics = get_existing_topics_by_language(language)
-    existing_topics_str = "\n".join(list(existing_topics))
-
-    prompt = f"""
-    YOU MUST RETURN VALID JSON ONLY.
-    NO explanations. NO markdown. NO extra text.
-
-    GLOBAL SETTINGS
-    - Universe: "{broad_niche}"
-    - Output Language: "{language}"
-    - Strategy Tier: {selected_tier}
-    - Guideline: {guideline}
-    - ALL OUTPUT MUST BE IN ENGLISH (except the TITLE language rule below).
-
-    AVOID DUPLICATION
-    Do NOT generate topics similar to or overlapping with the following:
-    {existing_topics_str}
-
-    RESEARCH RULE
-    If information feels shallow or outdated, you MAY use the google_search tool to fetch deeper or fresher context.
-
-    ────────────────────
-    TASK DEFINITION
-    ────────────────────
-
-    1. SUBJECT SELECTION
-    Choose ONE:
-    - A character
-    - A location
-    - A historical event
-    - A theory (fictional or real)
-
-    2. THEME RESTRICTIONS (VERY IMPORTANT)
-    Focus ONLY on:
-    - Origins
-    - Psychological analysis
-    - Hidden lore
-    - Historical mysteries
-    - Lesser-known facts or implications
-    
-    - Focus on concrete implications, not symbolism or metaphors
-    - Avoid abstract themes unless directly tied to a factual detail
-
-    ❌ DO NOT:
-    - Summarize the basic plot
-    - Explain obvious motivations
-    - Retell well-known story beats
-
-    Example of what NOT to do:
-    ❌ "Thorfinn changed because Askeladd died."
-
-    3. FORBIDDEN WORDS (TITLE + SCRIPT IDEAS)
-    Never use:
-    "Wildest", "Funny", "Best", "Top 10", "Moments", "Get ready"
-
-    ────────────────────
-    TITLE GUIDELINES
-    ────────────────────
-
-    - Title MUST be written in {language}
-    - Title must feel documentary-style, mysterious, or analytical
-    - No clickbait lists
-    - No recap framing
-    
-    TONE CONSTRAINT (CRITICAL)
-    - Avoid epic, mythic, or heroic language
-    - Prefer neutral, restrained, analytical wording
-    - If a phrase sounds like an anime trailer, rewrite it plainly
-
-    GOOD EXAMPLES:
-    - "The Fallen One: Who Was Sukuna Before He Became a Curse?"
-    - "What Is the Culling Game? Kenjaku’s True Endgame"
-    - "Who Were the Jomsvikings? The Real Legends Behind Vinland Saga"
-
-    SPECIAL CASE — SPACE / UNIVERSE TOPICS:
-    If the topic is about space or cosmic theories:
-    - Frame it as a simple but fascinating thought experiment
-    - Make it understandable for a TikTok audience
-    Example:
-    "What Happens to a Human If They Fall Into a Black Hole?"
-
-    ────────────────────
-    YOUTUBE SEARCH QUERIES (CRITICAL)
-    ────────────────────
-
-    GOAL:
-    Find high-quality visuals focused on atmosphere, characters, or cinematic scenes.
-    Avoid UI, HUD, gameplay, or YouTuber edits.
-    Prefer official sources to minimize copyright risk.
-
-    SEARCH RULES:
-    ❌ NEVER use:
-    "Gameplay", "Mission", "Walkthrough", "Playthrough"
-
-    ✅ ALWAYS prefer:
-    "Cutscene", "Official Clip", "Scene", "Episode", "Cinematic"
-
-    CHARACTER SEARCH RULE (NPC RULE):
-    Use:
-    [Character Name] + "scene" OR "moments"
-
-    Examples:
-    - "Satoru Gojo speech jjk scene"
-    - "Fallout Brotherhood of Steel cinematic 4K"
-
-    UNIVERSE-SPECIFIC RULES:
-    - Fallout → ONLY visuals from the Fallout TV series
-    - Space topics → animations, space footage, cosmic visuals
-      ❌ No explanations or educational narration videos
-
-    ────────────────────
-    MUSIC MOOD RULES
-    ────────────────────
-
-    - Search for OFFICIAL OST styles only
-    - Prefer ambient or instrumental
-    - No lyrical tracks
-    - NEVER use music from Interstellar
-
-    BAD:
-    "The Great Worm Theme"
-
-    GOOD:
-    - "Metro Last Light Official Soundtrack Ambient"
-    - "Hazbin Hotel OST instrumental no lyrics"
-
-    ────────────────────
-    OUTPUT FORMAT (STRICT)
-    ────────────────────
-
-    Return EXACTLY this JSON structure:
-
-    {{
-      "topic": "Title in {language}",
-      "specific_subject": "Exact English Wikipedia title",
-      "youtube_queries": [
-        "PRIMARY_QUERY",
-        "BACKUP_QUERY_1",
-        "BACKUP_QUERY_2"
-      ],
-      "music_mood": "specific OST style or vibe",
-      "voice_name": "{VOICE_KEY}"
-    }}
-    """
-
-    if "FRANCHISE PILLARS" in selected_tier:
-        temperature = 0.45
-    elif "CORE NARRATIVE" in selected_tier:
-        temperature = 0.55
-    else:  # ESOTERIC LORE & DEEP CUTS
-        temperature = 0.6
-
-    config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        temperature=temperature
-    )
-
-    response = call_gemini_with_retry(prompt, config)
-    if response and response.text:
-        try:
-            return json.loads(response.text)
-        except Exception as e:
-            print(f"AI Producer JSON Error: {e}")
-    return None
-
-
-# ==============================================================================
-# 4. THE PIPELINE
-# ==============================================================================
-def run_pipeline_for_idea(idea_data, niche_name):
-    # Unpack from JSON
-    TOPIC = idea_data['topic']
-    SUBJECT = idea_data['specific_subject']
-    YOUTUBE_QUERIES = idea_data.get('youtube_queries', [])
-
-    # Ensure we have a list of queries
-    if isinstance(YOUTUBE_QUERIES, str):
-        YOUTUBE_QUERIES = [YOUTUBE_QUERIES]
-
-    # Ensure music search has 'instrumental' to avoid vocals in background
-    raw_music = idea_data['music_mood']
-    MUSIC_QUERY = f"{raw_music} instrumental ost" if "ost" not in raw_music.lower() else raw_music
-
-    VOICE_NAME = idea_data['voice_name']
-
-    print(f"📋 PLAN: {SUBJECT}")
-    print(f"   Title: {TOPIC}")
-
-    contextual_topic = f"{TOPIC} inside the universe of {niche_name}"
-
-    # 1. SCRIPT (Using the Gemini generator with search grounding)
-    script = generate_dynamic_script(
-        topic=contextual_topic,
-        language=LANGUAGE
-    )
-
-    if not script or len(script) < 50:
-        print("❌ Script generation failed.")
-        return False
-    print(script)
-    # 2. VISUALS - with query rotation and video tracking
-    print(f"🎮 Fetching visuals...")
-    used_video_ids = set()  # Track used videos to avoid repeats
-
-    video_paths = fetch_gameplay_by_search(
-        search_queries=YOUTUBE_QUERIES,
-        max_videos=1,
-        retry_searches=10,
-        used_video_ids=used_video_ids
-    )
-
-    if not video_paths:
-        print("⚠️ Skipping due to lack of usable visuals.")
-        return False
-
-    # 3. MUSIC
-    print(f"🎵 Fetching music...")
-    music_path = fetch_random_music(search_query=MUSIC_QUERY)
-
-    # 4. VOICE
-    print(f"🗣️ Generating voice...")
-    audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
-    audio_path = generate_voice(script, audio_filename, VOICE_NAME, LANGUAGE)
-
-    # 5. SUBTITLES
-    print(f"📝 Generating subtitles...")
-    subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
-    print(f"✅ Generated {len(subtitle_data) if subtitle_data else 0} subtitle chunks")
-
-    # 6. EDIT
-    final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
-    print(f"🎬 Starting video editing...")
-
-    final_path = merge_audio_video(
-        video_paths=video_paths,
-        audio_path=audio_path,
-        output_name=final_filename,
-        vertical=True,
-        shorts_cap=True,
-        music_path=music_path,
-        music_volume=MUSIC_VOLUME,
-        subtitles_data=subtitle_data,
-        subtitles_position=SUBTITLES_POSITION
-    )
-
-    print(f"\n✅ DONE! Saved to: {final_path}")
-
-    # 7. CLEANUP
-    if CLEANUP_FILES:
-        if os.path.exists(audio_path): os.remove(audio_path)
-        if music_path and os.path.exists(music_path): os.remove(music_path)
-        for v in video_paths:
-            if os.path.exists(v): os.remove(v)
-
-        cache_file = f"youtube_topics_cache_{LANGUAGE}.txt"
-        if os.path.exists(cache_file):
-            os.remove(cache_file)
-            print(f"🗑️ Cleaned up YouTube cache: {cache_file}")
-
-        global existing_topics_cache
-        existing_topics_cache.clear()
-
-    return True
-
+        print(f"❌ Pipeline Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == "__main__":
-    # FORCE the test niche
-    niche =  "Jujutsu Kaisen"
-    print(f"🎬 TESTING NEW NICHE: {niche}")
-    plan = generate_idea_from_niche(niche, LANGUAGE)
-    if plan:
-        run_pipeline_for_idea(plan, niche)
+    if MANUAL_DATA:
+        run_manual_pipeline(MANUAL_DATA)
+    else:
+        print("Please paste your JSON into the MANUAL_DATA variable.")
