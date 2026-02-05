@@ -1,6 +1,3 @@
-# modules/tiktok_checker.py
-import requests
-import json
 import os
 from typing import List, Set
 
@@ -12,7 +9,6 @@ HEADERS = {
     )
 }
 
-# In-memory cache (same idea as YouTube)
 existing_tiktok_topics_cache = {}
 
 from yt_dlp import YoutubeDL
@@ -103,3 +99,29 @@ def check_duplicate_tiktok_topic(topic: str, existing_topics: Set[str]) -> bool:
         if topic in existing or existing in topic:
             return True
     return False
+
+
+if __name__ == "__main__":
+    TEST_LANGUAGE = "en"
+    TEST_TOPIC = "N’s memory wipes are a safety mechanism"
+    TEST_TIKTOK_CHANNELS = {
+        "en": {
+            "username": "plaim62"
+        }
+    }
+
+    print("🔍 Fetching existing TikTok topics...")
+    existing = get_existing_tiktok_topics_by_language(
+        TEST_LANGUAGE,
+        TEST_TIKTOK_CHANNELS,
+        force_refresh=True
+    )
+
+    print(f"📄 Loaded {len(existing)} existing captions")
+
+    is_duplicate = check_duplicate_tiktok_topic(TEST_TOPIC, existing)
+
+    if is_duplicate:
+        print("⛔ DUPLICATE DETECTED")
+    else:
+        print("✅ Topic is unique")

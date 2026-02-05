@@ -1,0 +1,104 @@
+make a tiktok script 90 - 100 words(USE SIMPLE ENGLISH B1) about jjk. Make a viral video about some interesting fact, do not make a video about obvious facts taht every fan knows or boring or too deep stuff.
+
+THe structure is ->
+{
+"topic": "",
+"specific_subject": "",
+"youtube_queries": [
+"",
+"",
+""
+],
+"twelvelabs_query": "Yuji eats Sukuna finger, gagging reaction",
+"music_mood": "",
+"voice_name": "Hamid",
+"script": "Everyone talks about how gross it is that Yuji eats Sukuna’s fingers, but have you ever wondered what they actually taste like? In the official JJK fanbook, Gege Akutami revealed they taste exactly like... waxy soap. But the reason is actually disturbing. The fingers are covered in Adipocere—better known as 'grave wax.' This is a fatty substance that forms on bodies preserved in moist, airless environments. So, Yuji isn’t just eating a mummy; he’s basically chewing on a bar of ancient human-fat soap. No wonder he gags every single time. Follow for more"
+}
+
+
+
+──────────────────
+
+twelvelabs_query:
+
+Short, precise description of what you want to see on screen.
+
+Ideal for AI indexing: character + action + visible text or reaction.    YOUTUBE SEARCH QUERIES (CRITICAL)
+    ────────────────────
+     GOAL:
+    Find raw cinematic visuals only for background video.
+    No narration. No analysis. No commentary. No essays.
+
+    STRICTLY AVOID SEARCH TERMS THAT ATTRACT EXPLANATIONS:
+    ❌ longevity
+    ❌ meaning
+    ❌ explained
+    ❌ symbolism
+    ❌ lore
+    ❌ analysis
+    ❌ philosophy
+    ❌ why
+    Avoid UI, HUD, gameplay, or YouTuber edits.
+
+    ALWAYS SEARCH FOR:
+    Concrete story moments
+    Physical actions
+    Episode-specific scenes
+    Emotional beats shown on screen
+    Prefer official sources to minimize copyright risk.
+    SEARCH RULES:
+    ❌ NEVER use:
+    "Gameplay", "Mission", "Walkthrough", "Playthrough"
+    ✅ ALWAYS prefer:
+    "Cutscene", "Official Clip", "Scene", "Episode", "Cinematic"
+
+    CHARACTER SEARCH RULE (NPC RULE):
+    Use:
+    [Character Name] + "scene" OR "moments"
+
+    GOOD EXAMPLES (Frieren):
+    "Gojo Satoru scene jjk"
+    "Sukuna first apprentice scene jjk"
+
+    UNIVERSE-SPECIFIC RULES:
+    - Fallout → ONLY visuals from the Fallout TV series
+    - Space topics → animations, space footage, cosmic visuals
+      ❌ No explanations or educational narration video
+
+
+    ────────────────────
+    MUSIC MOOD RULES
+    ────────────────────
+
+    - Search for OFFICIAL OST styles only
+    - Prefer ambient or instrumental
+    - No lyrical tracks
+    - NEVER use music from Interstellar
+
+    BAD:
+    "The Great Worm Theme"
+
+    GOOD:
+    - "Metro Last Light Official Soundtrack Ambient"
+    - "Hazbin Hotel OST instrumental no lyrics"
+HUMOR/PERSONALITY RULES:
+                    - Sound like someone who's genuinely a bit too invested in this topic
+                    - Okay to be slightly unhinged or dramatic IF it's funny, not poetic
+                    - One light joke or exaggeration is fine if it lands naturally
+                    - Avoid sounding like a teacher, a brand, or a movie trailer
+                    - If something is absurd, you can call it out ("which is insane")
+
+
+THE VIDEOS THAT I ARLEADY HAVE(SO DO NOT coppy them or make similiar ones):
+it is not just a box, but it is a human, prison realm (gojo). #jjk #jujutsukaisen #gojo
+hidden hud joke in murder drones #murderdronesn #murderdronesedit #murderdrone #murderdronesn
+the shibuya incident's hidden date significance. #jjk #jujutsukaisen #gojo
+why j is the only drone who stays loyal to the company? #murderdronesn #murderdronesedit #murderdrone
+mahito's philosophy, interesting fact! #jjk #mahitojjk
+the secret heroic origins of ryomen sukuna #jjk #sukuna #sukunaryomen
+the man who traded everything for one fight, kashimo. #jjk #jujutsukaisen #kashimo
+gojo satoru's sugar addiction #jjk #gojo #gojosatoru #jujutsukaisenmanga
+why the solver is obsessed with n (it's tragic) #murderdronesn #murderdrone #murderdronesedit
+
+
+
