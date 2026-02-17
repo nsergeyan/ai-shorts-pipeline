@@ -117,8 +117,8 @@ def _make_opts_no_cookies(skip_download: bool):
         "ignoreerrors": True,
         "overwrites": True,
         "nopart": True,
-        "format": "best[height<=720]",
-        "extractor_args": {
+        "format": "bestvideo[height>=480][ext=mp4]+bestaudio[ext=m4a]/best[height>=480][ext=mp4]/best",
+                  "extractor_args": {
             "youtube": {
                 "player_client": ["android", "web"],
                 "skip": ["hls", "dash"],
@@ -305,7 +305,7 @@ def fetch_gameplay_by_search(
             if vid_id in used_video_ids:
                 continue
 
-            if duration and duration < 61:
+            if duration and duration < 30:
                 used_video_ids.add(vid_id)
                 continue
 
@@ -317,7 +317,7 @@ def fetch_gameplay_by_search(
                 used_video_ids.add(vid_id)
                 continue
 
-            if duration and duration > 7200:
+            if duration and duration > 3600:
                 used_video_ids.add(vid_id)
                 continue
 

@@ -24,7 +24,7 @@ from twelvelabs.indexes import IndexesCreateRequestModelsItem
 # ---------------- CONFIG ---------------- #
 API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.02
+MUSIC_VOLUME = 0.025
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0  # seconds for TwelveLabs-trimmed scene
@@ -35,21 +35,18 @@ SLEEP_INTERVAL = 5
 
 # PASTE YOUR JSON HERE
 MANUAL_DATA = {
-"topic": "JJK Hidden Details",
-"specific_subject": "The Junpei Opening Trick",
-"youtube_queries": [
-"Jujutsu Kaisen Season 1 Opening 1 Junpei scene",
-"Junpei Yoshino death scene Yuji reaction",
-"Yuji and Junpei school roof scene"
-],
-"twelvelabs_query": "Junpei Yoshino in Jujutsu High uniform smiling in the opening",
-"music_mood": "Sad and emotional piano JJK OST",
-"voice_name": "Hamid",
-"script": "Have you ever felt betrayed by an anime opening? In the first season of JJK, we see Junpei Yoshino wearing a Jujutsu High uniform. He is standing with Yuji and the others, looking happy. Most fans thought he would join the team and become a main character. But here is the crazy part: Gege Akutami did this on purpose to trick us! Junpei never actually joins the school. He dies shortly after meeting Yuji. The animators literally lied to us just to make the tragedy hurt even more. That is pure evil! Follow for more."
+  "topic": "Jujutsu Kaisen",
+  "specific_subject": "Gege made Hakari's entire power based on gambling to spite editors who banned pachinko",
+  "youtube_queries": [
+    "Hakari learns Megumi is Zenin clan's head | Jujutsu Kaisen Season 3 Ep 7"
+  ],
+  "twelvelabs_query": "Hakari moment",
+  "music_mood": "tuca tonca phonk",
+  "voice_name": "Hamid",
+  "script": "Gege Akutami is the king of writing out of pure spite. Originally Gege wanted Yuji to visit a Japanese gambling parlor but the Shonen Jump editors shut it down because they said gambling was a bad influence for a kids magazine. So what did Gege do? He did not just drop it, he leveled up. He created Kinji Hakari, a character whose entire power is literally a rigged slot machine. His Domain Expansion forces his opponents to sit through a literal gambling mini game and if he hits the Jackpot he gets infinite cursed energy and becomes immortal for four minutes. The editors could not ban it this time because the gambling was the plot. Gege basically said you will not let me show a casino? Fine, I will make gambling the strongest power in the entire series. Absolute madman behavior. Follow for more JJK secrets!"
 }
 
-
-def trim_video_flexible(input_file, output_file, ai_start, ai_end, narration_duration, prepad=3.0, max_clip_duration=60.0):
+def trim_video_flexible(input_file, output_file, ai_start, ai_end, narration_duration, prepad=2.0, max_clip_duration=60.0):
     """
     Trims video to include the AI-found scene, with optional prepad before start,
     but ensures clip fits narration duration and does not exceed max_clip_duration.
@@ -60,10 +57,14 @@ def trim_video_flexible(input_file, output_file, ai_start, ai_end, narration_dur
 
     subprocess.run([
         "ffmpeg",
-        "-i", input_file,
         "-ss", str(clip_start),
+        "-i", input_file,
         "-t", str(clip_duration),
-        "-c", "copy",
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-force_key_frames", "0",
+        "-c:a", "aac",
+        "-movflags", "+faststart",
         output_file
     ], check=True)
 
@@ -115,6 +116,7 @@ def run_manual_pipeline(data):
             query_text=data.get("twelvelabs_query"),
             search_options=MODEL_OPTIONS
         )
+
         # After TwelveLabs scene is found:
         results_list = list(results)
         if not results_list:
@@ -135,10 +137,13 @@ def run_manual_pipeline(data):
             trimmed_video = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
             subprocess.run([
                 "ffmpeg",
+                "-ss", str(start_time),  # Put -ss BEFORE -i for faster/cleaner seeking
                 "-i", original_video,
-                "-ss", str(start_time),
                 "-t", str(duration),
-                "-c", "copy",
+                "-c:v", "libx264",  # Re-encode to fix the frozen start
+                "-preset", "veryfast",
+                "-c:a", "aac",
+                "-avoid_negative_ts", "make_non_negative",
                 trimmed_video
             ], check=True)
             print(f"🎬 Trimmed clip saved as: {trimmed_video}")

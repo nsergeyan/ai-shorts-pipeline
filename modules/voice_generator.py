@@ -15,7 +15,7 @@ if not ELEVENLABS_API_KEYS:
 
 VOICES = {
     "hamid": "yr43K8H5LoTp6S1QFSGg",
-    "Molodoy": "VKjbtGrk0YiYbA2Xpq7n",
+    "Molodoy": "CW5zNfAn61sKXzPr2rKZ",
     "spanish_guy": "kwajW3Xh5svCeKU5ky2S",
 }
 
@@ -44,9 +44,9 @@ def _try_generate_with_key(
         # RUSSIAN SETTINGS
         model_id = "eleven_multilingual_v2"
         voice_settings = {
-            "stability": 0.4,
-            "similarity_boost": 0.75,
-            "style": 0.8,
+            "stability": 0.75,
+            "similarity_boost": 0.8,
+            "style": 0.3,
             "use_speaker_boost": True
         }
         latency_opt = "1"

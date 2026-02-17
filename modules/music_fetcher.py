@@ -426,6 +426,14 @@ def fetch_music_by_search(search_query: str, max_tracks: int = 1) -> List[str]:
             })
 
     video_candidates = [v for v in video_candidates if v.get("webpage_url") and v.get("id")]
+    strong_terms = [w for w in search_query.lower().split() if len(w) > 4]
+
+    def matches_query(item):
+        title = (item.get("title") or "").lower()
+        return any(term in title for term in strong_terms)
+
+    video_candidates = [v for v in video_candidates if matches_query(v)]
+
     ranked = sorted(video_candidates, key=_score_entry, reverse=True)
     filtered_ranked = [item for item in ranked if _score_entry(item) >= 0]
 

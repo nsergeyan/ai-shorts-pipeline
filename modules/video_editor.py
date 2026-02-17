@@ -158,15 +158,8 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
     if len(clips) == 1:
         c = clips[0]
         if c.duration > total_duration:
-            # Calculate the latest possible start time
-            max_start_time = c.duration - total_duration
-
-            # Pick a random start time
-            random_start = random.uniform(0, max_start_time)
-            random_end = random_start + total_duration
-
-            print(f"🎲 RANDOM CUT: Selecting video segment from {int(random_start)}s to {int(random_end)}s")
-            return [c.subclip(random_start, random_end)]
+            print(f"✂️ CUT FROM START: Selecting video segment from 0s to {int(total_duration)}s")
+            return [c.subclip(0, total_duration)]
 
     # Scenario 2: Video is shorter than audio, or multiple clips (Fallback)
     total_source = sum(c.duration for c in clips)
@@ -293,7 +286,7 @@ def merge_audio_video(
         video_paths = [video_paths]
 
     # 1. Load Clips and MUTE them immediately
-    raw_clips = [VideoFileClip(p).without_audio() for p in video_paths]
+    raw_clips = [VideoFileClip(p).without_audio().set_fps(30) for p in video_paths]
 
     # 2. Vertical Crop
     if vertical:
@@ -315,7 +308,7 @@ def merge_audio_video(
     clips_ready = _trim_clips_to_total_duration(raw_clips, final_dur)
 
     if len(clips_ready) > 1:
-        video = concatenate_videoclips(clips_ready, method="compose")
+        video = concatenate_videoclips(clips_ready)
     else:
         video = clips_ready[0]
 
@@ -370,11 +363,26 @@ def merge_audio_video(
     video = video.set_audio(final_audio)
 
     out_path = os.path.join(FINAL_DIR, output_name)
+    video = video.set_start(0)
+    video = video.set_duration(final_dur)
+
+    # Force fresh timestamps
+    video = video.set_fps(30)
+
+    # Force full re-render of frames
+    video = video.fl(lambda gf, t: gf(t))
     video.write_videofile(
         out_path,
         codec="libx264",
         audio_codec="aac",
         fps=30,
+        preset="veryfast",
+        ffmpeg_params=[
+            "-movflags", "+faststart",
+            "-pix_fmt", "yuv420p",
+            "-video_track_timescale", "30"
+        ],
+        threads=4,
         logger=None
     )
 
