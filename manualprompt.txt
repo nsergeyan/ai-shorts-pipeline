@@ -57,11 +57,8 @@ THe structure is ->
 
 ──────────────────
 
-twelvelabs_query:
-
-Short, precise description of what you want to see on screen.
-
-Ideal for AI indexing: character + action + visible text or reaction.    YOUTUBE SEARCH QUERIES (CRITICAL)
+twelvelabs_query: Short, precise description of what you want to see on screen(based on script).
+YOUTUBE SEARCH QUERIES (CRITICAL):
     ────────────────────
      GOAL:
     Find raw cinematic visuals only for background video.

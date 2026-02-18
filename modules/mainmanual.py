@@ -1,15 +1,18 @@
+import json
 import os
 import random
+import re
 import sys
+import time
 import uuid
 import subprocess
-
-# --- ADD MODULES PATH ---
+from google import genai
+import ffmpeg
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
-    from modules.music_fetcher import fetch_random_music
+    from modules.music_fetcher import fetch_music_by_search
     from modules.voice_generator import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_groups
@@ -17,9 +20,6 @@ except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
 
-# --- TwelveLabs ---
-from twelvelabs import TwelveLabs
-from twelvelabs.indexes import IndexesCreateRequestModelsItem
 
 # ---------------- CONFIG ---------------- #
 API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
@@ -35,24 +35,43 @@ SLEEP_INTERVAL = 5
 
 # PASTE YOUR JSON HERE
 MANUAL_DATA = {
-  "topic": "Jujutsu Kaisen",
-  "specific_subject": "Gege made Hakari's entire power based on gambling to spite editors who banned pachinko",
+  "topic": "Invincible",
+  "specific_subject": "Kirkman gave all Viltrumites mustaches because his own dad had a mustache",
   "youtube_queries": [
-    "Hakari learns Megumi is Zenin clan's head | Jujutsu Kaisen Season 3 Ep 7"
+    "invincible viltrumates fighting",
+      "invicnible omniman moments"
   ],
-  "twelvelabs_query": "Hakari moment",
-  "music_mood": "tuca tonca phonk",
+  "twelvelabs_query": "Omni-Man Nolan Grayson mustache face close up talking scene",
+  "music_mood": "tiktok phonk viral music",
   "voice_name": "Hamid",
-  "script": "Gege Akutami is the king of writing out of pure spite. Originally Gege wanted Yuji to visit a Japanese gambling parlor but the Shonen Jump editors shut it down because they said gambling was a bad influence for a kids magazine. So what did Gege do? He did not just drop it, he leveled up. He created Kinji Hakari, a character whose entire power is literally a rigged slot machine. His Domain Expansion forces his opponents to sit through a literal gambling mini game and if he hits the Jackpot he gets infinite cursed energy and becomes immortal for four minutes. The editors could not ban it this time because the gambling was the plot. Gege basically said you will not let me show a casino? Fine, I will make gambling the strongest power in the entire series. Absolute madman behavior. Follow for more JJK secrets!"
+  "script": "Every male Viltrumite has a mustache. Omni-Man. Thragg. Conquest. Kregg. All of them. Fans spent years wondering why this entire alien warrior race all had the same facial hair. Is it cultural? Ceremonial? Religious? Robert Kirkman finally admitted the real reason. He gave Viltrumites mustaches because his own father had one. That's it. That's the whole reason. The most feared alien conquerors in the universe all look like Kirkman's dad. An entire galactic empire's aesthetic was decided because one comic book writer thought his father's mustache looked cool. Every Viltrumite is just Kirkman's dad cosplay. Follow for more Invincible secrets!"
 }
 
-def trim_video_flexible(input_file, output_file, ai_start, ai_end, narration_duration, prepad=2.0, max_clip_duration=60.0):
+
+def trim_video_to_end(
+    input_file,
+    output_file,
+    ai_start,
+    prepad=0.02,
+    max_duration=61.0
+):
     """
-    Trims video to include the AI-found scene, with optional prepad before start,
-    but ensures clip fits narration duration and does not exceed max_clip_duration.
+    Trims video starting a bit before AI-found timestamp and goes up to max_duration seconds,
+    but not beyond the actual video length.
+    Prevents freezing or looping.
     """
-    clip_start = max(ai_start - prepad, 0.0)
-    clip_end = min(ai_end, clip_start + max_clip_duration, clip_start + narration_duration)
+    import subprocess
+    import ffmpeg
+
+    # get video duration
+    info = ffmpeg.probe(input_file)
+    video_duration = float(info['format']['duration'])
+
+    # compute safe start
+    clip_start = max(float(ai_start) - prepad, 0.0)
+
+    # compute clip end safely
+    clip_end = min(clip_start + max_duration, video_duration)
     clip_duration = clip_end - clip_start
 
     subprocess.run([
@@ -62,13 +81,185 @@ def trim_video_flexible(input_file, output_file, ai_start, ai_end, narration_dur
         "-t", str(clip_duration),
         "-c:v", "libx264",
         "-preset", "veryfast",
-        "-force_key_frames", "0",
         "-c:a", "aac",
         "-movflags", "+faststart",
         output_file
     ], check=True)
 
-    return clip_start, clip_end
+    print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
+
+
+
+def evaluate_video_with_genai(video_path, script_text):
+    client = genai.Client(api_key="AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+    #AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
+    #WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
+    #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+
+    # Upload video
+    uploaded_file = client.files.upload(file=video_path)
+    print(f"Uploaded file: {uploaded_file.name}")
+
+    # Wait until file is ACTIVE
+    file_info = client.files.get(name=uploaded_file.name)
+    while file_info.state != "ACTIVE":
+        print(f"File state: {file_info.state}, waiting...")
+        time.sleep(2)
+        file_info = client.files.get(name=uploaded_file.name)
+    print("File is ACTIVE ✅")
+
+    # Build prompt
+    prompt = f"""
+    You are acting as a short-form content editor.
+
+    You judge the video based on what is clearly visible, but you MAY give partial credit if the visuals **contextually support** the script, even if exact actions aren’t shown. Do NOT invent unseen events, but allow for implied relevance.
+
+    Script excerpt:
+    \"\"\"{script_text}\"\"\"
+
+    Evaluation Rules:
+    1. Core Visual Proof Check
+       - Give partial credit if the scene includes the relevant character, objects, or context, even if the exact action isn’t literally shown.
+    2. Visual-Script Alignment (1–10)
+       - Higher if visuals contextually support the script.
+    3. First 2-Second Hook (1–10)
+       - Assess visual and audio engagement, not necessarily direct relevance.
+    4. Technical Quality (1–10)
+       - Animation smoothness, effects, audio clarity.
+    5. Posting Decision
+       - "post" if relevance_score >= 6, hook_score >= 7, technical_score >= 8
+       - Otherwise: "revise" or "reject"
+    Respond ONLY with valid JSON:
+    {{
+      "relevance_score": <1-10>,
+      "hook_score": <1-10>,
+      "technical_score": <1-10>,
+      "decision": "post" | "revise" | "reject"
+    }}
+    """
+
+    # Send request
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[uploaded_file, prompt]
+    )
+
+    # Ensure we have the text string
+    raw_text = response.text if hasattr(response, "text") else str(response)
+
+    try:
+        # Clean up extra characters
+        clean_text = raw_text.strip()
+        if not clean_text.startswith("{"):
+            clean_text = clean_text[clean_text.find("{"):]
+        if not clean_text.endswith("}"):
+            clean_text = clean_text[:clean_text.rfind("}") + 1]
+        return json.loads(clean_text)
+    except Exception as e:
+        print(f"⚠️ Failed to parse GenAI JSON: {e}")
+        print("Raw response:", raw_text)
+        return {
+            "relevance_score": 0,
+            "hook_score": 0,
+            "technical_score": 0,
+            "decision": "revise"
+        }
+
+
+def find_scene_with_gemini(video_path, query):
+    client = genai.Client(api_key="AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+    # AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
+    # WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
+    #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+
+    uploaded_file = client.files.upload(file=video_path)
+    print(f"Uploaded file: {uploaded_file.name}")
+
+    file_info = client.files.get(name=uploaded_file.name)
+    while file_info.state != "ACTIVE":
+        print(f"File state: {file_info.state}, waiting...")
+        time.sleep(2)
+        file_info = client.files.get(name=uploaded_file.name)
+
+    print("File ACTIVE ✅")
+
+    prompt = f"""
+    You are analyzing a full video timeline.
+
+    Your task:
+    Find the segment that best matches the following query:
+
+    "{query}"
+
+    Important:
+    First, understand the nature of the query.
+
+    - If the query describes a specific action or moment (e.g., something happens, appears, moves, drops, says something, etc.), treat this as a precise event detection task and return the exact moment it occurs.
+
+    - If the query describes a scene type, character appearance, facial expression, or general visual situation (e.g., close-up of a character, someone talking, emotional reaction, etc.), treat this as a semantic scene search task and return the segment that best visually matches the description.
+
+    Rules:
+    - The event or scene may occur briefly.
+    - It may happen in the background.
+    - Search the ENTIRE video carefully.
+    - Do NOT assume it happens at the start.
+    - Do NOT guess.
+    - Do NOT fabricate matches.
+
+    Selection guidelines:
+    - Return a tight segment around the best match.
+    - Typical duration should be:
+      - 1–8 seconds for specific actions
+      - 3–15 seconds for general scenes
+    - If multiple matches exist, return the clearest and most relevant one.
+
+    If no strong and confident match exists, return 0,0.
+
+    Timestamps:
+    - Use float seconds relative to the full video timeline.
+
+    Return ONLY valid JSON.
+    No markdown.
+    No explanations.
+    No extra text.
+
+    Format:
+    {{
+      "start": <seconds>,
+      "end": <seconds>
+    }}
+
+    If not confidently found:
+    {{
+      "start": 0,
+      "end": 0
+    }}
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[uploaded_file, prompt]
+    )
+
+    text = response.text.strip()
+    print("Raw model output:", text)
+
+    # remove markdown fences
+    text = re.sub(r"```json|```", "", text).strip()
+
+    try:
+        return json.loads(text)
+    except:
+        # extract JSON block if extra text exists
+        match = re.search(r"\{.*?\}", text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except:
+                pass
+
+    print("Failed parsing:", text)
+    return {"start": 0, "end": 0}
 
 
 def run_manual_pipeline(data):
@@ -85,72 +276,70 @@ def run_manual_pipeline(data):
         print(f"topic: {TOPIC}")
         print(f"   Script Length: {len(SCRIPT_TEXT)} chars")
 
-        # 2️⃣ VISUALS - Download first video from YouTube
+        # 2️⃣ VISUALS - Download and evaluate with retry
         print(f"🎮 Fetching visuals...")
-        video_paths = fetch_gameplay_by_search(
-            search_queries=YOUTUBE_QUERIES,
-            max_videos=1,
-            retry_searches=5,
-            used_video_ids=set()
-        )
-        if not video_paths:
-            print("❌ No visuals found. Check your YouTube queries.")
-            return False
-        original_video = video_paths[0]
 
-        # 3️⃣ Use TwelveLabs to find scene
-        print(f"🤖 Uploading video to TwelveLabs for scene search...")
-        client = TwelveLabs(api_key=API_KEY)
-        index_name = f"manual_index_{uuid.uuid4().hex[:6]}"
-        index = client.indexes.create(
-            index_name=index_name,
-            models=[IndexesCreateRequestModelsItem(model_name=MODEL_NAME, model_options=MODEL_OPTIONS)]
-        )
-        with open(original_video, "rb") as f:
-            task = client.tasks.create(index_id=index.id, video_file=f)
-        client.tasks.wait_for_done(task.id, sleep_interval=SLEEP_INTERVAL)
+        video_attempts = 0
+        max_attempts = len(YOUTUBE_QUERIES)
+        original_video = None
 
-        # Query the scene
-        results = client.search.query(
-            index_id=index.id,
-            query_text=data.get("twelvelabs_query"),
-            search_options=MODEL_OPTIONS
-        )
+        for i, query in enumerate(YOUTUBE_QUERIES):
+            print(f"📌 Attempt {i + 1}: Searching YouTube for query: '{query}'")
+            video_paths = fetch_gameplay_by_search(
+                search_queries=[query],  # use the current query
+                max_videos=1,
+                retry_searches=5,
+                used_video_ids=set()
+            )
+            if not video_paths:
+                print("❌ No visuals found. Check your YouTube queries.")
+                return False
 
-        # After TwelveLabs scene is found:
-        results_list = list(results)
-        if not results_list:
-            print("⚠️ No scene found in video. Using full video instead.")
+            candidate_video = video_paths[0]
+            video_attempts += 1
+            print(f"📌 Attempt {video_attempts}: Evaluating video...")
+
+            evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
+
+            if evaluation and evaluation.get("decision") == "post":
+                print("✅ Video approved by GenAI!")
+                original_video = candidate_video
+                break
+            else:
+                print(f"❌ Video rejected by GenAI: {evaluation.get('decision') if evaluation else 'unknown'}")
+                if video_attempts >= max_attempts:
+                    print("❌ Maximum attempts reached. Stopping pipeline.")
+                    return False
+                print("🔁 Retrying with next video...")
+
+        print("🤖 Searching scene with Gemini...")
+
+        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"))
+        print(scene)
+
+        if scene["start"] == 0 and scene["end"] == 0:
+            print("⚠️ No scene found. Using full video.")
             trimmed_video = original_video
         else:
-            match = results_list[0]
-            # Go 3 seconds earlier if possible
-            start_time = max(match.start - 3, 0.0)
-            # Clip end = either max 90s or original video end
-            import ffmpeg
-            video_duration = float(ffmpeg.probe(original_video)['format']['duration'])
-            end_time = min(start_time + 90.0, video_duration)
-            duration = end_time - start_time
+            # compute safe start
+            ai_start = scene["start"]
 
-            print(f"✅ Scene found: start={match.start:.2f}s, using clip {start_time:.2f}-{end_time:.2f}s")
-
+            # output file
             trimmed_video = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-            subprocess.run([
-                "ffmpeg",
-                "-ss", str(start_time),  # Put -ss BEFORE -i for faster/cleaner seeking
-                "-i", original_video,
-                "-t", str(duration),
-                "-c:v", "libx264",  # Re-encode to fix the frozen start
-                "-preset", "veryfast",
-                "-c:a", "aac",
-                "-avoid_negative_ts", "make_non_negative",
-                trimmed_video
-            ], check=True)
-            print(f"🎬 Trimmed clip saved as: {trimmed_video}")
+
+            # call your method
+            trim_video_to_end(
+                input_file=original_video,
+                output_file=trimmed_video,
+                ai_start=ai_start,
+                prepad=0.02,  # same as your previous prepad
+                max_duration=61.0  # max clip length
+            )
 
         # 4️⃣ MUSIC
         print(f"🎵 Fetching music...")
-        music_path = fetch_random_music(search_query=MUSIC_QUERY)
+        music_results = fetch_music_by_search(queries=[MUSIC_QUERY], max_tracks=1)
+        music_path = music_results[0] if music_results else None
 
         # 5️⃣ VOICE
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
