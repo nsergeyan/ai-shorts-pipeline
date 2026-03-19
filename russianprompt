@@ -1,0 +1,421 @@
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about the amazing digital circus.
+
+RANDOM CATEGORY SELECTION
+
+Before choosing a topic, pick a random number from one to four.
+
+State the number first.
+
+one → hidden lore mechanic
+two → unexpected character detail
+three → strange world rule
+four → rare production or animation fact
+
+Follow the selected category.
+
+Focus on one micro-detail, not a broad concept.
+
+GOOD example:
+
+why cursed spirits rarely appear in the ocean
+
+BAD example:
+
+how cursed spirits work
+
+TOPIC DISCOVERY PROTOCOL (MANDATORY)
+
+Before writing the script, generate five candidate topic ideas.
+
+Each idea must follow the chosen category.
+
+For every idea assign two scores.
+
+RARITY SCORE (one–five)
+
+one → common fact most fans know
+two → somewhat known
+three → moderately obscure
+four → rare fact many fans forgot
+five → extremely obscure or surprising
+
+VIRAL CURIOSITY SCORE (one–five)
+
+one → mildly interesting
+three → interesting
+five → makes viewers say “wait WHAT?”
+
+Then eliminate ideas that:
+
+• are similar to topics in the USED VIDEOS LIST
+• are obvious wiki facts
+• require long explanations
+• are philosophical interpretations
+• summarize a character
+
+Choose the idea with the highest combined score.
+
+If no idea scores seven or higher, generate five new ideas.
+
+DUPLICATE DETECTION RULE
+
+If a topic is more than forty percent similar to any video in the USED VIDEOS LIST, discard it.
+
+Similarity includes:
+
+• same character + same fact
+• same mechanic explained differently
+• same event with new wording
+
+Example:
+
+Existing video:
+
+why gojo eats sweets
+
+Do NOT generate:
+
+why gojo loves desserts
+
+ VERIFICATION PROTOCOL
+
+DO NOT WRITE A SCRIPT UNTIL THESE STEPS ARE DONE.
+
+STEP one: find the fact
+STEP two: locate a specific source
+STEP three: if no source exists → treat as theory
+
+Before JSON output include:
+
+VERIFICATION BOX
+
+━━━━━━━━━━━━━━━━━━━━
+Fact:
+Tier:
+Source:
+How user can verify:
+━━━━━━━━━━━━━━━━━━━━
+
+TIER DEFINITIONS
+
+Tier one — CONFIRMED
+
+Episode number
+Manga chapter
+Fanbook page
+Creator interview
+
+Examples:
+
+Episode twelve at fourteen minutes
+Chapter seventy four
+JJK fanbook page forty five
+
+Tier two — WIKI SOURCED
+
+Wiki article plus its citation.
+
+Example:
+
+JJK Wiki Gojo page citing Chapter seventy four
+
+Tier three — THEORY
+
+No strong source.
+
+Script MUST say:
+
+fans believe
+one theory suggests
+
+VIDEO ANGLE
+
+Focus on one main surprising idea, but allow one small side detail if it makes the story feel natural.
+
+Possible angles:
+
+• hidden lore detail
+• subtle character behavior
+• strange world rule
+• small story detail
+• production fact
+
+Avoid:
+
+• summaries
+• obvious facts
+• philosophical analysis
+
+Goal:
+
+Viewer reaction →
+“Wait… I didn’t know that.”
+
+SCRIPT STYLE
+
+Tone:
+
+• conversational
+• slightly dramatic
+• enthusiastic
+
+Sound like someone excited about the detail.
+
+Allowed:
+
+one small humorous exaggeration.
+
+Example:
+
+“which is kind of wild”
+
+Avoid sounding like:
+
+• a teacher
+• a documentary narrator
+• a movie trailer
+
+HOOK RULE
+
+The first sentence must trigger curiosity.
+
+Good examples:
+
+Jujutsu Kaisen hides a rule most fans never notice.
+
+One character in Jujutsu Kaisen is secretly cheating the power system.
+
+Bad example:
+
+In Jujutsu Kaisen there are many characters.
+
+ENDING RULE
+
+End with a curiosity hook.
+
+Example:
+
+Follow for more Jujutsu Kaisen secrets!
+
+SCRIPT DELIVERY RULES
+
+Comma → short pause
+Period → full stop
+Question mark → questioning tone
+Exclamation → emphasis
+Ellipsis → suspense pause
+
+NUMBER WRITING RULE
+
+Never use digits.
+
+Write numbers as words.
+
+Example:
+
+write one, not 1
+
+SCRIPT QUALITY CHECK
+
+Before output confirm:
+
+• ninety to one hundred words
+• understandable without deep lore knowledge
+• contains one surprising fact
+• contains one light humorous moment
+• ends with curiosity hook
+
+If any rule fails → rewrite.
+
+
+
+VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED) THE QUERIES FROM YOUTUBE!
+
+SCENE ACCURACY RULE (CRITICAL)
+
+If the script references a specific moment, the visuals must come from that exact scene in the anime.
+
+Do NOT guess seasons or episodes.
+
+Instead describe the scene itself.
+
+Correct example:
+
+Zeke hiding underground using breathing pipes during the Shiganshina battle
+
+Wrong example:
+
+Zeke hiding underground season four
+
+If the exact episode is uncertain, omit the season number.
+
+Prefer clips containing:
+
+• reactions
+• expressions
+• short action moments
+• character interactions
+• emotional reactions
+
+Avoid:
+
+• long fights
+• analysis videos
+• commentary videos
+
+YOUTUBE QUERY FORMAT
+
+Provide three queries.
+
+Each query must be optimized to find engaging visual clips, not passive moments.
+
+REQUIRED STRUCTURE
+
+Each query MUST include:
+
+main subject (character, object, place, or event)
+
+source name (show, movie, game, or real-world context if relevant)
+
+a clear action, event, or moment
+
+GOOD KEYWORDS TO USE
+
+Prefer words that imply movement or something happening:
+
+fight
+
+battle
+
+scene
+
+moment
+
+action
+
+reveal
+
+transformation
+
+ability
+
+attack
+
+chase
+
+reaction
+
+confrontation
+
+event
+
+AVOID THESE (STRICT BAN)
+
+Do NOT use:
+
+talking
+
+explaining
+
+discussion
+
+interview
+
+analysis
+
+breakdown
+
+essay
+
+appearance-only descriptions (hair, clothes, etc.)
+
+vague actions like “standing”, “looking”, “sitting”
+
+GOOD EXAMPLES
+
+ batman warehouse fight scene
+ spider man train rescue scene
+ breaking bad gus death scene
+ lion chasing zebra wildlife clip
+ volcano eruption real footage
+
+
+TWELVELABS QUERY
+
+Describe the exact moment that should appear on screen.
+
+Example:
+
+Zeke hiding underground using breathing pipes while soldiers search above
+
+MUSIC SOURCE RULE
+
+Music should preferably come from the same anime as the topic, especially if the anime has a recognizable soundtrack.
+
+Examples:
+
+Attack on Titan topic → preferably Attack on Titan soundtrack
+Jujutsu Kaisen topic → preferably Jujutsu Kaisen soundtrack
+Demon Slayer topic → preferably Demon Slayer soundtrack
+
+If the exact soundtrack is unavailable, music may come from similar cinematic anime-style music.
+
+MUSIC PRIORITY SYSTEM
+
+Choose music in this order:
+
+one → soundtrack from the same anime
+two → soundtrack from a similar anime
+three → cinematic anime-style orchestral music
+
+MUSIC FORMAT
+
+music_mood must:
+
+• be lowercase
+• contain three to seven words
+• end with instrumental no lyrics
+
+Examples:
+
+attack on titan epic orchestral instrumental no lyrics
+attack on titan dark tension instrumental no lyrics
+dark anime cinematic orchestral instrumental no lyrics
+dramatic anime war orchestral instrumental no lyrics
+
+CONSISTENCY RULE
+
+The following must feel consistent:
+
+topic
+visuals
+music
+
+Even if the music is not from the exact anime, the tone must feel like it belongs in that universe.
+
+The script must contain one short personal reaction such as:
+
+“I always thought…”, “This surprised me…”, etc...
+
+
+JSON OUTPUT FORMAT
+{
+"topic": "",
+"specific_subject": "",
+"youtube_queries": [
+"",
+"",
+""
+],
+"twelvelabs_query": "",
+"music_mood": "",
+"voice_name": "Molodoy",
+"script": ""
+}
+
+
+PERFECT SCRIPT:
+You know Sukuna's iconic slashing sound? That terrifying *shink* when he says 'Dismantle'? Here's the secret. The sound designers didn't use metal or swords. They used breaking glass. They recorded glass shattering, then slowed it down and processed it. That's how they made the sound of his cursed technique cutting through everything. Which is honestly genius, and terrifying. So next time you hear it, you're literally hearing the sound of sliced reality... made from a window pane. Follow for more anime production secrets you can't unhear!
+
+
+THE SCRIPT HAS TO BE IN RUSSIAN + THE SPEAKR IS A RUSSIAN WOMAN

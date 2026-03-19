@@ -9,7 +9,6 @@ import subprocess
 from google import genai
 import ffmpeg
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
-
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_fetcher import fetch_music_by_search
@@ -19,34 +18,29 @@ try:
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
-
-
 # ---------------- CONFIG ---------------- #
 API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
-LANGUAGE = "en"
-MUSIC_VOLUME = 0.025
+LANGUAGE = "ru"
+MUSIC_VOLUME = 0.03
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
-CLIP_DURATION = 60.0  # seconds for TwelveLabs-trimmed scene
-MODEL_NAME = "marengo3.0"
+CLIP_DURATION = 60.0
 MODEL_OPTIONS = ["visual", "audio"]
 SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
-# PASTE YOUR JSON HERE
 MANUAL_DATA = {
-  "topic": "Invincible",
-  "specific_subject": "Kirkman gave all Viltrumites mustaches because his own dad had a mustache",
-  "youtube_queries": [
-    "invincible viltrumates fighting",
-      "invicnible omniman moments"
-  ],
-  "twelvelabs_query": "Omni-Man Nolan Grayson mustache face close up talking scene",
-  "music_mood": "tiktok phonk viral music",
-  "voice_name": "Hamid",
-  "script": "Every male Viltrumite has a mustache. Omni-Man. Thragg. Conquest. Kregg. All of them. Fans spent years wondering why this entire alien warrior race all had the same facial hair. Is it cultural? Ceremonial? Religious? Robert Kirkman finally admitted the real reason. He gave Viltrumites mustaches because his own father had one. That's it. That's the whole reason. The most feared alien conquerors in the universe all look like Kirkman's dad. An entire galactic empire's aesthetic was decided because one comic book writer thought his father's mustache looked cool. Every Viltrumite is just Kirkman's dad cosplay. Follow for more Invincible secrets!"
+"topic": "Kinger's Shotgun Concept Art",
+"specific_subject": "Kinger",
+"youtube_queries": [
+"kinger screaming in pillow the amazing digital circus scene",
+"kinger throwing insect collection the amazing digital circus action"
+],
+"twelvelabs_query": "Kinger shaking and glitching nervously while looking around the digital circus",
+"music_mood": "the amazing digital circus main theme ost no lyrics",
+"voice_name": "Molodoy",
+"script": "Удивительный Цифровой Цирк скрывает безумный факт о создании. Вы знаете Кингера, того самого параноидального короля шахмат. Я всегда думала, что он просто безобидный дед. Но изначально создатели хотели дать герою настоящее оружие! В первых концептах Кингер буквально носил с собой дробовик. Аниматоры планировали сделать его бойцом, который всегда готов к атаке монстров. Представляете Кингера с мощным дробовиком? Это же просто полное безумие! Однако позже авторы решили, что ружье полностью разрушит атмосферу детской ретро игры. Поэтому они забрали огнестрел, оставив ему только вечную паранойю. Подписывайся, чтобы узнать больше секретов мира анимации!"
 }
-
 
 def trim_video_to_end(
     input_file,
@@ -60,19 +54,28 @@ def trim_video_to_end(
     but not beyond the actual video length.
     Prevents freezing or looping.
     """
-    import subprocess
-    import ffmpeg
 
     # get video duration
     info = ffmpeg.probe(input_file)
-    video_duration = float(info['format']['duration'])
+
+    video_stream = next(
+        s for s in info["streams"]
+        if s["codec_type"] == "video"
+    )
+
+    video_duration = float(video_stream["duration"])
 
     # compute safe start
     clip_start = max(float(ai_start) - prepad, 0.0)
+    clip_start = min(clip_start, video_duration - 0.001)
 
     # compute clip end safely
     clip_end = min(clip_start + max_duration, video_duration)
     clip_duration = clip_end - clip_start
+
+    if clip_duration <= 0:
+        print("⚠️ Invalid clip duration. Skipping.")
+        return False
 
     subprocess.run([
         "ffmpeg",
@@ -90,8 +93,113 @@ def trim_video_to_end(
 
 
 
+def evaluate_music_with_genai(music_path, script_text):
+    client = genai.Client(api_key="IzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+
+    # Upload music file
+    uploaded_file = client.files.upload(file=music_path)
+    print(f"Uploaded music: {uploaded_file.name}")
+
+    # Wait until ACTIVE
+    file_info = client.files.get(name=uploaded_file.name)
+    while file_info.state != "ACTIVE":
+        print(f"Music state: {file_info.state}, waiting...")
+        time.sleep(2)
+        file_info = client.files.get(name=uploaded_file.name)
+
+    print("Music file ACTIVE ✅")
+
+    # 🔥 PROMPT (this is the important part)
+    prompt = f"""
+    You are a short-form content audio expert.
+
+    Your job is to evaluate how well this MUSIC fits the SCRIPT.
+
+    IMPORTANT RULES:
+    - Focus ONLY on the audio provided.
+    - Do NOT assume visuals.
+    - Judge vibe, energy, and emotional tone.
+    - Consider this is for TikTok / YouTube Shorts.
+
+    SCRIPT:
+    \"\"\"{script_text}\"\"\"
+
+    SCORING CRITERIA:
+
+    1. Mood Match (mood_score: 1–10)
+       Does the music emotionally match the script?
+
+       9–10: Perfect emotional alignment
+       7–8 : Good fit
+       5–6 : Neutral / usable
+       3–4 : Slight mismatch
+       1–2 : Completely wrong mood
+
+    2. Energy & Engagement (energy_score: 1–10)
+       Is the music engaging for short-form content?
+
+       Consider:
+       - buildup
+       - rhythm
+       - loopability
+       - modern feel
+
+    3. Voice Compatibility (voice_score: 1–10)
+       Would this music sit well under narration?
+
+       Consider:
+       - not too loud or chaotic
+       - not distracting
+       - supports storytelling
+
+    DECISION RULES:
+
+    - "post"
+      mood_score >= 7 AND energy_score >= 7 AND voice_score >= 7
+
+    - "revise"
+      usable but not optimal
+
+    - "reject"
+      wrong vibe OR distracting OR unusable
+
+    OUTPUT FORMAT:
+    Return ONLY JSON.
+
+    {{
+      "mood_score": <1-10>,
+      "energy_score": <1-10>,
+      "voice_score": <1-10>,
+      "decision": "post" | "revise" | "reject"
+    }}
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[uploaded_file, prompt]
+    )
+
+    raw_text = response.text if hasattr(response, "text") else str(response)
+
+    try:
+        clean_text = raw_text.strip()
+        if not clean_text.startswith("{"):
+            clean_text = clean_text[clean_text.find("{"):]
+        if not clean_text.endswith("}"):
+            clean_text = clean_text[:clean_text.rfind("}") + 1]
+        return json.loads(clean_text)
+    except Exception as e:
+        print(f"⚠️ Failed to parse music JSON: {e}")
+        print("Raw:", raw_text)
+        return {
+            "mood_score": 0,
+            "energy_score": 0,
+            "voice_score": 0,
+            "decision": "revise"
+        }
+
 def evaluate_video_with_genai(video_path, script_text):
-    client = genai.Client(api_key="AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+    client = genai.Client(api_key="AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw")
     #AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     #WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
@@ -110,26 +218,60 @@ def evaluate_video_with_genai(video_path, script_text):
 
     # Build prompt
     prompt = f"""
-    You are acting as a short-form content editor.
+    You are acting as a short-form video content reviewer.
 
-    You judge the video based on what is clearly visible, but you MAY give partial credit if the visuals **contextually support** the script, even if exact actions aren’t shown. Do NOT invent unseen events, but allow for implied relevance.
+    Your job is to evaluate how well the VIDEO matches the SCRIPT excerpt.
 
-    Script excerpt:
+    IMPORTANT GUIDELINES:
+    - Judge ONLY what is visually or audibly present in the clip.
+    - Do NOT invent events that are not shown.
+    - HOWEVER, you MAY give partial credit if the visuals clearly support the script's topic, characters, objects, or situation.
+    - Do NOT be overly strict about literal action matching. Contextual relevance is acceptable.
+    - Be fair and balanced when scoring.
+
+    SCRIPT EXCERPT:
     \"\"\"{script_text}\"\"\"
 
-    Evaluation Rules:
-    1. Core Visual Proof Check
-       - Give partial credit if the scene includes the relevant character, objects, or context, even if the exact action isn’t literally shown.
-    2. Visual-Script Alignment (1–10)
-       - Higher if visuals contextually support the script.
-    3. First 2-Second Hook (1–10)
-       - Assess visual and audio engagement, not necessarily direct relevance.
-    4. Technical Quality (1–10)
-       - Animation smoothness, effects, audio clarity.
-    5. Posting Decision
-       - "post" if relevance_score >= 6, hook_score >= 7, technical_score >= 8
-       - Otherwise: "revise" or "reject"
-    Respond ONLY with valid JSON:
+    SCORING CRITERIA:
+
+    1. Visual–Script Alignment (relevance_score: 1–10)
+       Evaluate how well the visuals support the meaning or context of the script.
+
+       9–10: Visuals clearly depict or strongly support the script
+       7–8 : Visuals are contextually relevant but not exact
+       5–6 : Partially related elements present
+       3–4 : Weak or indirect connection
+       1–2 : No meaningful relation
+
+    2. First 2-Second Hook (hook_score: 1–10)
+       Evaluate whether the opening is visually or audibly engaging enough to stop scrolling.
+
+       Consider:
+       - Motion
+       - Visual intensity
+       - Curiosity
+       - Audio impact
+       - Emotional trigger
+
+    3. Technical Quality (technical_score: 1–10)
+       Evaluate production quality:
+       - Animation smoothness
+       - Editing and pacing
+       - Audio clarity
+       - Visual effects quality
+
+    DECISION RULES:
+
+    - "post"
+      relevance_score >= 6 AND hook_score >= 7 AND technical_score >= 8
+
+    - "reject"
+      Visuals are largely unrelated OR technical quality is very poor.
+
+    BE JUST AND FAIR, try to decide if the visuals could be a background of the script or not.
+    OUTPUT FORMAT:
+    Respond ONLY with valid JSON. No explanation.
+
     {{
       "relevance_score": <1-10>,
       "hook_score": <1-10>,
@@ -166,11 +308,15 @@ def evaluate_video_with_genai(video_path, script_text):
         }
 
 
-def find_scene_with_gemini(video_path, query):
-    client = genai.Client(api_key="AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+def find_scene_with_gemini(video_path, query, script):
+    client = genai.Client(api_key="IzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
     # AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     # WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+
+    info = ffmpeg.probe(video_path)
+    video_stream = next(s for s in info["streams"] if s["codec_type"] == "video")
+    video_duration = float(video_stream["duration"])
 
     uploaded_file = client.files.upload(file=video_path)
     print(f"Uploaded file: {uploaded_file.name}")
@@ -184,56 +330,67 @@ def find_scene_with_gemini(video_path, query):
     print("File ACTIVE ✅")
 
     prompt = f"""
-    You are analyzing a full video timeline.
+    You are performing precise visual scene matching in a video timeline.
 
-    Your task:
-    Find the segment that best matches the following query:
+    VIDEO METADATA
+    - Total video duration: {video_duration} seconds
+    - The returned timestamps MUST stay within this duration.
 
+    USER DESCRIPTION
     "{query}"
 
-    Important:
-    First, understand the nature of the query.
+    VIDEO SCRIPT
+    "{script}"
 
-    - If the query describes a specific action or moment (e.g., something happens, appears, moves, drops, says something, etc.), treat this as a precise event detection task and return the exact moment it occurs.
+    TASK
+    Scan the entire video and identify the segment that best visually matches the user description.
 
-    - If the query describes a scene type, character appearance, facial expression, or general visual situation (e.g., close-up of a character, someone talking, emotional reaction, etc.), treat this as a semantic scene search task and return the segment that best visually matches the description.
+    MATCHING RULES
+    1. Focus primarily on VISUAL similarity.
+    2. Consider:
+       - foreground actions
+       - background activity
+       - small movements
+       - brief appearances
+    3. Even if the element appears briefly or in the background, it can still be a valid match.
+    4. If multiple matches exist, return the segment with the STRONGEST visual correspondence.
+    5. Return a tight segment around the best match.
 
-    Rules:
-    - The event or scene may occur briefly.
-    - It may happen in the background.
-    - Search the ENTIRE video carefully.
-    - Do NOT assume it happens at the start.
-    - Do NOT guess.
-    - Do NOT fabricate matches.
+    FALLBACK RULE
+    If the visual element described in "{query}" cannot be found:
+    - Use the SCRIPT to estimate the most likely visual moment.
+    - If the script also provides no reasonable hint, return:
+      {{ "start": 0, "end": 0 }}
 
-    Selection guidelines:
-    - Return a tight segment around the best match.
-    - Typical duration should be:
-      - 1–8 seconds for specific actions
-      - 3–15 seconds for general scenes
-    - If multiple matches exist, return the clearest and most relevant one.
-
-    If no strong and confident match exists, return 0,0.
-
-    Timestamps:
+    TIMESTAMP RULES
     - Use float seconds relative to the full video timeline.
+    - start and end MUST be numeric floats.
+    - start MUST be >= 0
+    - end MUST be <= {video_duration}
+    - end MUST be greater than start
+    - DO NOT use MM:SS format.
+    - DO NOT use strings.
+    - DO NOT include quotes around numbers.
 
+    VALID EXAMPLE
+    {{ "start": 257.0, "end": 259.5 }}
+
+    INVALID EXAMPLES
+    {{ "start": 4:17, "end": 4:18 }}
+    {{ "start": "4:17", "end": "4:18" }}
+    {{ "start": "257", "end": "259" }}
+
+    OUTPUT RULES
     Return ONLY valid JSON.
     No markdown.
-    No explanations.
-    No extra text.
+    No explanation.
+    No additional text.
 
-    Format:
-    {{
-      "start": <seconds>,
-      "end": <seconds>
-    }}
+    FORMAT
+    {{ "start": <seconds>, "end": <seconds> }}
 
-    If not confidently found:
-    {{
-      "start": 0,
-      "end": 0
-    }}
+    If no confident match exists:
+    {{ "start": 0, "end": 0 }}
     """
 
     response = client.models.generate_content(
@@ -241,7 +398,20 @@ def find_scene_with_gemini(video_path, query):
         contents=[uploaded_file, prompt]
     )
 
-    text = response.text.strip()
+    try:
+        text = response.text
+        if not text and response.candidates:
+            text = response.candidates[0].content.parts[0].text
+
+        if not text:
+            raise ValueError("Empty response from Gemini")
+
+        text = text.strip()
+
+    except Exception as e:
+        print("Gemini response error:", e)
+        print("Full response:", response)
+        return None
     print("Raw model output:", text)
 
     # remove markdown fences
@@ -301,7 +471,7 @@ def run_manual_pipeline(data):
 
             evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
 
-            if evaluation and evaluation.get("decision") == "post":
+            if evaluation and evaluation.get("decision") == "post" or evaluation.get("decision") == "revise":
                 print("✅ Video approved by GenAI!")
                 original_video = candidate_video
                 break
@@ -314,7 +484,7 @@ def run_manual_pipeline(data):
 
         print("🤖 Searching scene with Gemini...")
 
-        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"))
+        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"), data.get("SCRIPT_TEXT"))
         print(scene)
 
         if scene["start"] == 0 and scene["end"] == 0:
@@ -338,8 +508,36 @@ def run_manual_pipeline(data):
 
         # 4️⃣ MUSIC
         print(f"🎵 Fetching music...")
-        music_results = fetch_music_by_search(queries=[MUSIC_QUERY], max_tracks=1)
-        music_path = music_results[0] if music_results else None
+        music_attempts = 0
+        max_music_attempts = 3
+        music_path = None
+
+        while music_attempts < max_music_attempts:
+            music_results = fetch_music_by_search(
+                queries=[MUSIC_QUERY],
+                max_tracks=1
+            )
+
+            if not music_results:
+                print("❌ No music found.")
+                break
+
+            candidate_music = music_results[0]
+            music_attempts += 1
+
+            print(f"🎧 Evaluating music attempt {music_attempts}...")
+
+            music_eval = evaluate_music_with_genai(candidate_music, SCRIPT_TEXT)
+
+            if music_eval["decision"] in ["post", "revise"]:
+                print("✅ Music approved!")
+                music_path = candidate_music
+                break
+            else:
+                print("❌ Music rejected, retrying...")
+
+        if not music_path:
+            print("⚠️ No good music found, continuing without music.")
 
         # 5️⃣ VOICE
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
@@ -348,7 +546,11 @@ def run_manual_pipeline(data):
 
         # 6️⃣ SUBTITLES
         print(f"📝 Generating subtitles...")
-        subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
+        if LANGUAGE == "es":
+            print("🇪🇸 Spanish detected — skipping subtitles.")
+            subtitle_data = None
+        else:
+            subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
 
         # 7️⃣ EDIT
         final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"

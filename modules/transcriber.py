@@ -103,6 +103,9 @@ def transcribe_audio_to_groups(
         "word_timestamps": True,
         "task": "transcribe",  # keep original language; do not translate
         "verbose": False,
+        "temperature": 0.0,
+        "beam_size": 5,  # better decoding
+        "best_of": 5,
     }
     if language:
         transcribe_kwargs["language"] = language  # e.g., "ru"
