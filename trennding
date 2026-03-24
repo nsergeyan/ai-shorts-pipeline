@@ -1,0 +1,235 @@
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1).
+
+🔥 LIVE TREND DISCOVERY SYSTEM (MANDATORY)
+
+Before anything else, detect current trending animation topics across the internet.
+
+Search sources:
+
+• TikTok trending hashtags
+• YouTube Shorts / viral clips
+• Twitter / X trends
+• Google Trends
+• recent episode releases
+
+Focus on:
+
+• new seasons or episodes
+• viral scenes or moments
+• characters trending in edits
+• meme formats and repost waves
+
+📈 TREND CANDIDATE GENERATION
+
+Generate five trending animation topics.
+
+Each must include:
+
+• show name
+• specific trending reason
+
+📊 TREND SCORING
+
+For each topic assign:
+
+TREND SCORE (one–five)
+CONTENT POTENTIAL SCORE (one–five)
+
+⚡ SOCIAL VIRALITY BOOST (CRITICAL)
+
+If a topic has strong presence on:
+
+• TikTok edits
+• memes
+• YouTube Shorts
+
+Then:
+
+increase TREND SCORE by +one or +two
+
+🌍 NON-SEASONAL TREND RULE
+
+Do NOT penalize topics for:
+
+• no recent episode
+• irregular releases
+
+If they are still widely posted online.
+
+🎯 TREND DIVERSITY RULE (VERY IMPORTANT)
+
+At least one of the five topics MUST be:
+
+• western animation
+• indie animation
+• meme-driven content
+
+Examples:
+
+• Invincible
+• The Amazing Digital Circus
+
+🚫 TREND FILTER
+
+Remove topics that:
+
+• are outdated
+• have no viral clip potential
+• are purely informational
+
+🏆 FINAL TREND SELECTION
+
+Choose the topic with the highest combined score.
+
+If tied → prefer:
+
+• strongest social virality
+• most reposted clips
+
+📢 OUTPUT BEFORE CONTINUING
+
+TREND PICK:
+anime:
+reason:
+
+🎯 RANDOM CATEGORY SELECTION
+
+Pick a random number from one to four.
+
+State the number first.
+
+one → hidden lore mechanic
+two → unexpected character detail
+three → strange world rule
+four → rare production or animation fact
+
+🎯 TOPIC RULE
+
+Focus on one micro-detail.
+
+🧠 TREND-SYNC RULE
+
+The topic MUST connect to something currently viral:
+
+• trending scene
+• viral character moment
+• popular clip
+• widely shared edit
+
+🔍 TOPIC DISCOVERY PROTOCOL
+
+Generate five candidate ideas.
+
+Each includes:
+
+RARITY SCORE (one–five)
+VIRAL CURIOSITY SCORE (one–five)
+
+❌ ELIMINATION RULES
+
+Remove ideas that:
+
+• match USED VIDEOS LIST
+• are obvious facts
+• require long explanation
+• summarize characters
+
+🧬 DUPLICATE DETECTION
+
+If more than forty percent similar → discard
+
+🏆 FINAL IDEA SELECTION
+
+Pick highest score.
+
+If none ≥ seven → regenerate.
+
+✅ VERIFICATION PROTOCOL
+
+STEP one: find fact
+STEP two: find source
+STEP three: if none → theory
+
+📦 VERIFICATION BOX
+
+━━━━━━━━━━━━━━━━━━━━
+Fact:
+Tier:
+Source:
+How user can verify:
+━━━━━━━━━━━━━━━━━━━━
+
+📊 TIER SYSTEM
+
+Tier one — CONFIRMED
+Tier two — WIKI
+Tier three — THEORY
+
+🎬 SCRIPT STYLE
+
+• conversational
+• enthusiastic
+• slightly dramatic
+
+Include one personal reaction.
+
+🎣 HOOK RULE
+
+First line = curiosity hook
+
+🧾 SCRIPT RULES
+
+• ninety to one hundred words
+• simple English
+• one surprising fact
+• one light humor moment
+• end with curiosity hook
+
+🔢 NUMBER RULE
+
+Write numbers as words.
+
+🎥 VISUAL CLIP STRATEGY
+
+Use dynamic scenes only.
+
+🔎 YOUTUBE QUERIES
+
+Provide three:
+
+must include subject + source + action
+
+🎯 TWELVELABS QUERY
+
+Describe exact visual moment.
+
+🎵 MUSIC RULE
+
+Priority:
+
+one → same show
+two → similar
+three → cinematic
+
+Format:
+
+lowercase, three to seven words, end with
+“instrumental no lyrics”
+
+📦 JSON OUTPUT
+
+{
+"topic": "",
+"specific_subject": "",
+"youtube_queries": [
+"",
+"",
+""
+],
+"twelvelabs_query": "",
+"music_mood": "",
+"voice_name": "Hamid",
+"script": ""
+}
+
+

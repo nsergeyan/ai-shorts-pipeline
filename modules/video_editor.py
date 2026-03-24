@@ -230,7 +230,7 @@ def _make_subtitle_clips(subtitles_data, video_size, position="top"):
     clips = []
     fontsize = int(h_vid * 0.06)
 
-    FONT_EN = "/System/Library/Fonts/Arial.ttf"
+    FONT_EN = "/System/Library/Fonts/Helvetica.ttc"
     FONT_RU = "/opt/homebrew/share/fonts/dejavu/DejaVuSans.ttf"
     if not os.path.exists(FONT_RU):
         FONT_RU = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
@@ -391,4 +391,33 @@ def merge_audio_video(
 
     print(f"✅  Saved: {out_path}")
     return out_path
+
+
+if __name__ == "__main__":
+    # Test the exact scenario that was failing
+    try:
+        from moviepy.editor import TextClip
+        import os
+
+        # Test with the exact font path that was failing
+        FONT_EN = "/System/Library/Fonts/Helvetica.ttc"
+
+        # This is what was failing in your original code
+        txt_clip = TextClip(
+            "TEST SUBTITLE".upper(),
+            fontsize=50,  # Similar to your calculated fontsize
+            color='white',
+            font=FONT_EN,
+            method='caption',
+            size=(900, None),  # Similar to your 85% width constraint
+            stroke_color='black',
+            stroke_width=4,
+            align='center'
+        )
+
+        print("✅ Original TextClip scenario PASSED!")
+
+    except Exception as e:
+        print(f"❌ Original TextClip scenario FAILED: {e}")
+        print("This confirms the font issue exists")
 

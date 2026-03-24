@@ -20,7 +20,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
-LANGUAGE = "ru"
+LANGUAGE = "en"
 MUSIC_VOLUME = 0.03
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
@@ -30,16 +30,15 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Kinger's Shotgun Concept Art",
-"specific_subject": "Kinger",
-"youtube_queries": [
-"kinger screaming in pillow the amazing digital circus scene",
-"kinger throwing insect collection the amazing digital circus action"
-],
-"twelvelabs_query": "Kinger shaking and glitching nervously while looking around the digital circus",
-"music_mood": "the amazing digital circus main theme ost no lyrics",
-"voice_name": "Molodoy",
-"script": "Удивительный Цифровой Цирк скрывает безумный факт о создании. Вы знаете Кингера, того самого параноидального короля шахмат. Я всегда думала, что он просто безобидный дед. Но изначально создатели хотели дать герою настоящее оружие! В первых концептах Кингер буквально носил с собой дробовик. Аниматоры планировали сделать его бойцом, который всегда готов к атаке монстров. Представляете Кингера с мощным дробовиком? Это же просто полное безумие! Однако позже авторы решили, что ружье полностью разрушит атмосферу детской ретро игры. Поэтому они забрали огнестрел, оставив ему только вечную паранойю. Подписывайся, чтобы узнать больше секретов мира анимации!"
+  "topic": "Invincible",
+  "specific_subject": "Nolan's mother beats him the exact same way he later beats Mark — the show deliberately mirrored the shots to reveal generational abuse",
+  "youtube_queries": [
+    "young nolan fighting parents invicnible"
+  ],
+  "twelvelabs_query": "Nolan's mother pinning young Nolan against a stairwell and punching his face repeatedly while his father watches on Viltrum",
+  "music_mood": "invincible dark emotional tension instrumental no lyrics",
+  "voice_name": "Hamid",
+  "script": "Invincible season four just explained why Omni-Man beat his own son. In episode two, we see a flashback that was never in the comics. Young Nolan is pinned against a stairwell by his own mother. She punches his face over and over. His father just watches. Now pause the screen. It is the same angle, same position, same repeated punches that Nolan used on Mark in the season one finale. The show copied the exact shot on purpose. Nolan did not choose to be violent. He was raised that way. I genuinely was not ready for that. What other details is this show hiding in plain sight?"
 }
 
 def trim_video_to_end(
@@ -94,7 +93,7 @@ def trim_video_to_end(
 
 
 def evaluate_music_with_genai(music_path, script_text):
-    client = genai.Client(api_key="IzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
 
     # Upload music file
     uploaded_file = client.files.upload(file=music_path)
@@ -199,7 +198,7 @@ def evaluate_music_with_genai(music_path, script_text):
         }
 
 def evaluate_video_with_genai(video_path, script_text):
-    client = genai.Client(api_key="AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
     #AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     #WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
@@ -309,7 +308,7 @@ def evaluate_video_with_genai(video_path, script_text):
 
 
 def find_scene_with_gemini(video_path, query, script):
-    client = genai.Client(api_key="IzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
     # AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     # WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
@@ -484,7 +483,7 @@ def run_manual_pipeline(data):
 
         print("🤖 Searching scene with Gemini...")
 
-        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"), data.get("SCRIPT_TEXT"))
+        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"), SCRIPT_TEXT)
         print(scene)
 
         if scene["start"] == 0 and scene["end"] == 0:
