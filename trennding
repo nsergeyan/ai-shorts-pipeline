@@ -1,157 +1,129 @@
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1).
+Improved Prompt
+Task: Create a TikTok script about a currently trending animation topic.
 
-🔥 LIVE TREND DISCOVERY SYSTEM (MANDATORY)
+Core Goal
+Use live web research first, then choose the best trending animation topic, then generate a short script in simple English (B1 level).
 
-Before anything else, detect current trending animation topics across the internet.
+1) LIVE TREND DISCOVERY — REQUIRED
+Before writing anything, search the web for current animation trends.
 
-Search sources:
+Search these sources:
+TikTok trending hashtags and edits
+YouTube Shorts / viral clips
+Twitter / X trends
+Google Trends
+Recent episode or season releases
+Focus on topics related to:
+new seasons or episodes
+viral scenes or moments
+characters trending in edits
+meme formats
+repost waves
+surprise announcements
+fandom spikes
+2) TREND CANDIDATE GENERATION
+Generate 5 trending animation topics.
 
-• TikTok trending hashtags
-• YouTube Shorts / viral clips
-• Twitter / X trends
-• Google Trends
-• recent episode releases
+For each topic, include:
 
-Focus on:
+show name
+specific reason it is trending now
+3) TREND SCORING
+For each of the 5 topics, assign:
 
-• new seasons or episodes
-• viral scenes or moments
-• characters trending in edits
-• meme formats and repost waves
+Trend Score: 1 to 5
+Content Potential Score: 1 to 5
+Social Virality Boost
+If a topic has strong presence in:
 
-📈 TREND CANDIDATE GENERATION
+TikTok edits
+memes
+YouTube Shorts
+then increase the Trend Score by +1 or +2.
 
-Generate five trending animation topics.
+Non-Seasonal Trend Rule
+Do not lower a score just because:
 
-Each must include:
+there is no recent episode
+the release schedule is irregular
+If the topic is still widely posted and shared online, it can still score high.
 
-• show name
-• specific trending reason
+Trend Diversity Rule
+At least 1 of the 5 topics must be from one of these:
 
-📊 TREND SCORING
-
-For each topic assign:
-
-TREND SCORE (one–five)
-CONTENT POTENTIAL SCORE (one–five)
-
-⚡ SOCIAL VIRALITY BOOST (CRITICAL)
-
-If a topic has strong presence on:
-
-• TikTok edits
-• memes
-• YouTube Shorts
-
-Then:
-
-increase TREND SCORE by +one or +two
-
-🌍 NON-SEASONAL TREND RULE
-
-Do NOT penalize topics for:
-
-• no recent episode
-• irregular releases
-
-If they are still widely posted online.
-
-🎯 TREND DIVERSITY RULE (VERY IMPORTANT)
-
-At least one of the five topics MUST be:
-
-• western animation
-• indie animation
-• meme-driven content
-
+western animation
+indie animation
+meme-driven animated content
 Examples:
 
-• Invincible
-• The Amazing Digital Circus
+Invincible
+The Amazing Digital Circus
+Trend Filter
+Remove topics that are:
 
-🚫 TREND FILTER
-
-Remove topics that:
-
-• are outdated
-• have no viral clip potential
-• are purely informational
-
-🏆 FINAL TREND SELECTION
-
+outdated
+no longer viral
+weak for short-form clips
+only informational, with no strong visual or emotional hook
+4) FINAL TREND SELECTION
 Choose the topic with the highest combined score.
 
-If tied → prefer:
+If there is a tie, prefer:
 
-• strongest social virality
-• most reposted clips
-
-📢 OUTPUT BEFORE CONTINUING
-
+strongest social virality
+most reposted or edited clips
+strongest short-form video potential
+Output this before continuing:
 TREND PICK:
-anime:
+show:
 reason:
 
-🎯 RANDOM CATEGORY SELECTION
+5) RANDOM CATEGORY SELECTION
+Pick a random number from 1 to 4 and show the number first.
 
-Pick a random number from one to four.
+1 = hidden lore mechanic
+2 = unexpected character detail
+3 = strange world rule
+4 = rare production or animation fact
+6) MICRO-TOPIC DISCOVERY
+The final topic must focus on one small, specific detail.
 
-State the number first.
+Trend-Sync Rule
+The detail must connect to something that is currently viral, such as:
 
-one → hidden lore mechanic
-two → unexpected character detail
-three → strange world rule
-four → rare production or animation fact
+a trending scene
+a viral character moment
+a popular clip
+a widely shared edit
+Generate 5 candidate micro-ideas
+For each idea, include:
 
-🎯 TOPIC RULE
-
-Focus on one micro-detail.
-
-🧠 TREND-SYNC RULE
-
-The topic MUST connect to something currently viral:
-
-• trending scene
-• viral character moment
-• popular clip
-• widely shared edit
-
-🔍 TOPIC DISCOVERY PROTOCOL
-
-Generate five candidate ideas.
-
-Each includes:
-
-RARITY SCORE (one–five)
-VIRAL CURIOSITY SCORE (one–five)
-
-❌ ELIMINATION RULES
-
+Rarity Score: 1 to 5
+Viral Curiosity Score: 1 to 5
+Elimination Rules
 Remove ideas that:
 
-• match USED VIDEOS LIST
-• are obvious facts
-• require long explanation
-• summarize characters
+match the USED VIDEOS LIST
+are too obvious
+need long explanation
+are just character summaries
+are too similar to another idea
+Duplicate Detection
+If an idea is more than 40% similar to another, discard it.
 
-🧬 DUPLICATE DETECTION
+Final Idea Selection
+Pick the idea with the highest combined score.
 
-If more than forty percent similar → discard
+If no idea has a total score of at least 7, generate 5 new ideas.
 
-🏆 FINAL IDEA SELECTION
+7) FACT VERIFICATION
+For the final idea:
 
-Pick highest score.
-
-If none ≥ seven → regenerate.
-
-✅ VERIFICATION PROTOCOL
-
-STEP one: find fact
-STEP two: find source
-STEP three: if none → theory
-
-📦 VERIFICATION BOX
-
+Verification Protocol
+Find the fact
+Find a source
+If no reliable source exists, label it as a theory
+Verification Box Format
 ━━━━━━━━━━━━━━━━━━━━
 Fact:
 Tier:
@@ -159,77 +131,283 @@ Source:
 How user can verify:
 ━━━━━━━━━━━━━━━━━━━━
 
-📊 TIER SYSTEM
+Tier System
+Tier 1 — CONFIRMED
+Tier 2 — WIKI
+Tier 3 — THEORY
+8) SCRIPT REQUIREMENTS
+Write a TikTok script with these rules:
 
-Tier one — CONFIRMED
-Tier two — WIKI
-Tier three — THEORY
+Style
+conversational
+enthusiastic
+slightly dramatic
+Include:
 
-🎬 SCRIPT STYLE
+1 personal reaction
+1 surprising fact
+1 light humor moment
+Hook Rule
+The first line must be a curiosity hook.
 
-• conversational
-• enthusiastic
-• slightly dramatic
+Script Rules
+90 to 100 words
+simple English, B1 level
+focus on one micro-detail only
+end with another curiosity hook or open loop
+Number Rule
+Write all numbers as words.
 
-Include one personal reaction.
+9) VISUAL STRATEGY
+Use only dynamic scenes for clip suggestions.
 
-🎣 HOOK RULE
+10) YOUTUBE SEARCH QUERIES
+Provide 3 YouTube queries.
 
-First line = curiosity hook
+Each must include:
 
-🧾 SCRIPT RULES
+subject
+source
+action
+11) TWELVELABS QUERY
+Write one exact visual search description for the best moment to find in video search.
 
-• ninety to one hundred words
-• simple English
-• one surprising fact
-• one light humor moment
-• end with curiosity hook
+It should describe:
 
-🔢 NUMBER RULE
-
-Write numbers as words.
-
-🎥 VISUAL CLIP STRATEGY
-
-Use dynamic scenes only.
-
-🔎 YOUTUBE QUERIES
-
-Provide three:
-
-must include subject + source + action
-
-🎯 TWELVELABS QUERY
-
-Describe exact visual moment.
-
-🎵 MUSIC RULE
+character
+action
+setting
+emotional tone
+camera or visual energy if useful
+12) MUSIC RULE
+Choose one music mood.
 
 Priority:
 
-one → same show
-two → similar
-three → cinematic
+same show vibe
+similar show vibe
+cinematic fallback
+Format
+lowercase only
+3 to 7 words
+must end with: instrumental no lyrics
+13) OUTPUT FORMAT
+Return the result in this order:
 
-Format:
+A. Trend analysis
+Include:
 
-lowercase, three to seven words, end with
-“instrumental no lyrics”
+5 trend candidates with reasons and scores
+final trend pick
+B. Category selection
+Show the random number and category
 
-📦 JSON OUTPUT
+C. Micro-idea analysis
+Include:
+
+5 candidate micro-ideas with scores
+final selected idea
+D. Verification box
+E. Final JSON only
+JSON
 
 {
-"topic": "",
-"specific_subject": "",
-"youtube_queries": [
-"",
-"",
-""
-],
-"twelvelabs_query": "",
-"music_mood": "",
-"voice_name": "Hamid",
-"script": ""
+  "topic": "",
+  "specific_subject": "",
+  "youtube_queries": [
+    "",
+    "",
+    ""
+  ],
+  "twelvelabs_query": "",
+  "music_mood": "",
+  "voice_name": "Hamid",
+  "script": ""
 }
+Why this version is better
+Your original prompt had good ideas, but it had a few issues:
 
+grammar problems that may confuse the AI
+too many repeated rules
+some parts were vague
+“output before continuing” could conflict with “JSON output only”
+scoring logic was not fully structured
+This rewritten version:
 
+keeps your full workflow
+makes the steps more logical
+improves reliability with web-enabled AIs
+reduces the chance the model ignores parts of the prompt
+Even Better Version for Grounded AI
+If your AI supports web search but sometimes gives weak trend results, use this stricter version:
+
+Use live web search and only select topics that are trending right now. Do not rely on old internal knowledge if current search results disagree. Prefer topics with visible activity across multiple platforms in the last seven days. If exact trend data is limited, use the strongest available cross-platform signals and clearly state that.
+
+Do not invent trend evidence. If you cannot confirm a trend, exclude it.
+
+When possible, cite or mention the platform evidence behind each trend pick.
+
+Optional Add-On: Used Videos List
+Your prompt mentions USED VIDEOS LIST, but does not define it. You should add this:
+
+text
+
+USED VIDEOS LIST:
+- [put previous topics or subjects here]
+Example:
+
+text
+
+USED VIDEOS LIST:
+- Gojo eye reveal
+- Frieren mimic scene
+- Jinx chair symbolism
+- Alastor smile theory
+Recommended Final Prompt Template
+If you want, this is the version I’d actually use in production:
+
+text
+
+Create a TikTok script about a currently trending animation topic using live web research first.
+
+IMPORTANT:
+- Use web search before writing.
+- Focus on animation, anime, western animation, or indie animation.
+- Prefer trends with strong activity in the last seven days.
+- Do not invent trend evidence.
+- If trend evidence is unclear, say so.
+
+STEP 1 — Live trend discovery
+Search:
+- TikTok trending hashtags and edits
+- YouTube Shorts / viral clips
+- Twitter / X trends
+- Google Trends
+- recent episode/season releases
+
+Focus on:
+- new seasons or episodes
+- viral scenes or moments
+- characters trending in edits
+- meme formats
+- repost waves
+- fandom spikes
+
+STEP 2 — Generate 5 trend candidates
+For each include:
+- show name
+- why it is trending now
+- Trend Score (1–5)
+- Content Potential Score (1–5)
+
+If strong on TikTok edits, memes, or YouTube Shorts, add +1 or +2 Trend Score.
+
+Do not penalize a topic just because it has no recent episode if it is still viral.
+
+At least 1 candidate must be:
+- western animation
+- indie animation
+- or meme-driven animation
+
+Remove outdated or weak topics.
+
+STEP 3 — Pick the best trend
+Choose the topic with the highest total score.
+If tied, prefer:
+- strongest social virality
+- most reposted clips
+- best short-form potential
+
+Output:
+TREND PICK:
+show:
+reason:
+
+STEP 4 — Random category
+Pick a random number from 1 to 4 and show it first:
+1 = hidden lore mechanic
+2 = unexpected character detail
+3 = strange world rule
+4 = rare production or animation fact
+
+STEP 5 — Generate 5 micro-ideas
+The final idea must focus on one micro-detail connected to something currently viral.
+
+For each idea include:
+- Rarity Score (1–5)
+- Viral Curiosity Score (1–5)
+
+Remove ideas that:
+- match USED VIDEOS LIST
+- are obvious
+- need long explanation
+- are summaries
+- are more than 40% similar to another idea
+
+Pick the highest-scoring idea.
+If no idea scores at least 7 total, generate 5 new ideas.
+
+USED VIDEOS LIST:
+- [insert your old topics here]
+
+STEP 6 — Verify the final fact
+Verification protocol:
+1. find fact
+2. find source
+3. if no reliable source exists, label as theory
+
+Verification box:
+━━━━━━━━━━━━━━━━━━━━
+Fact:
+Tier:
+Source:
+How user can verify:
+━━━━━━━━━━━━━━━━━━━━
+
+Tier system:
+- Tier 1 — CONFIRMED
+- Tier 2 — WIKI
+- Tier 3 — THEORY
+
+STEP 7 — Write the script
+Requirements:
+- 90 to 100 words
+- simple English, B1 level
+- conversational
+- enthusiastic
+- slightly dramatic
+- first line must be a curiosity hook
+- include 1 surprising fact
+- include 1 light humor moment
+- include 1 personal reaction
+- end with a curiosity hook
+- write numbers as words
+- focus on one micro-detail only
+
+STEP 8 — Extra outputs
+Provide:
+- 3 YouTube queries, each with subject + source + action
+- 1 TwelveLabs query describing the exact visual moment
+- 1 music mood in lowercase, 3 to 7 words, ending with “instrumental no lyrics”
+
+STEP 9 — Output order
+A. Trend analysis
+B. Category selection
+C. Micro-idea analysis
+D. Verification box
+E. Final JSON
+
+JSON format:
+{
+  "topic": "",
+  "specific_subject": "",
+  "youtube_queries": [
+    "",
+    "",
+    ""
+  ],
+  "twelvelabs_query": "",
+  "music_mood": "",
+  "voice_name": "Hamid",
+  "script": ""
+}

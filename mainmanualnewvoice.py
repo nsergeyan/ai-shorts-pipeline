@@ -12,7 +12,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_fetcher import fetch_music_by_search
-    from modules.voice_generator import generate_voice
+    from modules.newvoice import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_groups
 except ImportError as e:
@@ -30,19 +30,15 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Nanami's goggles have no glass",
-"specific_subject": "The secret design of Kento Nanami's signature eyewear",
+"topic": "Attack on Titan",
+"specific_subject": "Levi Ackerman's severe insomnia",
 "youtube_queries": [
-"Nanami adjusting his glasses Jujutsu Kaisen",
-"Nanami looking at Mahito close up Jujutsu Kaisen",
-"Nanami eye reveal removing glasses Jujutsu Kaisen"
+"Levi Ackerman season three part one Attack on Titan"
 ],
-"twelvelabs_query": "Kento Nanami adjusting his weird metal goggles while looking completely serious during a fight.",
-"music_mood": "cool jazz anime instrumental no lyrics",
+"twelvelabs_query": "Close up of Levi Ackerman looking extremely tired and annoyed while sitting indoors.",
+"music_mood": "melancholy acoustic anime instrumental no lyrics",
 "voice_name": "Hamid",
-"elevenlabs_character_direction": "You are a fast-paced, highly expressive TikTok anime expert. Speak naturally, emphasizing the bizarre and surprising nature of this character design choice.",
-"elevenlabs_overall_tags": "energetically, conversational, engaging",
-"script": "[in disbelief] Have you ever looked closely at Kento Nanami and his iconic glasses? [leans in] You probably assumed they were just strange sunglasses designed to protect his eyes. But the creator revealed a secret about his design that changes everything. [laughs softly] Those goggles do not actually have any glass lenses inside them. Gege Akutami confirmed in the official fanbook that Nanami literally just wears empty metal frames. He does this strictly to hide his line of sight from cursed spirits, without blocking his own vision. Which is kind of wild. [excitedly] Imagine fighting terrifying monsters while wearing empty frames! Did you know this?"
+"script": "[excitedly] Did you know humanity's strongest soldier has a terrible secret about his health? [pauses] We know Levi Ackerman is flawless in combat. But the creator revealed a really sad detail about his daily life. [whispering] Levi actually suffers from severe insomnia. He only sleeps for two to three hours a day! [sighs] And it gets worse. He does not even sleep in a normal bed. He just sits in a chair and sleeps in his daily clothes. Which is kind of wild. Imagine fighting giant monsters all day on a tiny chair nap. [playfully] Follow for more secrets!"
 }
 
 def trim_video_to_end(
@@ -97,7 +93,7 @@ def trim_video_to_end(
 
 
 def evaluate_music_with_genai(music_path, script_text):
-    client = genai.Client(api_key="AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
 
     # Upload music file
     uploaded_file = client.files.upload(file=music_path)
@@ -202,7 +198,7 @@ def evaluate_music_with_genai(music_path, script_text):
         }
 
 def evaluate_video_with_genai(video_path, script_text):
-    client = genai.Client(api_key="AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
     #AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     #WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
@@ -310,7 +306,7 @@ def evaluate_video_with_genai(video_path, script_text):
 
 
 def find_scene_with_gemini(video_path, query, script):
-    client = genai.Client(api_key="AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw")
+    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
     # AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
     # WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
     #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q

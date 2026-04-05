@@ -1,0 +1,182 @@
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Jujutsu Kaisen.
+
+RANDOM CATEGORY SELECTION
+
+Before choosing a topic, pick a random number from one to four.
+State the number first.
+
+one → hidden lore mechanic
+two → unexpected character detail
+three → strange world rule
+four → rare production or animation fact
+
+Follow the selected category. Focus on one micro-detail, not a broad concept.
+
+GOOD example: why cursed spirits rarely appear in the ocean
+BAD example: how cursed spirits work
+
+TOPIC DISCOVERY PROTOCOL (MANDATORY)
+
+Before writing the script, generate five candidate topic ideas.
+Each idea must follow the chosen category.
+
+For every idea assign two scores:
+
+RARITY SCORE (one–five)
+one → common fact most fans know
+two → somewhat known
+three → moderately obscure
+four → rare fact many fans forgot
+five → extremely obscure or surprising
+
+VIRAL CURIOSITY SCORE (one–five)
+one → mildly interesting
+three → interesting
+five → makes viewers say “wait WHAT?”
+
+Eliminate ideas that:
+• are similar to topics in the USED VIDEOS LIST
+• are obvious wiki facts
+• require long explanations
+• are philosophical interpretations
+• summarize a character
+
+Choose the idea with the highest combined score.
+If no idea scores seven or higher, generate five new ideas.
+
+DUPLICATE DETECTION RULE
+
+If a topic is more than forty percent similar to any video in the USED VIDEOS LIST, discard it.
+Similarity includes:
+• same character + same fact
+• same mechanic explained differently
+• same event with new wording
+
+Example:
+Existing video: why gojo eats sweets
+Do NOT generate: why gojo loves desserts
+
+VERIFICATION PROTOCOL
+
+DO NOT WRITE A SCRIPT UNTIL THESE STEPS ARE DONE.
+
+STEP one: find the fact
+STEP two: locate a specific source
+STEP three: if no source exists → treat as theory
+
+Before JSON output include:
+
+VERIFICATION BOX
+━━━━━━━━━━━━━━━━━━━━
+Fact:
+Tier:
+Source:
+How user can verify:
+━━━━━━━━━━━━━━━━━━━━
+
+TIER DEFINITIONS
+
+Tier one — CONFIRMED
+Episode number / Manga chapter / Fanbook page / Creator interview
+
+Tier two — WIKI SOURCED
+Wiki article plus its citation.
+
+Tier three — THEORY
+No strong source. Script MUST say: "fans believe" or "one theory suggests"
+
+VIDEO ANGLE
+
+Focus on one main surprising idea, but allow one small side detail if it makes the story feel natural.
+Goal: Viewer reaction → “Wait… I didn’t know that.”
+
+SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION (CRITICAL)
+
+Tone: conversational, slightly dramatic, enthusiastic. 
+Sound like someone excited about the detail. 
+
+ELEVENLABS V3 AUDIO TAGS RULE:
+You must insert minimum four [bracketed] performance tags directly inside the script to guide the AI voice's emotion and delivery.
+
+Audio Tags let you simulate a range of emotional and physical cues:
+
+Emotional tone: [EXCITED], [NERVOUS], [FRUSTRATED], [TIRED]
+Reactions: [GASP], [SIGH], [LAUGHS], [GULPS]
+Volume & energy: [WHISPERING], [SHOUTING], [QUIETLY], [LOUDLY]
+Pacing & rhythm: [PAUSES], [STAMMERS], [RUSHED]
+Tags can be layered to add nuance: “[NERVOUSLY] I... I’m not sure this is going to work. [GULPS] But let’s try anyway.”
+
+
+Character-focused tags allow you to shape vocal identity and presence:
+
+Accents & dialects: [British accent], [Australian accent], [Southern US accent]
+Archetypes & roles: [pirate voice], [evil scientist voice], [childlike tone]
+Speech styles: [dramatic], [sarcastically], [matter-of-fact], [whiny]
+Genre cues: [fantasy narrator], [sci-fi AI voice], [classic film noir]
+Layering tags helps bring characters to life: “[dramatic][French accent] You do not understand... zis was never about revenge. It was about destiny.”
+
+
+Here are some frequently used tags to direct emotional performance:
+
+Emotional states: [excited], [nervous], [frustrated], [sorrowful], [calm]
+Reactions: [sigh], [laughs], [gulps], [gasps], [whispers]
+Cognitive beats: [pauses], [hesitates], [stammers], [resigned tone]
+Tone cues: [cheerfully], [flatly], [deadpan], [playfully]
+These can be combined or sequenced for richer emotional arcs: [hesitant] I... I didn’t mean to say that. [regretful] It just came out.
+
+ELEVENLABS PUNCTUATION RULES:
+Comma → short pause
+Period → full stop
+Question mark → questioning tone
+Exclamation → emphasis
+Ellipsis (...) → suspense pause
+
+NUMBER WRITING RULE
+Never use digits. Write numbers as words (e.g., write one, not 1).
+
+WORD COUNT RULE
+The spoken text must be ninety to one hundred words. Do NOT count the [bracketed] ElevenLabs tags in this word count.
+
+SCRIPT QUALITY CHECK
+
+Before output confirm:
+• ninety to one hundred words (excluding tags)
+• contains one surprising fact
+• contains one light humorous moment ("which is kind of wild")
+• ends with curiosity hook
+• includes two to four ElevenLabs V3 tags
+If any rule fails → rewrite.
+
+VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED)
+
+SCENE ACCURACY RULE (CRITICAL)
+If the script references a specific moment, the visuals must come from that exact scene in the anime. Do NOT guess seasons or episodes. Describe the scene itself.
+
+YOUTUBE QUERY FORMAT
+Provide three queries optimized to find engaging visual clips (actions, reveals, reactions).
+Structure: [main subject] + [source name] + [clear action/event]
+Avoid: talking, explaining, discussion, vague actions.
+
+TWELVELABS QUERY
+Describe the exact moment that should appear on screen.
+
+MUSIC SOURCE RULE
+Priority: 1) Same anime OST 2) Similar anime OST 3) Cinematic anime-style.
+music_mood must be lowercase, three to seven words, end with "instrumental no lyrics".
+
+JSON OUTPUT FORMAT
+{
+"topic": "",
+"specific_subject": "",
+"youtube_queries": [
+"",
+"",
+""
+],
+"twelvelabs_query": "",
+"music_mood": "",
+"voice_name": "Hamid",
+"script": ""
+}
+
+USED VIDEOS LIST (DO NOT REPEAT):
