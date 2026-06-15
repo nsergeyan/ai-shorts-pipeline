@@ -348,40 +348,31 @@ Example:
 
 Zeke hiding underground using breathing pipes while soldiers search above
 
-MUSIC SOURCE RULE
+MUSIC PROMPT RULE
 
-Music should preferably come from the same anime as the topic, especially if the anime has a recognizable soundtrack.
+music_prompt is used to generate custom AI music via ElevenLabs.
+It must describe the mood, genre, instruments, energy, and atmosphere.
+Always instrumental — no lyrics.
 
-Examples:
+MUSIC PROMPT FORMAT
 
-Attack on Titan topic → preferably Attack on Titan soundtrack
-Jujutsu Kaisen topic → preferably Jujutsu Kaisen soundtrack
-Demon Slayer topic → preferably Demon Slayer soundtrack
+music_prompt must:
 
-If the exact soundtrack is unavailable, music may come from similar cinematic anime-style music.
+• describe the emotional tone of the script
+• name specific instruments or genre
+• mention BPM or energy level
+• always end with: no lyrics
 
-MUSIC PRIORITY SYSTEM
+MUSIC PROMPT EXAMPLES BY TOPIC TYPE
 
-Choose music in this order:
+Anime dark lore (JJK, Demon Slayer, AoT):
+"Dark dramatic orchestral, tense strings and taiko drums, slow cinematic build, anime battle atmosphere, no lyrics"
 
-one → soundtrack from the same anime
-two → soundtrack from a similar anime
-three → cinematic anime-style orchestral music
+Anime mystery / hidden detail:
+"Mysterious and suspenseful orchestral, subtle piano and strings, quiet tension building, anime mystery atmosphere, no lyrics"
 
-MUSIC FORMAT
-
-music_mood must:
-
-• be lowercase
-• contain three to seven words
-• end with instrumental no lyrics
-
-Examples:
-
-attack on titan epic orchestral instrumental no lyrics
-attack on titan dark tension instrumental no lyrics
-dark anime cinematic orchestral instrumental no lyrics
-dramatic anime war orchestral instrumental no lyrics
+Anime trivia / production fact:
+"Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, no lyrics"
 
 CONSISTENCY RULE
 
@@ -389,9 +380,9 @@ The following must feel consistent:
 
 topic
 visuals
-music
+music_prompt
 
-Even if the music is not from the exact anime, the tone must feel like it belongs in that universe.
+The music_prompt tone must match the emotional energy of the script.
 
 The script must contain one short personal reaction such as:
 
@@ -408,7 +399,7 @@ JSON OUTPUT FORMAT
 ""
 ],
 "twelvelabs_query": "",
-"music_mood": "",
+"music_prompt": "",
 "voice_name": "Hamid",
 "script": ""
 }
