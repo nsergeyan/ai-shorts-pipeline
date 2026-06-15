@@ -148,3 +148,42 @@ def transcribe_audio_to_groups(
 
     print(f"✅ Transcription done: {len(final_groups)} subtitle chunks generated.")
     return final_groups
+
+
+def transcribe_audio_to_words(
+    audio_path: str,
+    language: str | None = None,
+):
+    """
+    Transcribe audio and return word-level timestamps for word-by-word highlighting.
+    Returns: List of (word, start, end)
+    """
+    if not os.path.exists(audio_path):
+        print(f"❌ Audio file not found: {audio_path}")
+        return []
+
+    print(f"👂 Transcribing audio for word-level sync: {os.path.basename(audio_path)}...")
+
+    transcribe_kwargs = {
+        "word_timestamps": True,
+        "task": "transcribe",
+        "verbose": False,
+        "temperature": 0.0,
+        "beam_size": 5,
+        "best_of": 5,
+    }
+    if language:
+        transcribe_kwargs["language"] = language
+
+    result = model.transcribe(audio_path, **transcribe_kwargs)
+
+    words = _build_word_list_from_result(result)
+    if not words:
+        words = _fallback_words_from_segments(result.get("segments", []))
+
+    output = [
+        (w["word"].strip().upper(), float(w["start"]), float(w["end"]))
+        for w in words if w["word"].strip()
+    ]
+    print(f"✅ Word-level transcription done: {len(output)} words.")
+    return output

@@ -14,7 +14,7 @@ try:
     from modules.music_generator import generate_music
     from modules.newvoice import generate_voice
     from modules.video_editor import merge_audio_video
-    from modules.transcriber import transcribe_audio_to_groups
+    from modules.transcriber import transcribe_audio_to_words
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
@@ -30,18 +30,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "rare production or animation fact",
-  "specific_subject": "Jujutsu Kaisen 0 movie was reportedly animated in only about four monthsthi",
+  "topic": "unexpected character detail",
+  "specific_subject": "Toge Inumaki speaks only in rice-ball ingredients so his Cursed Speech doesn't accidentally command people",
   "youtube_queries": [
-    "Jujutsu Kaisen 0 movie Yuta fight scene best animation",
-    "Jujutsu Kaisen 0 Gojo action scene movie clip",
-    "Jujutsu Kaisen 0 Rika cursed spirit transformation movie"
+    "Jujutsu Kaisen Inumaki cursed speech blast away Hanami fight",
+    "Jujutsu Kaisen Toge Inumaki saying salmon scene",
+    "Jujutsu Kaisen Inumaki commands cursed spirits exorcise scene"
   ],
-  "twelvelabs_query": "Young boy with black hair swinging a glowing sword, a giant white ghostly female monster with long hair floating behind him, fast camera dashing through a crowd of dark curses, bright energy slashes lighting up the screen",
-  "music_mood": "mysterious",
-  "music_prompt": "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements",
+  "twelvelabs_query": "Boy with white hair and a high collar covering his mouth, snake-like markings on his cheeks, opening his mouth to shout, a visible shockwave blasting forward and knocking back a monster, then him coughing",
+  "music_mood": "curious",
+  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
   "voice_name": "Hamid",
-  "script": "[curious] You watched Jujutsu Kaisen Zero and thought the animation looked insane, right? [pauses] Well, here is something wild. According to one of its own animators, that whole movie, over one hundred minutes long, was reportedly finished in only about four months. [excited] Four! [matter-of-fact] For comparison, most films like this take two to three years. [whispering] The animator basically said even he could not believe it happened. [playfully] So next time your homework feels rushed, just remember a whole movie got drawn faster than one school term. [pauses] Makes you wonder... what did that speed actually cost them?"
+  "script": "[curious] You know that quiet guy in Jujutsu Kaisen who only says random words like salmon and bonito flakes? [pauses] People think it is just a weird quirk. It is not. [excited] Toge has a power called Cursed Speech. Any word he says can become a command that forces people to obey. And here is the scary part. He cannot turn it off. [whispering] So if he said something normal, like go away, he might actually hurt someone. [matter-of-fact] That is why he sticks to safe rice-ball words. [playfully] Imagine ordering lunch and accidentally controlling the chef. [pauses] So... what happens if he ever loses his temper?"
 }
 
 def trim_video_to_end(
@@ -523,12 +523,12 @@ def run_manual_pipeline(data):
         audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
 
         # 6️⃣ SUBTITLES
-        print(f"📝 Generating subtitles...")
+        print(f"📝 Generating word-level subtitles...")
         if LANGUAGE == "es":
             print("🇪🇸 Spanish detected — skipping subtitles.")
-            subtitle_data = None
+            words_data = None
         else:
-            subtitle_data = transcribe_audio_to_groups(audio_path, 2, LANGUAGE)
+            words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
         # 7️⃣ EDIT
         final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
@@ -541,7 +541,7 @@ def run_manual_pipeline(data):
             shorts_cap=True,
             music_path=music_path,
             music_volume=MUSIC_VOLUME,
-            subtitles_data=subtitle_data,
+            words_data=words_data,
             subtitles_position=SUBTITLES_POSITION
         )
 
