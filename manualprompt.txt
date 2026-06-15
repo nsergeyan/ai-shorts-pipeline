@@ -1,0 +1,521 @@
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Jujutsu Kaisen.
+
+RANDOM CATEGORY SELECTION
+
+Before choosing a topic, pick a random number from one to four.
+
+State the number first.
+
+one → hidden lore mechanic
+two → unexpected character detail
+three → strange world rule
+four → rare production or animation fact
+
+Follow the selected category.
+
+Focus on one micro-detail, not a broad concept.
+
+GOOD example:
+
+why cursed spirits rarely appear in the ocean
+
+BAD example:
+
+how cursed spirits work
+
+TOPIC DISCOVERY PROTOCOL (MANDATORY)
+
+Before writing the script, generate five candidate topic ideas.
+
+Each idea must follow the chosen category.
+
+For every idea assign two scores.
+
+RARITY SCORE (one–five)
+
+one → common fact most fans know
+two → somewhat known
+three → moderately obscure
+four → rare fact many fans forgot
+five → extremely obscure or surprising
+
+VIRAL CURIOSITY SCORE (one–five)
+
+one → mildly interesting
+three → interesting
+five → makes viewers say “wait WHAT?”
+
+Then eliminate ideas that:
+
+• are similar to topics in the USED VIDEOS LIST
+• are obvious wiki facts
+• require long explanations
+• are philosophical interpretations
+• summarize a character
+
+Choose the idea with the highest combined score.
+
+If no idea scores seven or higher, generate five new ideas.
+
+DUPLICATE DETECTION RULE
+
+If a topic is more than forty percent similar to any video in the USED VIDEOS LIST, discard it.
+
+Similarity includes:
+
+• same character + same fact
+• same mechanic explained differently
+• same event with new wording
+
+Example:
+
+Existing video:
+
+why gojo eats sweets
+
+Do NOT generate:
+
+why gojo loves desserts
+
+ VERIFICATION PROTOCOL
+
+DO NOT WRITE A SCRIPT UNTIL THESE STEPS ARE DONE.
+
+STEP one: find the fact
+STEP two: locate a specific source
+STEP three: if no source exists → treat as theory
+
+Before JSON output include:
+
+VERIFICATION BOX
+
+━━━━━━━━━━━━━━━━━━━━
+Fact:
+Tier:
+Source:
+How user can verify:
+━━━━━━━━━━━━━━━━━━━━
+
+TIER DEFINITIONS
+
+Tier one — CONFIRMED
+
+Episode number
+Manga chapter
+Fanbook page
+Creator interview
+
+Examples:
+
+Episode twelve at fourteen minutes
+Chapter seventy four
+JJK fanbook page forty five
+
+Tier two — WIKI SOURCED
+
+Wiki article plus its citation.
+
+Example:
+
+JJK Wiki Gojo page citing Chapter seventy four
+
+Tier three — THEORY
+
+No strong source.
+
+Script MUST say:
+
+fans believe
+one theory suggests
+
+VIDEO ANGLE
+
+Focus on one main surprising idea, but allow one small side detail if it makes the story feel natural.
+
+Possible angles:
+
+• hidden lore detail
+• subtle character behavior
+• strange world rule
+• small story detail
+• production fact
+
+Avoid:
+
+• summaries
+• obvious facts
+• philosophical analysis
+
+Goal:
+
+Viewer reaction →
+“Wait… I didn’t know that.”
+
+SCRIPT STYLE
+
+Tone:
+
+• conversational
+• slightly dramatic
+• enthusiastic
+
+Sound like someone excited about the detail.
+
+Allowed:
+
+one small humorous exaggeration.
+
+Example:
+
+“which is kind of wild”
+
+Avoid sounding like:
+
+• a teacher
+• a documentary narrator
+• a movie trailer
+
+HOOK RULE
+
+The first sentence must trigger curiosity.
+
+Good examples:
+
+Jujutsu Kaisen hides a rule most fans never notice.
+
+One character in Jujutsu Kaisen is secretly cheating the power system.
+
+Bad example:
+
+In Jujutsu Kaisen there are many characters.
+
+ENDING RULE
+
+End with a curiosity hook.
+
+Example:
+
+Follow for more Jujutsu Kaisen secrets!
+
+SCRIPT DELIVERY RULES
+
+Comma → short pause
+Period → full stop
+Question mark → questioning tone
+Exclamation → emphasis
+Ellipsis → suspense pause
+
+NUMBER WRITING RULE
+
+Never use digits.
+
+Write numbers as words.
+
+Example:
+
+write one, not 1
+
+SCRIPT QUALITY CHECK
+
+Before output confirm:
+
+• ninety to one hundred words
+• understandable without deep lore knowledge
+• contains one surprising fact
+• contains one light humorous moment
+• ends with curiosity hook
+
+If any rule fails → rewrite.
+
+
+
+VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED) THE QUERIES FROM YOUTUBE!
+
+SCENE ACCURACY RULE (CRITICAL)
+
+If the script references a specific moment, the visuals must come from that exact scene in the anime.
+
+Do NOT guess seasons or episodes.
+
+Instead describe the scene itself.
+
+Correct example:
+
+Zeke hiding underground using breathing pipes during the Shiganshina battle
+
+Wrong example:
+
+Zeke hiding underground season four
+
+If the exact episode is uncertain, omit the season number.
+
+Prefer clips containing:
+
+• reactions
+• expressions
+• short action moments
+• character interactions
+• emotional reactions
+
+Avoid:
+
+• long fights
+• analysis videos
+• commentary videos
+
+YOUTUBE QUERY FORMAT
+
+Provide three queries.
+
+Each query must be optimized to find engaging visual clips, not passive moments.
+
+REQUIRED STRUCTURE
+
+Each query MUST include:
+
+main subject (character, object, place, or event)
+
+source name (show, movie, game, or real-world context if relevant)
+
+a clear action, event, or moment
+
+GOOD KEYWORDS TO USE
+
+Prefer words that imply movement or something happening:
+
+fight
+
+battle
+
+scene
+
+moment
+
+action
+
+reveal
+
+transformation
+
+ability
+
+attack
+
+chase
+
+reaction
+
+confrontation
+
+event
+
+AVOID THESE (STRICT BAN)
+
+Do NOT use:
+
+talking
+
+explaining
+
+discussion
+
+interview
+
+analysis
+
+breakdown
+
+essay
+
+appearance-only descriptions (hair, clothes, etc.)
+
+vague actions like “standing”, “looking”, “sitting”
+
+GOOD EXAMPLES
+
+ batman warehouse fight scene
+ spider man train rescue scene
+ breaking bad gus death scene
+ lion chasing zebra wildlife clip
+ volcano eruption real footage
+
+
+TWELVELABS QUERY
+
+Describe the exact moment that should appear on screen.
+
+Example:
+
+Zeke hiding underground using breathing pipes while soldiers search above
+
+MUSIC SOURCE RULE
+
+Music should preferably come from the same anime as the topic, especially if the anime has a recognizable soundtrack.
+
+Examples:
+
+Attack on Titan topic → preferably Attack on Titan soundtrack
+Jujutsu Kaisen topic → preferably Jujutsu Kaisen soundtrack
+Demon Slayer topic → preferably Demon Slayer soundtrack
+
+If the exact soundtrack is unavailable, music may come from similar cinematic anime-style music.
+
+MUSIC PRIORITY SYSTEM
+
+Choose music in this order:
+
+one → soundtrack from the same anime
+two → soundtrack from a similar anime
+three → cinematic anime-style orchestral music
+
+MUSIC FORMAT
+
+music_mood must:
+
+• be lowercase
+• contain three to seven words
+• end with instrumental no lyrics
+
+Examples:
+
+attack on titan epic orchestral instrumental no lyrics
+attack on titan dark tension instrumental no lyrics
+dark anime cinematic orchestral instrumental no lyrics
+dramatic anime war orchestral instrumental no lyrics
+
+CONSISTENCY RULE
+
+The following must feel consistent:
+
+topic
+visuals
+music
+
+Even if the music is not from the exact anime, the tone must feel like it belongs in that universe.
+
+The script must contain one short personal reaction such as:
+
+“I always thought…”, “This surprised me…”, etc...
+
+
+JSON OUTPUT FORMAT
+{
+"topic": "",
+"specific_subject": "",
+"youtube_queries": [
+"",
+"",
+""
+],
+"twelvelabs_query": "",
+"music_mood": "",
+"voice_name": "Hamid",
+"script": ""
+}
+
+
+PERFECT SCRIPT:
+You know Sukuna's iconic slashing sound? That terrifying *shink* when he says 'Dismantle'? Here's the secret. The sound designers didn't use metal or swords. They used breaking glass. They recorded glass shattering, then slowed it down and processed it. That's how they made the sound of his cursed technique cutting through everything. Which is honestly genius, and terrifying. So next time you hear it, you're literally hearing the sound of sliced reality... made from a window pane. Follow for more anime production secrets you can't unhear!
+
+USED VIDEOS LIST (DO NOT REPEAT):
+episode two was supposed to be a zombie apocalypse but liam hates mind control #murderdronesn #murderdronesedit #murderdrone
+titan bodies are extremely light despite their size #aot #atackontitan #erenyeager
+thorkell's pursuit of conflict #vinlandsagaanime #vinland #thorfin
+what is scp 500? how many pills are there?#scp #scp #scpfoundation
+scp-173's image is stolen art - the sculptor never gave permission and now it can't be used commercially #scp173 #scp #scp #scpfoundation
+uzi is left-handed - visible in how she writes and holds her railgun #murderdronesn #murderdronesedit #murderdrone
+cyn's visor icon grew from a puppy to an adult dog across the series - showing time passed#murderdronesn #murderdronesedit #murderdrone
+drones have a built-in trauma warning system called prior hazard#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+sorcerer death rule #jjk #naoya
+scp-049's skin #scpfoundation #scp049
+zeke hid underground using breathing pipes #atackontitan #aot
+shoko's medical license #jjk
+yuta kissed a cockroach? #jjk #yutaokkotsu
+the finale's ending song was written just days before premiere #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+yuta wears white because he's considered a problem student #jjk #jujutsukaisen #yutaokkotsu
+the sound design secret behind sukuna's dismantle technique. #jjk #sukuna #sukunaryomen
+pomni unknowingly created the exit doors in episode one because all humans can conjure things like caine #tadc #tadcpomni
+nolan's mother beats him the exact same way he later beats mark — the show deliberately mirrored the shots to reveal generational abuse #invincible #omniman
+viltrumite physiology #invincible
+background clocks in the circus display inconsistent random times suggesting time does not function normally #tadc #theamazingdigitalcircuspomni #tadcjax
+elbaf spelled backwards is fable, linking directly to usopp and aesop's fables #onepiece
+hidden keyboard pattern in the tadc episode eight title #tadc #pomni
+cursed energy biology rule #jjk
+michael kovach voices both n and jax - the nicest and meanest characters in glitch shows#murderdronesn #murderdronesedit #murderdrone #theamazingdigitalcircus #murderdronesuziedits
+armin arlert's colossal burden #aot #atackontitan #armin
+caine's programming language revealed on the computer terminal in tadc episode eight #tadc #kinger #caine
+why all viltrumites have mustaches? #invincible #omniman
+the graphic novel kickstarter was funded in five minutes #murderdronesn #murderdronesedit #murderdrone
+gege made hakari's entire power based on gambling to spite editors who banned japanese gambling games... #hakari #jjk #jujutsukaisen
+mappa forced jjk staff to sign ndas to silence complaints #jjk #jujutsukaisen
+scp-343 claims to be god and the foundation cannot actually contain him - he just chooses to stay #scp #scp #scpfoundation #scp343
+chineese room meaning in tadc#theamazingdigitalcircus #pomni #tadc
+the bizarre transformation trigger of dinosaurus in invincible season four #invincible #invincibleseason3
+zooble was a tatoo master? #theamazingdigitalcircus #tadc #pomni
+gooseworx designed all characters in one week#theamazingdigitalcircus #tadc
+cecil's expensive teleporter #invincible
+yaga is the only character who was ever married - and fans believe panda's three souls are his lost children....#jjk #jujutsukaisen
+caine bans npcs from the main area because he might confuse them with real humans #tadc #caine #tadccaine
+kento nanami is part danish #jjk #nanami
+disassembly drone eye bulbs have a hilarious official label#murderdronesn #murderdronesedit #murderdrone
+tessa screams when cyn dies - she was alive and conscious inside cyn's body the whole time#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+murder drones worker drones worldbuilding reproduction #murderdronesn #murderdronesedit #murderdrone
+sentinels developed their own secret tap language#murderdronesn #murderdronesedit #murderdrone
+pomnis name has a secret meaning in tadc #pomni #theamazingdigitalcircus
+liam vickers has no involvement in the murder drones graphic novel#murderdronesn #murderdronesedit #murderdrone
+the culling game colonies are mapped on real japanese cities to form a line that forces human evolution #jjk
+copper-9 was the ninth planet colonized by humans - worker drones were mining slaves#murderdronesn #murderdronesedit #murderdrone
+the yuji vs choso fight was mostly animated by one person - legendary animator yutaka nakamura #jjk #jujutsukaisen #choso #yuji
+the kinger is the creator of the digital circus?#theamazingdigitalcircus #tadc #kinger
+kevin temmer revealed that because tadc takes place inside a computer game, the team can disguise any animation error as an intentional digital world glitch #tadccaine #tadc
+the quirky timing line rule that punished pole position in the 2026 australian grand prix #f1
+the secret of one of the o5 member#scp #scp #scpfoundation
+heavenly restriction users are immune to domain sure hit effects #jujutsukaisen #jjk
+the colony combines prom and parent teacher conference into one event because not enough drones are left alive#murderdronesn #murderdronesedit #murderdrone
+sukuna ate his twin brother in the womb #sukuna #jjk #jujutsukaisen
+why is lucifer left handed? #hazbin #hazbinhotel #hazbinhotelalastor
+valhalla the lore and beliefs of the viking warrior's hall #vikings
+aoi todo's strategic genius #jjk #todo #jujutsukaisen
+uraume's true role as sukuna's chef #jjk #sukuna
+science dog name change in invincible #invincibleseason3 #invinciblecomic
+murder drones was originally a cute wall-e style show#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+n's dog drawings #murderdronesn
+gangle's comedy masks meaning #theamazingdigitalcircus #pomni #tadc #gangletadc
+nori thought being infected with the solver was cool #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+why people do not know about curse spirits in jujutsu kaisen? #jjk #jujutsukaisen
+the copper 9 has 13 months? #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
+what happens with class d in scp universe theory.#scp #scp #scpfoundation
+the ethics committee secretly holds more power than the o5 council #scp #scpfoundation
+the secret dates hidden in kinger's computer code during the hacking scene in episode eight #tadc #tadccaine
+gojo's black sunglasses #jjk #gojo #satorugojo
+lizzy is the teacher's daughter?#murderdronesn #murderdronesedit #murderdrone
+the administrator outranks the o5 but might not exist anymore#scp #scp #scpfoundation
+smart_atoms in invincible universe #invincible
+strange world rule about titan power inheritance via paths in attack on titan #atackontitan #aot #erenyeager
+scp 999 and scp 682 are brothers? #scp #scpfoundation #scp999 #682
+the keter class is named after a real researcher who died. #scp #scp #scpfoundation
+scp-055 and scp-579 combined can reset the entire universe - the foundation's secret undo button #scp #scpfoundation #scp
+the ocean has weak curses because humans conquered their fear of it - but forests still terrify us #jjk #jujutsukaisen
+the unexpected taste of sukuna's cursed fingers #sukunaryomen #sukuna  #jjk
+toji trained his inventory curse like a pet dog #toji #tojifushiguro #jjk #jujutsukaisen
+the chaos insurgency was created by the foundation itself #scp #scp #scpfoundation #chaosinsurgency
+shoko ieiri's smoking relapse #jjk
+the director created an eyelash police to stop animators from making gojo too beautiful #jjk #gojo
+david production delayed steel ball run because 2d horse animation was too difficult #steelballrun #animefyp
+angel dusts name has a secret meaning in hazbin hotel #hazbin #angeldusthazbinhotel #angeldust #hazbinhotel
+marco's birthday is the exact middle of the year... #atackontitan #aot #atackontitan #atackontitanedit #aotedit
+canute's awakening #vinland #canute
+does revealing your technique's secret give a permanent power boost? #jjk #jujutsukaisen #nanami
+projection sorcery uses 24fps because that's the actual anime frame rate #jjk #jujutsukaisen #naoyazenin #toji #gojo
+takako uro's cursed technique secretly works as her clothing in jujutsu kaisen #jjk
+nobara's dyed hair #jjk #jujutsukaisen #nobara
+ragatha's broken doll avatar physically represents her hidden trauma with her mother #tadc
+the scp wiki founder secretly ran two accounts to hide his identity #scp #scp #scpfoundation
+aoi todo's scar #jujutsukaisen #jjk #todo
+sukuna waers woman clothes?? #jjk
+gooseworx worked at mcdonald's for five years and got fired for showing up late - it inspired fast food masquerade #theamazingdigitalcircus #tadc #gangletadc #pomni
+what happend to dogs in copper-9?#murderdronesn #murderdronesedit #murderdrone
+sentinels were originally floating orbs not dinosaurs #murderdronesn #murderdronesedit #murderdrone
+the pilot was animated in only three months - insanely fast for 3d animation#pomni #tadc #theamazingdigitalcircus
+thank you for 1000 followers! i love you!#scp #murderdronesn #jujutsukaisen #theamazingdigitalcircus
+
