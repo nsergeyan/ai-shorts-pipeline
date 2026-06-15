@@ -42,7 +42,7 @@ def _make_opts(skip_download: bool, use_range: bool = False):
 
         # CRITICAL: Avoid HLS/DASH formats that cause 403 errors
         # Use progressive download formats instead
-        "format": "best[ext=mp4][protocol=https]/best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
+        "format": "18/best[ext=mp4][protocol=https]/best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
 
         # Avoid the problematic manifest-based downloads
         "extractor_args": {
@@ -51,6 +51,9 @@ def _make_opts(skip_download: bool, use_range: bool = False):
                 "skip": ["hls", "dash"],  # Skip HLS/DASH to avoid 403
             }
         },
+
+        # Use Node.js for JS challenge solving
+        "js_runtimes": {"node": {}},
 
         # Rate limiting to avoid detection
         "sleep_interval": 3,
@@ -92,7 +95,8 @@ def _make_opts_android(skip_download: bool):
         },
 
         # Get any working format
-        "format": "best",
+        "format": "18/best",
+        "js_runtimes": {"node": {}},
 
         "sleep_interval": 2,
         "max_sleep_interval": 5,
@@ -279,8 +283,14 @@ def fetch_gameplay_by_search(
         print(f"\n🔎 [Attempt {attempts}/{retry_searches}] Searching: \"{query}\"")
 
         try:
-            search_opts = _make_opts(skip_download=True)
-            search_opts['extractor_args'] = {'youtube': {'search_filter': YT_FILTER}}
+            search_opts = {
+                "quiet": False,
+                "skip_download": True,
+                "extract_flat": "in_playlist",
+                "playlistend": max_videos * 5,
+                "ignoreerrors": True,
+                "extractor_args": {"youtube": {"search_filter": YT_FILTER}},
+            }
 
             with yt_dlp.YoutubeDL(search_opts) as ydl:
                 info = ydl.extract_info(f"ytsearch{max_videos * 5}:{query}", download=False)
@@ -348,7 +358,7 @@ def fetch_gameplay_by_search(
     for e in filtered_entries:
         vid_id = e.get("id")
         title = _safe_title(e.get("title", "untitled"))
-        webpage_url = e.get("webpage_url")
+        webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
 
         used_video_ids.add(vid_id)
         print(f"\n⬇️  Downloading: {title}")
@@ -402,7 +412,7 @@ def fetch_gameplay_by_search(
                 result = subprocess.run([
                     "yt-dlp",
                     "--no-warnings",
-                    "--format", "best[ext=mp4]/best",
+                    "--format", "18/best[ext=mp4]/best",
                     "--output", output_path,
                     "--no-playlist",
                     "--extractor-args", "youtube:player_client=android",
