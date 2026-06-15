@@ -11,7 +11,7 @@ import ffmpeg
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
-    from modules.music_fetcher import fetch_music_by_search
+    from modules.music_generator import generate_music
     from modules.newvoice import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_groups
@@ -21,7 +21,7 @@ except ImportError as e:
 # ---------------- CONFIG ---------------- #
 API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.03
+MUSIC_VOLUME = 0.05
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -30,15 +30,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Attack on Titan",
-"specific_subject": "Levi Ackerman's severe insomnia",
-"youtube_queries": [
-"Levi Ackerman season three part one Attack on Titan"
-],
-"twelvelabs_query": "Close up of Levi Ackerman looking extremely tired and annoyed while sitting indoors.",
-"music_mood": "melancholy acoustic anime instrumental no lyrics",
-"voice_name": "Hamid",
-"script": "[excitedly] Did you know humanity's strongest soldier has a terrible secret about his health? [pauses] We know Levi Ackerman is flawless in combat. But the creator revealed a really sad detail about his daily life. [whispering] Levi actually suffers from severe insomnia. He only sleeps for two to three hours a day! [sighs] And it gets worse. He does not even sleep in a normal bed. He just sits in a chair and sleeps in his daily clothes. Which is kind of wild. Imagine fighting giant monsters all day on a tiny chair nap. [playfully] Follow for more secrets!"
+  "topic": "rare production or animation fact",
+  "specific_subject": "Jujutsu Kaisen 0 movie was reportedly animated in only about four monthsthi",
+  "youtube_queries": [
+    "Jujutsu Kaisen 0 movie Yuta fight scene best animation",
+    "Jujutsu Kaisen 0 Gojo action scene movie clip",
+    "Jujutsu Kaisen 0 Rika cursed spirit transformation movie"
+  ],
+  "twelvelabs_query": "Young boy with black hair swinging a glowing sword, a giant white ghostly female monster with long hair floating behind him, fast camera dashing through a crowd of dark curses, bright energy slashes lighting up the screen",
+  "music_mood": "mysterious",
+  "music_prompt": "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements",
+  "voice_name": "Hamid",
+  "script": "[curious] You watched Jujutsu Kaisen Zero and thought the animation looked insane, right? [pauses] Well, here is something wild. According to one of its own animators, that whole movie, over one hundred minutes long, was reportedly finished in only about four months. [excited] Four! [matter-of-fact] For comparison, most films like this take two to three years. [whispering] The animator basically said even he could not believe it happened. [playfully] So next time your homework feels rushed, just remember a whole movie got drawn faster than one school term. [pauses] Makes you wonder... what did that speed actually cost them?"
 }
 
 def trim_video_to_end(
@@ -89,8 +92,6 @@ def trim_video_to_end(
     ], check=True)
 
     print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
-
-
 
 def evaluate_music_with_genai(music_path, script_text):
     client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
@@ -150,7 +151,6 @@ def evaluate_music_with_genai(music_path, script_text):
        - not too loud or chaotic
        - not distracting
        - supports storytelling
-
     DECISION RULES:
 
     - "post"
@@ -217,71 +217,68 @@ def evaluate_video_with_genai(video_path, script_text):
 
     # Build prompt
     prompt = f"""
-    You are acting as a short-form video content reviewer.
+        You are an AI Video Editor Assistant. 
+        Your job is to evaluate if this RAW SOURCE FOOTAGE is usable as background B-roll for a short-form video.
 
-    Your job is to evaluate how well the VIDEO matches the SCRIPT excerpt.
+        Do NOT judge this as a final, edited TikTok/Reel. Judge it based on its POTENTIAL.
 
-    IMPORTANT GUIDELINES:
-    - Judge ONLY what is visually or audibly present in the clip.
-    - Do NOT invent events that are not shown.
-    - HOWEVER, you MAY give partial credit if the visuals clearly support the script's topic, characters, objects, or situation.
-    - Do NOT be overly strict about literal action matching. Contextual relevance is acceptable.
-    - Be fair and balanced when scoring.
+        SCRIPT EXCERPT:
+        \"\"\"{script_text}\"\"\"
+        
+        THe video has to be only with actual footages it means no subsccribe to chanel, no promotions in between stuff. Just raw moments
 
-    SCRIPT EXCERPT:
-    \"\"\"{script_text}\"\"\"
+        EVALUATION GUIDELINES (1-10 Scale):
 
-    SCORING CRITERIA:
+        1. Visual-Script Alignment (relevance_score)
+           Since this is raw anime footage, be highly forgiving. 
+           - If the video shows the correct character (Levi Ackerman) or the correct show (Attack on Titan), give it an 8-10. 
+           - It does NOT need to show literal insomnia or the exact actions in the script. Thematic atmosphere, the character's face, or general action is perfectly acceptable for background B-roll.
+           - Only score below 5 if it is the wrong show, wrong character entirely, or completely unrelated to the anime.
 
-    1. Visual–Script Alignment (relevance_score: 1–10)
-       Evaluate how well the visuals support the meaning or context of the script.
+        2. Usable Action / Hook Potential (hook_score)
+           Does this raw footage contain cool, dynamic, or interesting scenes we could *use* to make a hook?
+           - 8-10: Contains great action scenes, cool character close-ups, or intense moments.
+           - 5-7: Standard talking scenes, panning shots, average animation.
+           - 1-4: Mostly black screens, text overlays, fan-edits with heavy watermarks, or unusable static menus.
 
-       9–10: Visuals clearly depict or strongly support the script
-       7–8 : Visuals are contextually relevant but not exact
-       5–6 : Partially related elements present
-       3–4 : Weak or indirect connection
-       1–2 : No meaningful relation
+        3. Raw Technical Quality (technical_score)
+           Is the footage visually clear enough to be cropped for a phone screen?
+           - 8-10: Clean footage, minimal watermarks, acceptable visual clarity.
+           - 5-7: Slightly blurry or has minor subtitles/watermarks, but usable.
+           - 1-4: Extremely pixelated, completely ruined by heavy editing/watermarks, or unwatchable.
 
-    2. First 2-Second Hook (hook_score: 1–10)
-       Evaluate whether the opening is visually or audibly engaging enough to stop scrolling.
+        DECISION RULES:
+        - "post":   relevance_score >= 5 AND hook_score >= 5 AND technical_score >= 5
+        - "reject": relevance_score <= 4 OR technical_score <= 4
+        - "revise": Use this if you are unsure.
 
-       Consider:
-       - Motion
-       - Visual intensity
-       - Curiosity
-       - Audio impact
-       - Emotional trigger
+        OUTPUT FORMAT:
+        Respond ONLY with valid JSON. No explanations, no markdown blocks.
 
-    3. Technical Quality (technical_score: 1–10)
-       Evaluate production quality:
-       - Animation smoothness
-       - Editing and pacing
-       - Audio clarity
-       - Visual effects quality
-
-    DECISION RULES:
-
-    - "post"
-      relevance_score >= 6 AND hook_score >= 7 AND technical_score >= 8
-
-    - "reject"
-      Visuals are largely unrelated OR technical quality is very poor.
-    OUTPUT FORMAT:
-    Respond ONLY with valid JSON. No explanation.
-
-    {{
-      "relevance_score": <1-10>,
-      "hook_score": <1-10>,
-      "technical_score": <1-10>,
-      "decision": "post" | "revise" | "reject"
-    }}
+        {{
+          "relevance_score": <1-10>,
+          "hook_score": <1-10>,
+          "technical_score": <1-10>,
+          "decision": "post" | "revise" | "reject"
+        }}
     """
 
-    # Send request
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[uploaded_file, prompt]
-    )
+    # Send request with 503 retry
+    attempt = 0
+    while True:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[uploaded_file, prompt]
+            )
+            break
+        except Exception as e:
+            if "503" in str(e):
+                attempt += 1
+                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt})")
+                time.sleep(20)
+            else:
+                raise
 
     # Ensure we have the text string
     raw_text = response.text if hasattr(response, "text") else str(response)
@@ -327,73 +324,85 @@ def find_scene_with_gemini(video_path, query, script):
     print("File ACTIVE ✅")
 
     prompt = f"""
-    You are performing precise visual scene matching in a video timeline.
+    You are analyzing a video to find when a specific visual moment occurs.
 
-    VIDEO METADATA
-    - Total video duration: {video_duration} seconds
-    - The returned timestamps MUST stay within this duration.
+    VIDEO DURATION: {video_duration} seconds
 
-    USER DESCRIPTION
+    USER QUERY:
     "{query}"
 
-    VIDEO SCRIPT
+    VIDEO SCRIPT:
     "{script}"
 
-    TASK
-    Scan the entire video and identify the segment that best visually matches the user description.
+    TASK:
+    Find the BEST approximate timestamp where the query visually appears.
 
-    MATCHING RULES
-    1. Focus primarily on VISUAL similarity.
-    2. Consider:
-       - foreground actions
-       - background activity
-       - small movements
-       - brief appearances
-    3. Even if the element appears briefly or in the background, it can still be a valid match.
-    4. If multiple matches exist, return the segment with the STRONGEST visual correspondence.
-    5. Return a tight segment around the best match.
+    IMPORTANT:
+    - The timestamp does NOT need to be exact (±2–3 seconds is acceptable).
+    - Use the script to find candidate moments, then refine visually.
+    - The result must produce a GOOD 5-second clip (important).
 
-    FALLBACK RULE
-    If the visual element described in "{query}" cannot be found:
-    - Use the SCRIPT to estimate the most likely visual moment.
-    - If the script also provides no reasonable hint, return:
-      {{ "start": 0, "end": 0 }}
+    SEARCH STRATEGY:
+    1. Identify 1–3 likely moments from the script.
+    2. Compare them visually.
+    3. Select the clearest and most usable moment.
 
-    TIMESTAMP RULES
-    - Use float seconds relative to the full video timeline.
-    - start and end MUST be numeric floats.
-    - start MUST be >= 0
-    - end MUST be <= {video_duration}
-    - end MUST be greater than start
-    - DO NOT use MM:SS format.
-    - DO NOT use strings.
-    - DO NOT include quotes around numbers.
+    CLIP QUALITY RULES (CRITICAL):
+    - The selected moment MUST allow at least 5 full seconds of usable footage.
+    - Avoid picking moments too close to the end of the video.
+    - Avoid intros, outros, fade-ins, fade-outs, and transitions.
+    - Prefer moments in the middle of a scene (not scene boundaries).
 
-    VALID EXAMPLE
-    {{ "start": 257.0, "end": 259.5 }}
+    AVOID THESE RANGES:
+    - First 3 seconds of the video (likely intro)
+    - Last 8 seconds of the video (likely outro)
+    - Only use these ranges if absolutely necessary.
 
-    INVALID EXAMPLES
-    {{ "start": 4:17, "end": 4:18 }}
-    {{ "start": "4:17", "end": "4:18" }}
-    {{ "start": "257", "end": "259" }}
+    MATCHING RULES:
+    - Focus primarily on visual similarity.
+    - If multiple matches exist, pick the most visually clear one.
+    - If no exact match exists, return the closest relevant moment.
+    - Only return start=0 if the video is completely unrelated.
 
-    OUTPUT RULES
-    Return ONLY valid JSON.
-    No markdown.
-    No explanation.
-    No additional text.
+    TIMESTAMP RULES (CRITICAL):
+    - All timestamps must be in SECONDS only.
+    - Do NOT use minutes or mm:ss format.
+    - NEVER output values like 1.30 or 2.10.
+    - Convert properly:
+      - 1 minute 30 seconds = 90.0
+      - 2 minutes 10 seconds = 130.0
 
-    FORMAT
-    {{ "start": <seconds>, "end": <seconds> }}
+    BOUNDARY RULE:
+    - Ensure: start + 5 <= {video_duration}
+    - If the best moment is too close to the end(- 15 seconds), shift the start earlier to allow a 20-30 seconds.
 
-    If no confident match exists:
-    {{ "start": 0, "end": 0 }}
+    OUTPUT RULES:
+    - Output ONLY valid JSON.
+    - Do NOT include any explanation or text.
+    - JSON must be the ONLY output.
+
+    OUTPUT FORMAT:
+    {{ "start": float, "end": float }}
+
+    - end = start + 5
+    - start must be within [0, {video_duration}]
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[uploaded_file, prompt]
-    )
+    attempt = 0
+    while True:
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[uploaded_file, prompt]
+            )
+            break
+        except Exception as e:
+            if "503" in str(e):
+                attempt += 1
+                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt})")
+                time.sleep(20)
+            else:
+                raise
 
     try:
         text = response.text
@@ -411,7 +420,6 @@ def find_scene_with_gemini(video_path, query, script):
         return None
     print("Raw model output:", text)
 
-    # remove markdown fences
     text = re.sub(r"```json|```", "", text).strip()
 
     try:
@@ -435,7 +443,7 @@ def run_manual_pipeline(data):
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
-        MUSIC_QUERY = data.get('music_mood', 'ambient')
+        MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
         VOICE_NAME = data.get('voice_name', 'hamid')
         SCRIPT_TEXT = data['script']
 
@@ -504,37 +512,10 @@ def run_manual_pipeline(data):
             )
 
         # 4️⃣ MUSIC
-        print(f"🎵 Fetching music...")
-        music_attempts = 0
-        max_music_attempts = 3
-        music_path = None
-
-        while music_attempts < max_music_attempts:
-            music_results = fetch_music_by_search(
-                queries=[MUSIC_QUERY],
-                max_tracks=1
-            )
-
-            if not music_results:
-                print("❌ No music found.")
-                break
-
-            candidate_music = music_results[0]
-            music_attempts += 1
-
-            print(f"🎧 Evaluating music attempt {music_attempts}...")
-
-            music_eval = evaluate_music_with_genai(candidate_music, SCRIPT_TEXT)
-
-            if music_eval["decision"] in ["post", "revise"]:
-                print("✅ Music approved!")
-                music_path = candidate_music
-                break
-            else:
-                print("❌ Music rejected, retrying...")
-
+        print(f"🎵 Generating music with ElevenLabs...")
+        music_path = generate_music(MUSIC_PROMPT)
         if not music_path:
-            print("⚠️ No good music found, continuing without music.")
+            print("⚠️ Music generation failed, continuing without music.")
 
         # 5️⃣ VOICE
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
@@ -580,7 +561,6 @@ def run_manual_pipeline(data):
         print(f"❌ Pipeline Error: {e}")
         import traceback
         traceback.print_exc()
-
 
 if __name__ == "__main__":
     if MANUAL_DATA:
