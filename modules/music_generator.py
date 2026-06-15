@@ -1,9 +1,7 @@
 import os
 import random
 from elevenlabs.client import ElevenLabs
-from config import MUSIC_DIR
-
-ELEVENLABS_API_KEY = "sk_c8339c458c9b24371a53c7d5636f139359c30f8b661796a7"
+from config import MUSIC_DIR, ELEVENLABS_API_KEY
 
 MUSIC_LENGTH_MS = 90_000  # 90 seconds
 

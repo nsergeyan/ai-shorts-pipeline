@@ -6,8 +6,20 @@ import sys
 import time
 import uuid
 import subprocess
+import itertools
 from google import genai
 import ffmpeg
+from config import GEMINI_API_KEYS
+
+if not GEMINI_API_KEYS:
+    raise RuntimeError("GEMINI_API_KEYS is not set. Add it to your .env file.")
+
+_key_pool = itertools.cycle(GEMINI_API_KEYS)
+
+def _gemini_client():
+    key = next(_key_pool)
+    print(f"🔑 Gemini key: {key[:8]}...")
+    return genai.Client(api_key=key)
 sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
@@ -19,9 +31,8 @@ except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
-API_KEY = "tlk_10XHM2C2H2GGKR2WKS0JP3J4G4WY"
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.05
+MUSIC_VOLUME = 0.1
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -30,18 +41,17 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "unexpected character detail",
-  "specific_subject": "Toge Inumaki speaks only in rice-ball ingredients so his Cursed Speech doesn't accidentally command people",
+  "topic": "JJK Production Fact — Nanami Death Scene Animator Tribute",
+  "specific_subject": "Fans believe a MAPPA animator personally volunteered to animate Nanami Kento's death scene as an emotional tribute",
   "youtube_queries": [
-    "Jujutsu Kaisen Inumaki cursed speech blast away Hanami fight",
-    "Jujutsu Kaisen Toge Inumaki saying salmon scene",
-    "Jujutsu Kaisen Inumaki commands cursed spirits exorcise scene"
+    "Nanami Kento death scene jujutsu kaisen season two",
+    "MAPPA jujutsu kaisen season two animation breakdown behind the scenes",
+    "Nanami final moments sukuna shibuya jujutsu kaisen scene"
   ],
-  "twelvelabs_query": "Boy with white hair and a high collar covering his mouth, snake-like markings on his cheeks, opening his mouth to shout, a visible shockwave blasting forward and knocking back a monster, then him coughing",
-  "music_mood": "curious",
-  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
+  "twelvelabs_query": "Nanami Kento standing calmly as cursed spirits close in around him, his body breaking apart in golden light during the Shibuya Incident arc",
+  "music_prompt": "Emotional and bittersweet orchestral instrumental, soft piano melody with gentle strings, slow tempo around 60 BPM, quiet build with a sense of tribute and melancholy, anime dramatic atmosphere, no lyrics. Do not start with quiet music.",
   "voice_name": "Hamid",
-  "script": "[curious] You know that quiet guy in Jujutsu Kaisen who only says random words like salmon and bonito flakes? [pauses] People think it is just a weird quirk. It is not. [excited] Toge has a power called Cursed Speech. Any word he says can become a command that forces people to obey. And here is the scary part. He cannot turn it off. [whispering] So if he said something normal, like go away, he might actually hurt someone. [matter-of-fact] That is why he sticks to safe rice-ball words. [playfully] Imagine ordering lunch and accidentally controlling the chef. [pauses] So... what happens if he ever loses his temper?"
+  "script": "Jujutsu Kaisen hides its heart inside its credits. Nanami Kento's death in Shibuya, that quiet, heartbreaking moment, might feel extra personal. And fans believe there is a reason. According to the animation community, one animator at MAPPA personally asked to handle that scene themselves, as a tribute to the character. I always thought the emotion in those frames felt different, almost too real. And honestly, knowing someone poured their own grief into every drawing? That hits completely different. Which is kind of wild, when you think about it. The saddest scene in the show might be the most personal thing MAPPA ever made. Follow for more Jujutsu Kaisen secrets you never noticed!"
 }
 
 def trim_video_to_end(
@@ -94,7 +104,7 @@ def trim_video_to_end(
     print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
 
 def evaluate_music_with_genai(music_path, script_text):
-    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
+    client = _gemini_client()
 
     # Upload music file
     uploaded_file = client.files.upload(file=music_path)
@@ -198,10 +208,7 @@ def evaluate_music_with_genai(music_path, script_text):
         }
 
 def evaluate_video_with_genai(video_path, script_text):
-    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
-    #AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
-    #WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
-    #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+    client = _gemini_client()
 
     # Upload video
     uploaded_file = client.files.upload(file=video_path)
@@ -263,7 +270,6 @@ def evaluate_video_with_genai(video_path, script_text):
         }}
     """
 
-    # Send request with 503 retry
     attempt = 0
     while True:
         try:
@@ -277,6 +283,11 @@ def evaluate_video_with_genai(video_path, script_text):
                 attempt += 1
                 print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt})")
                 time.sleep(20)
+            elif "429" in str(e):
+                attempt += 1
+                print(f"⚠️ Gemini 429 quota hit, rotating key... (attempt {attempt})")
+                client = _gemini_client()
+                time.sleep(5)
             else:
                 raise
 
@@ -303,10 +314,7 @@ def evaluate_video_with_genai(video_path, script_text):
 
 
 def find_scene_with_gemini(video_path, query, script):
-    client = genai.Client(api_key="AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I")
-    # AIzaSyALxc3KaH3Bkt-zvV88guhk7vOxOhzZp_I
-    # WORKING AIzaSyBovTpWVnz7JU2jeiusfRlnWYWb-x8vgEw
-    #AIzaSyDTsvk17wwE-r-YEjwsI_HhAOsXh7rzn4Q
+    client = _gemini_client()
 
     info = ffmpeg.probe(video_path)
     video_stream = next(s for s in info["streams"] if s["codec_type"] == "video")

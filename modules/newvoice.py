@@ -2,17 +2,15 @@ import os
 import re
 import subprocess
 from elevenlabs.client import ElevenLabs
-from config import DATA_DIR
+from config import DATA_DIR, ELEVENLABS_API_KEY
 
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-ELEVENLABS_API_KEYS = [
-    "sk_c8339c458c9b24371a53c7d5636f139359c30f8b661796a7"
-]
+ELEVENLABS_API_KEYS = [ELEVENLABS_API_KEY] if ELEVENLABS_API_KEY else []
 
 if not ELEVENLABS_API_KEYS:
-    raise RuntimeError("No ElevenLabs API keys configured.")
+    raise RuntimeError("ELEVENLABS_API_KEY is not set. Add it to your .env file.")
 
 VOICES = {
     "hamid": "yr43K8H5LoTp6S1QFSGg",

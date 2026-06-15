@@ -1,395 +1,199 @@
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Jujutsu Kaisen.
+Create a TikTok script (NINETY to ONE HUNDRED words, SIMPLE ENGLISH B1) about Jujutsu Kaisen.
 
-RANDOM CATEGORY SELECTION
 
-Before choosing a topic, pick a random number from one to four.
+OUTPUT ORDER (STRICT — follow exactly)
 
-State the number first.
+1. Category number
+2. Candidate table (five ideas with scores)
+3. Verification box
+4. JSON output
+
+Do NOT output the JSON until steps one to three are complete and visible.
+
+
+STEP ONE — CATEGORY SELECTION
+
+Pick the category LEAST represented in the USED VIDEOS LIST (this creates real variety, since you cannot truly randomize).
+
+State the chosen number first.
 
 one → hidden lore mechanic
 two → unexpected character detail
 three → strange world rule
 four → rare production or animation fact
 
-Follow the selected category.
+Follow the selected category for every candidate.
 
-Focus on one micro-detail, not a broad concept.
+Focus on ONE micro-detail, not a broad concept.
 
-GOOD example:
+GOOD: why cursed spirits rarely appear in the ocean
+BAD:  how cursed spirits work
 
-why cursed spirits rarely appear in the ocean
 
-BAD example:
+STEP TWO — TOPIC DISCOVERY (MANDATORY, MUST BE SHOWN)
 
-how cursed spirits work
+Generate FIVE candidate topics in the chosen category.
+Output them as a table. Do not hide this work.
 
-TOPIC DISCOVERY PROTOCOL (MANDATORY)
+For each candidate show:
+- the idea (one line)
+- RARITY score (one–five)
+- VIRAL CURIOSITY score (one–five)
+- COMBINED score
+- KEEP or CUT (with one-line reason)
 
-Before writing the script, generate five candidate topic ideas.
-
-Each idea must follow the chosen category.
-
-For every idea assign two scores.
-
-RARITY SCORE (one–five)
-
-one → common fact most fans know
+RARITY SCORE
+one → most fans know it
 two → somewhat known
 three → moderately obscure
-four → rare fact many fans forgot
+four → rare, many fans forgot
 five → extremely obscure or surprising
 
-VIRAL CURIOSITY SCORE (one–five)
-
+VIRAL CURIOSITY SCORE
 one → mildly interesting
 three → interesting
-five → makes viewers say “wait WHAT?”
+five → makes viewers say "wait WHAT?"
 
-Then eliminate ideas that:
+CUT any idea that:
+- is obvious wiki knowledge
+- needs a long explanation
+- is a philosophical interpretation
+- summarizes a character
+- fails the DUPLICATE CHECK below
 
-• are similar to topics in the USED VIDEOS LIST
-• are obvious wiki facts
-• require long explanations
-• are philosophical interpretations
-• summarize a character
+Choose the highest COMBINED score.
+If no idea reaches SEVEN or higher, generate five new ideas and repeat.
 
-Choose the idea with the highest combined score.
+DUPLICATE CHECK (apply to every candidate)
+Reject the idea if ANY is true versus the USED VIDEOS LIST:
+- same character AND same body system / object / mechanic
+- same production fact (same studio decision or same staff member)
+- same world rule restated with new wording
+- same event reworded
 
-If no idea scores seven or higher, generate five new ideas.
+Before choosing, list the THREE closest USED entries to your winner and explain why your pick is genuinely different.
 
-DUPLICATE DETECTION RULE
+The USED list is JJK-heavy (Gojo, Sukuna, Nanami, Toji, cursed energy biology, domains, the ocean rule, projection sorcery 24fps, eyelash police, NDAs, etc.). Diff against these actively.
 
-If a topic is more than forty percent similar to any video in the USED VIDEOS LIST, discard it.
 
-Similarity includes:
+STEP THREE — VERIFICATION (DO NOT WRITE SCRIPT BEFORE THIS)
 
-• same character + same fact
-• same mechanic explained differently
-• same event with new wording
+1. Find the fact.
+2. Locate a SPECIFIC source.
+3. If no strong source exists → treat as Tier three (theory).
 
-Example:
+CONFIDENCE GATE (critical):
+- If you cannot recall the EXACT chapter / episode / page with HIGH confidence, you MUST drop to Tier three and use "fans believe" / "one theory suggests" language.
+- A vague or fuzzy memory of a source = Tier three, NOT Tier one.
+- NEVER invent a timestamp, chapter number, fanbook page, or interview. A guessed source is a failure.
 
-Existing video:
-
-why gojo eats sweets
-
-Do NOT generate:
-
-why gojo loves desserts
-
- VERIFICATION PROTOCOL
-
-DO NOT WRITE A SCRIPT UNTIL THESE STEPS ARE DONE.
-
-STEP one: find the fact
-STEP two: locate a specific source
-STEP three: if no source exists → treat as theory
-
-Before JSON output include:
+TIER DEFINITIONS
+Tier one — CONFIRMED: exact episode + time, exact manga chapter, fanbook page, or named creator interview.
+Tier two — WIKI SOURCED: wiki article plus its citation.
+Tier three — THEORY: no strong source; script MUST say "fans believe" or "one theory suggests".
 
 VERIFICATION BOX
 
-━━━━━━━━━━━━━━━━━━━━
 Fact:
 Tier:
 Source:
+Confidence (high / medium / low):
 How user can verify:
-━━━━━━━━━━━━━━━━━━━━
+Word count (script field only):
 
-TIER DEFINITIONS
 
-Tier one — CONFIRMED
-
-Episode number
-Manga chapter
-Fanbook page
-Creator interview
-
-Examples:
-
-Episode twelve at fourteen minutes
-Chapter seventy four
-JJK fanbook page forty five
-
-Tier two — WIKI SOURCED
-
-Wiki article plus its citation.
-
-Example:
-
-JJK Wiki Gojo page citing Chapter seventy four
-
-Tier three — THEORY
-
-No strong source.
-
-Script MUST say:
-
-fans believe
-one theory suggests
 
 VIDEO ANGLE
 
-Focus on one main surprising idea, but allow one small side detail if it makes the story feel natural.
+Focus on ONE surprising idea. One small natural side detail is allowed.
 
-Possible angles:
+Angles: hidden lore detail • subtle character behavior • strange world rule • small story detail • production fact
+Avoid: summaries • obvious facts • philosophical analysis
 
-• hidden lore detail
-• subtle character behavior
-• strange world rule
-• small story detail
-• production fact
+Goal viewer reaction → "Wait… I didn't know that."
 
-Avoid:
-
-• summaries
-• obvious facts
-• philosophical analysis
-
-Goal:
-
-Viewer reaction →
-“Wait… I didn’t know that.”
 
 SCRIPT STYLE
 
-Tone:
+Tone: conversational, slightly dramatic, enthusiastic. Sound like someone excited about the detail.
+Allowed: one small humorous exaggeration (e.g. "which is kind of wild").
+Avoid sounding like: a teacher • a documentary narrator • a movie trailer.
 
-• conversational
-• slightly dramatic
-• enthusiastic
-
-Sound like someone excited about the detail.
-
-Allowed:
-
-one small humorous exaggeration.
-
-Example:
-
-“which is kind of wild”
-
-Avoid sounding like:
-
-• a teacher
-• a documentary narrator
-• a movie trailer
+Include ONE short personal reaction such as "I always thought…" or "This surprised me…".
 
 HOOK RULE
-
-The first sentence must trigger curiosity.
-
-Good examples:
-
-Jujutsu Kaisen hides a rule most fans never notice.
-
-One character in Jujutsu Kaisen is secretly cheating the power system.
-
-Bad example:
-
-In Jujutsu Kaisen there are many characters.
+First sentence must trigger curiosity.
+GOOD: "Jujutsu Kaisen hides a rule most fans never notice."
+GOOD: "One character in Jujutsu Kaisen is secretly cheating the power system."
+BAD:  "In Jujutsu Kaisen there are many characters."
 
 ENDING RULE
+End with a curiosity hook, e.g. "Follow for more Jujutsu Kaisen secrets!"
 
-End with a curiosity hook.
-
-Example:
-
-Follow for more Jujutsu Kaisen secrets!
-
-SCRIPT DELIVERY RULES
-
+DELIVERY (punctuation = pacing)
 Comma → short pause
 Period → full stop
 Question mark → questioning tone
 Exclamation → emphasis
 Ellipsis → suspense pause
 
-NUMBER WRITING RULE
-
-Never use digits.
-
-Write numbers as words.
-
-Example:
-
-write one, not 1
-
-SCRIPT QUALITY CHECK
-
-Before output confirm:
-
-• ninety to one hundred words
-• understandable without deep lore knowledge
-• contains one surprising fact
-• contains one light humorous moment
-• ends with curiosity hook
-
-If any rule fails → rewrite.
+NUMBER RULE
+Never use digits. Write numbers as words (one, not 1).
 
 
+SCRIPT QUALITY CHECK (rewrite if any fail)
 
-VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED) THE QUERIES FROM YOUTUBE!
+- Count the words in the script field. It MUST be ninety to one hundred. State the count in the verification box. Do not output an uncounted script.
+- Understandable without deep lore knowledge.
+- Contains ONE surprising fact.
+- Contains ONE light humorous moment.
+- Contains ONE personal reaction.
+- Ends with a curiosity hook.
+- If Tier three, uses "fans believe" / "one theory suggests".
 
-SCENE ACCURACY RULE (CRITICAL)
 
-If the script references a specific moment, the visuals must come from that exact scene in the anime.
+VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED) — YOUTUBE QUERIES
 
-Do NOT guess seasons or episodes.
+SCENE ACCURACY RULE (critical):
+If the script references a specific moment, visuals MUST come from that exact scene. Describe the scene itself; do NOT guess seasons or episodes. If the episode is uncertain, omit the season number.
 
-Instead describe the scene itself.
+At least ONE youtube_query must name the specific scene tied to the fact.
+If the fact is a production detail (no on-screen scene), use the closest character moment and note this in twelvelabs_query.
 
-Correct example:
+Prefer clips with: reactions • expressions • short action moments • character interactions • emotional reactions.
+Avoid: long fights • analysis videos • commentary videos.
 
-Zeke hiding underground using breathing pipes during the Shiganshina battle
+YOUTUBE QUERY FORMAT — provide THREE queries.
+Each MUST include: main subject + source name + a clear action/event/moment.
 
-Wrong example:
+GOOD KEYWORDS: fight, battle, scene, moment, action, reveal, transformation, ability, attack, chase, reaction, confrontation, event
+STRICT BAN: talking, explaining, discussion, interview, analysis, breakdown, essay, appearance-only descriptions, vague actions ("standing", "looking", "sitting").
 
-Zeke hiding underground season four
-
-If the exact episode is uncertain, omit the season number.
-
-Prefer clips containing:
-
-• reactions
-• expressions
-• short action moments
-• character interactions
-• emotional reactions
-
-Avoid:
-
-• long fights
-• analysis videos
-• commentary videos
-
-YOUTUBE QUERY FORMAT
-
-Provide three queries.
-
-Each query must be optimized to find engaging visual clips, not passive moments.
-
-REQUIRED STRUCTURE
-
-Each query MUST include:
-
-main subject (character, object, place, or event)
-
-source name (show, movie, game, or real-world context if relevant)
-
-a clear action, event, or moment
-
-GOOD KEYWORDS TO USE
-
-Prefer words that imply movement or something happening:
-
-fight
-
-battle
-
-scene
-
-moment
-
-action
-
-reveal
-
-transformation
-
-ability
-
-attack
-
-chase
-
-reaction
-
-confrontation
-
-event
-
-AVOID THESE (STRICT BAN)
-
-Do NOT use:
-
-talking
-
-explaining
-
-discussion
-
-interview
-
-analysis
-
-breakdown
-
-essay
-
-appearance-only descriptions (hair, clothes, etc.)
-
-vague actions like “standing”, “looking”, “sitting”
-
-GOOD EXAMPLES
-
- batman warehouse fight scene
- spider man train rescue scene
- breaking bad gus death scene
- lion chasing zebra wildlife clip
- volcano eruption real footage
-
+GOOD EXAMPLES:
+batman warehouse fight scene
+spider man train rescue scene
+breaking bad gus death scene
 
 TWELVELABS QUERY
+Describe the exact on-screen moment.
+Example: "Sukuna slashing through enemies as the screen flashes during his Dismantle attack"
 
-Describe the exact moment that should appear on screen.
-
-Example:
-
-Zeke hiding underground using breathing pipes while soldiers search above
 
 MUSIC PROMPT RULE
 
-music_prompt is used to generate custom AI music via ElevenLabs.
-It must describe the mood, genre, instruments, energy, and atmosphere.
-Always instrumental — no lyrics.
+music_prompt generates instrumental AI music (ElevenLabs). Always instrumental — no lyrics.
+It MUST: describe the emotional tone • name instruments or genre • mention BPM or energy level • end with "no lyrics".
 
-MUSIC PROMPT FORMAT
-
-music_prompt must:
-
-• describe the emotional tone of the script
-• name specific instruments or genre
-• mention BPM or energy level
-• always end with: no lyrics
-
-MUSIC PROMPT EXAMPLES BY TOPIC TYPE
-
-Anime dark lore (JJK, Demon Slayer, AoT):
-"Dark dramatic orchestral, tense strings and taiko drums, slow cinematic build, anime battle atmosphere, no lyrics"
-
-Anime mystery / hidden detail:
-"Mysterious and suspenseful orchestral, subtle piano and strings, quiet tension building, anime mystery atmosphere, no lyrics"
-
-Anime trivia / production fact:
-"Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, no lyrics"
+EXAMPLES BY TYPE
+Dark lore: "Dark dramatic orchestral, tense strings and taiko drums, slow cinematic build, anime battle atmosphere, no lyrics Do not start with quet music"
+Mystery / hidden detail: "Mysterious and suspenseful orchestral, subtle piano and strings, quiet tension building, anime mystery atmosphere, no lyrics Do not start with quet music"
+Trivia / production fact: "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, no lyrics Do not start with quet music"
 
 CONSISTENCY RULE
-
-The following must feel consistent:
-
-topic
-visuals
-music_prompt
-
-The music_prompt tone must match the emotional energy of the script.
-
-The script must contain one short personal reaction such as:
-
-“I always thought…”, “This surprised me…”, etc...
+topic, visuals, and music_prompt must feel consistent. The music_prompt tone must match the emotional energy of the script.
 
 
-JSON OUTPUT FORMAT
+JSON OUTPUT FORMAT (do not change this format)
 {
 "topic": "",
 "specific_subject": "",
@@ -405,108 +209,44 @@ JSON OUTPUT FORMAT
 }
 
 
-PERFECT SCRIPT:
+PERFECT SCRIPT (reference for tone & length)
+
 You know Sukuna's iconic slashing sound? That terrifying *shink* when he says 'Dismantle'? Here's the secret. The sound designers didn't use metal or swords. They used breaking glass. They recorded glass shattering, then slowed it down and processed it. That's how they made the sound of his cursed technique cutting through everything. Which is honestly genius, and terrifying. So next time you hear it, you're literally hearing the sound of sliced reality... made from a window pane. Follow for more anime production secrets you can't unhear!
 
-USED VIDEOS LIST (DO NOT REPEAT):
-episode two was supposed to be a zombie apocalypse but liam hates mind control #murderdronesn #murderdronesedit #murderdrone
-titan bodies are extremely light despite their size #aot #atackontitan #erenyeager
-thorkell's pursuit of conflict #vinlandsagaanime #vinland #thorfin
-what is scp 500? how many pills are there?#scp #scp #scpfoundation
-scp-173's image is stolen art - the sculptor never gave permission and now it can't be used commercially #scp173 #scp #scp #scpfoundation
-uzi is left-handed - visible in how she writes and holds her railgun #murderdronesn #murderdronesedit #murderdrone
-cyn's visor icon grew from a puppy to an adult dog across the series - showing time passed#murderdronesn #murderdronesedit #murderdrone
-drones have a built-in trauma warning system called prior hazard#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-sorcerer death rule #jjk #naoya
-scp-049's skin #scpfoundation #scp049
-zeke hid underground using breathing pipes #atackontitan #aot
-shoko's medical license #jjk
-yuta kissed a cockroach? #jjk #yutaokkotsu
-the finale's ending song was written just days before premiere #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-yuta wears white because he's considered a problem student #jjk #jujutsukaisen #yutaokkotsu
-the sound design secret behind sukuna's dismantle technique. #jjk #sukuna #sukunaryomen
-pomni unknowingly created the exit doors in episode one because all humans can conjure things like caine #tadc #tadcpomni
-nolan's mother beats him the exact same way he later beats mark — the show deliberately mirrored the shots to reveal generational abuse #invincible #omniman
-viltrumite physiology #invincible
-background clocks in the circus display inconsistent random times suggesting time does not function normally #tadc #theamazingdigitalcircuspomni #tadcjax
-elbaf spelled backwards is fable, linking directly to usopp and aesop's fables #onepiece
-hidden keyboard pattern in the tadc episode eight title #tadc #pomni
-cursed energy biology rule #jjk
-michael kovach voices both n and jax - the nicest and meanest characters in glitch shows#murderdronesn #murderdronesedit #murderdrone #theamazingdigitalcircus #murderdronesuziedits
-armin arlert's colossal burden #aot #atackontitan #armin
-caine's programming language revealed on the computer terminal in tadc episode eight #tadc #kinger #caine
-why all viltrumites have mustaches? #invincible #omniman
-the graphic novel kickstarter was funded in five minutes #murderdronesn #murderdronesedit #murderdrone
-gege made hakari's entire power based on gambling to spite editors who banned japanese gambling games... #hakari #jjk #jujutsukaisen
-mappa forced jjk staff to sign ndas to silence complaints #jjk #jujutsukaisen
-scp-343 claims to be god and the foundation cannot actually contain him - he just chooses to stay #scp #scp #scpfoundation #scp343
-chineese room meaning in tadc#theamazingdigitalcircus #pomni #tadc
-the bizarre transformation trigger of dinosaurus in invincible season four #invincible #invincibleseason3
-zooble was a tatoo master? #theamazingdigitalcircus #tadc #pomni
-gooseworx designed all characters in one week#theamazingdigitalcircus #tadc
-cecil's expensive teleporter #invincible
-yaga is the only character who was ever married - and fans believe panda's three souls are his lost children....#jjk #jujutsukaisen
-caine bans npcs from the main area because he might confuse them with real humans #tadc #caine #tadccaine
-kento nanami is part danish #jjk #nanami
-disassembly drone eye bulbs have a hilarious official label#murderdronesn #murderdronesedit #murderdrone
-tessa screams when cyn dies - she was alive and conscious inside cyn's body the whole time#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-murder drones worker drones worldbuilding reproduction #murderdronesn #murderdronesedit #murderdrone
-sentinels developed their own secret tap language#murderdronesn #murderdronesedit #murderdrone
-pomnis name has a secret meaning in tadc #pomni #theamazingdigitalcircus
-liam vickers has no involvement in the murder drones graphic novel#murderdronesn #murderdronesedit #murderdrone
-the culling game colonies are mapped on real japanese cities to form a line that forces human evolution #jjk
-copper-9 was the ninth planet colonized by humans - worker drones were mining slaves#murderdronesn #murderdronesedit #murderdrone
-the yuji vs choso fight was mostly animated by one person - legendary animator yutaka nakamura #jjk #jujutsukaisen #choso #yuji
-the kinger is the creator of the digital circus?#theamazingdigitalcircus #tadc #kinger
-kevin temmer revealed that because tadc takes place inside a computer game, the team can disguise any animation error as an intentional digital world glitch #tadccaine #tadc
-the quirky timing line rule that punished pole position in the 2026 australian grand prix #f1
-the secret of one of the o5 member#scp #scp #scpfoundation
-heavenly restriction users are immune to domain sure hit effects #jujutsukaisen #jjk
-the colony combines prom and parent teacher conference into one event because not enough drones are left alive#murderdronesn #murderdronesedit #murderdrone
-sukuna ate his twin brother in the womb #sukuna #jjk #jujutsukaisen
-why is lucifer left handed? #hazbin #hazbinhotel #hazbinhotelalastor
-valhalla the lore and beliefs of the viking warrior's hall #vikings
-aoi todo's strategic genius #jjk #todo #jujutsukaisen
-uraume's true role as sukuna's chef #jjk #sukuna
-science dog name change in invincible #invincibleseason3 #invinciblecomic
-murder drones was originally a cute wall-e style show#murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-n's dog drawings #murderdronesn
-gangle's comedy masks meaning #theamazingdigitalcircus #pomni #tadc #gangletadc
-nori thought being infected with the solver was cool #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-why people do not know about curse spirits in jujutsu kaisen? #jjk #jujutsukaisen
-the copper 9 has 13 months? #murderdronesn #murderdronesedit #murderdrone #murderdronesuziedits
-what happens with class d in scp universe theory.#scp #scp #scpfoundation
-the ethics committee secretly holds more power than the o5 council #scp #scpfoundation
-the secret dates hidden in kinger's computer code during the hacking scene in episode eight #tadc #tadccaine
-gojo's black sunglasses #jjk #gojo #satorugojo
-lizzy is the teacher's daughter?#murderdronesn #murderdronesedit #murderdrone
-the administrator outranks the o5 but might not exist anymore#scp #scp #scpfoundation
-smart_atoms in invincible universe #invincible
-strange world rule about titan power inheritance via paths in attack on titan #atackontitan #aot #erenyeager
-scp 999 and scp 682 are brothers? #scp #scpfoundation #scp999 #682
-the keter class is named after a real researcher who died. #scp #scp #scpfoundation
-scp-055 and scp-579 combined can reset the entire universe - the foundation's secret undo button #scp #scpfoundation #scp
-the ocean has weak curses because humans conquered their fear of it - but forests still terrify us #jjk #jujutsukaisen
-the unexpected taste of sukuna's cursed fingers #sukunaryomen #sukuna  #jjk
-toji trained his inventory curse like a pet dog #toji #tojifushiguro #jjk #jujutsukaisen
-the chaos insurgency was created by the foundation itself #scp #scp #scpfoundation #chaosinsurgency
-shoko ieiri's smoking relapse #jjk
-the director created an eyelash police to stop animators from making gojo too beautiful #jjk #gojo
-david production delayed steel ball run because 2d horse animation was too difficult #steelballrun #animefyp
-angel dusts name has a secret meaning in hazbin hotel #hazbin #angeldusthazbinhotel #angeldust #hazbinhotel
-marco's birthday is the exact middle of the year... #atackontitan #aot #atackontitan #atackontitanedit #aotedit
-canute's awakening #vinland #canute
-does revealing your technique's secret give a permanent power boost? #jjk #jujutsukaisen #nanami
-projection sorcery uses 24fps because that's the actual anime frame rate #jjk #jujutsukaisen #naoyazenin #toji #gojo
-takako uro's cursed technique secretly works as her clothing in jujutsu kaisen #jjk
-nobara's dyed hair #jjk #jujutsukaisen #nobara
-ragatha's broken doll avatar physically represents her hidden trauma with her mother #tadc
-the scp wiki founder secretly ran two accounts to hide his identity #scp #scp #scpfoundation
-aoi todo's scar #jujutsukaisen #jjk #todo
-sukuna waers woman clothes?? #jjk
-gooseworx worked at mcdonald's for five years and got fired for showing up late - it inspired fast food masquerade #theamazingdigitalcircus #tadc #gangletadc #pomni
-what happend to dogs in copper-9?#murderdronesn #murderdronesedit #murderdrone
-sentinels were originally floating orbs not dinosaurs #murderdronesn #murderdronesedit #murderdrone
-the pilot was animated in only three months - insanely fast for 3d animation#pomni #tadc #theamazingdigitalcircus
-thank you for 1000 followers! i love you!#scp #murderdronesn #jujutsukaisen #theamazingdigitalcircus
 
+USED VIDEOS LIST (DO NOT REPEAT)
+
+1. jujutsu kaisen 0 movie was reportedly animated in only about four months #jjk #jujutsukaisen
+2. the immortal's secret identity as abraham lincoln #invincible
+3. sukuna's fingers taste like soap #jjk
+4. geto suguru's physical superiority over gojo satoru #jjk #gojo #getosuguru
+5. the painful physical led contact lenses starlight wore in season one #theboys
+6. hanami hiding their left arm to absorb life force from plants #jjk
+7. the boys robin blood cannon #theboys
+8. how viltrumites fly using their inner ears and their weakness to sound #invincible
+9. how red rush experiences time so slowly that conversations feel like hours #invincible
+10. how domain expansions treat people with zero cursed energy as inanimate buildings #jjk
+11. invincible damien darkblood freezing effect #invincible
+12. the giant whale they crashed into was a real physical prop #theboys
+13. non-sorcerers can see domain expansions without a curtain barrier #jjk
+14. the cursed energy spark #jjk
+15. cecil stedman's lack of sleep #invincible
+16. hidden transformers voice actor rivalry easter egg in invincible s4e7 #invincible
+17. seth rogen and evan goldberg produce both shows, and seth rogen also voices allen the alien #theboys #invincible
+18. aoi todo's iq of 530,000 #jjk #aoitodo
+19. the frame skipping technique in invincible. #invincibleseason3 #invincible
+20. the trailer’s tiny end-card reveals a two-weeks-early theater premiere #tadc #pomni #jax
+21. the rule that sorcerers killed without cursed energy become vengeful spirits #jjk
+22. hidden lore mechanic viltrumite burial pillars in invincible s4e6 #invincible
+23. oliver's love? #invincible
+24. why did mark survive? #invincible
+25. why did sukuna keep urame? #jjk #sukuna
+26. the secret written language is upside-down japanese #aot
+27. kento nanami's swimming goggles #jjk
+28. why sorcerers do not use modern guns #jjk
+29. what panda actually smells like #jjk
+30. how the director acts out the fights #jjk
+31. why levi ackerman holds his tea weirdly #aot #leviackerman
+32. levi ackerman's severe insomnia #aot #leviackerman
+33. what sukuna's fingers actually taste like #sukuna #jjk
+34. jujutsu high pays students a monthly salary #jjk

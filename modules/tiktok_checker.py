@@ -103,3 +103,12 @@ def check_duplicate_tiktok_topic(topic: str, existing_topics: Set[str]) -> bool:
         if topic in existing or existing in topic:
             return True
     return False
+
+
+if __name__ == "__main__":
+    username = "plaim62"
+    print(f"🔍 Fetching TikTok videos for @{username}...")
+    videos = get_tiktok_videos(username, max_results=50)
+    print(f"✅ Found {len(videos)} videos:\n")
+    for i, caption in enumerate(videos, 1):
+        print(f"{i}. {caption}")
