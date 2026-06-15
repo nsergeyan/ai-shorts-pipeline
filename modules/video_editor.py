@@ -232,6 +232,79 @@ def _create_text_image(text: str, video_size: tuple, font_path: str, fontsize: i
     return temp_path
 
 
+def _render_word_highlight_image(words_in_line, active_idx, video_size, fontsize):
+    """Render a line of words with the active word in yellow using Pillow."""
+    w_vid, h_vid = video_size
+    img = Image.new('RGBA', (w_vid, h_vid), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    font_path = "/System/Library/Fonts/Helvetica.ttc"
+    font = ImageFont.truetype(font_path, fontsize)
+
+    space_w = draw.textbbox((0, 0), " ", font=font)[2]
+    word_widths = [draw.textbbox((0, 0), w, font=font)[2] - draw.textbbox((0, 0), w, font=font)[0]
+                   for w in words_in_line]
+    total_w = sum(word_widths) + space_w * (len(words_in_line) - 1)
+
+    max_w = int(w_vid * 0.9)
+    if total_w > max_w:
+        fontsize = int(fontsize * (max_w / total_w))
+        font = ImageFont.truetype(font_path, fontsize)
+        space_w = draw.textbbox((0, 0), " ", font=font)[2]
+        word_widths = [draw.textbbox((0, 0), w, font=font)[2] - draw.textbbox((0, 0), w, font=font)[0]
+                       for w in words_in_line]
+        total_w = sum(word_widths) + space_w * (len(words_in_line) - 1)
+
+    x = (w_vid - total_w) / 2
+    y = int(h_vid * 0.10)
+
+    for i, (word, ww) in enumerate(zip(words_in_line, word_widths)):
+        color = "#FFE000" if i == active_idx else "white"
+        for dx in range(-3, 4):
+            for dy in range(-3, 4):
+                draw.text((x + dx, y + dy), word, font=font, fill="black")
+        draw.text((x, y), word, font=font, fill=color)
+        x += ww + space_w
+
+    temp_path = f"temp_wh_{uuid.uuid4().hex}.png"
+    img.save(temp_path)
+    return temp_path
+
+
+def _make_word_highlight_clips(words_data, video_size, words_per_line=3):
+    """
+    words_data: [(word, start, end)]
+    Groups words into lines and renders each word's highlight frame.
+    Cleans up temp PNG files after creating clips.
+    """
+    h_vid = video_size[1]
+    fontsize = int(h_vid * 0.065)
+    clips = []
+    temp_files = []
+
+    lines = [words_data[i:i + words_per_line] for i in range(0, len(words_data), words_per_line)]
+
+    for line in lines:
+        words_in_line = [w for w, s, e in line]
+        for active_idx, (word, start, end) in enumerate(line):
+            dur = end - start
+            if dur <= 0:
+                continue
+            img_path = _render_word_highlight_image(words_in_line, active_idx, video_size, fontsize)
+            temp_files.append(img_path)
+            clip = ImageClip(img_path).set_start(start).set_duration(dur).set_position((0, 0))
+            clips.append(clip)
+
+    # Clean up temp PNGs
+    for f in temp_files:
+        try:
+            os.remove(f)
+        except:
+            pass
+
+    return clips
+
+
 def _make_subtitle_clips(subtitles_data, video_size, position="top"):
     w_vid, h_vid = video_size
     clips = []
@@ -282,6 +355,7 @@ def merge_audio_video(
         music_volume: float = 0.01,
         subtitles_data: Optional[list] = None,
         subtitles_position: str = "bottom",
+        words_data: Optional[list] = None,
         cta_path=cta_path,
         subtitles_text: Optional[str] = None
 ):
@@ -340,7 +414,14 @@ def merge_audio_video(
         )
 
     # 5. Subtitles
-    if subtitles_data:
+    if words_data:
+        try:
+            subs = _make_word_highlight_clips(words_data, video.size)
+            if subs:
+                video = CompositeVideoClip([video] + subs)
+        except Exception as e:
+            print(f"⚠️ Word highlight generation failed: {e}")
+    elif subtitles_data:
         try:
             subs = _make_subtitle_clips(subtitles_data, video.size, subtitles_position)
             if subs:
