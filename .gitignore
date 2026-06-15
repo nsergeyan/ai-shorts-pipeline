@@ -1,4 +1,21 @@
 .venv/
 __pycache__/
 *.pyc
+*.pyo
+
+# Data directories
 data/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# IDE
+.idea/
+
+# Cache files
+*_topics_cache*.txt
+
+# Temp pipeline files
+trimmed_scene_*.mp4
+token.json
