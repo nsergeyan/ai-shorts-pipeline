@@ -15,6 +15,7 @@ from moviepy.video.VideoClip import ImageClip, ColorClip, VideoClip
 CYRILLIC_RE = re.compile(r'[\u0400-\u04FF]')
 
 def contains_cyrillic(text: str) -> bool:
+    """Return True if the text contains any Cyrillic characters."""
     return bool(CYRILLIC_RE.search(text))
 
 
@@ -91,6 +92,7 @@ def load_cta_clip(
     duration: Optional[float] = None,
     green_screen: bool = True
 ):
+    """Load the CTA overlay clip, resize it, and optionally remove the green background."""
     cta = VideoFileClip(cta_path).without_audio()
 
     # Resize CTA to match video
@@ -108,6 +110,7 @@ def load_cta_clip(
 
 
 def _make_vertical_9x16(clip, target_w=1080, target_h=1920, bg_color=(0, 0, 0)):
+    """Resize a clip to fit 9:16 aspect ratio with black letterboxing."""
     w, h = clip.size
     src_ratio = w / h
     tgt_ratio = target_w / target_h
@@ -124,12 +127,14 @@ def _make_vertical_9x16(clip, target_w=1080, target_h=1920, bg_color=(0, 0, 0)):
 
 
 def _loop_video_to_duration(clip, target_duration: float):
+    """Loop or trim a video clip to exactly target_duration seconds."""
     if clip.duration and clip.duration >= target_duration:
         return clip.subclip(0, target_duration)
     return clip.fx(vfx.loop, duration=target_duration).subclip(0, target_duration)
 
 
 def _loop_audio_to_duration(audio_clip, target_duration: float):
+    """Loop or trim an audio clip to exactly target_duration seconds."""
     if audio_clip.duration and audio_clip.duration >= target_duration:
         return audio_clip.subclip(0, target_duration)
 
@@ -187,6 +192,7 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
 
 
 def _create_text_image(text: str, video_size: tuple, font_path: str, fontsize: int):
+    """Render a text string onto a transparent image using Pillow, auto-scaling if too wide."""
     w_vid, h_vid = video_size
     img = Image.new('RGBA', (w_vid, h_vid), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
@@ -298,6 +304,7 @@ def _make_word_highlight_clips(words_data, video_size, words_per_line=3):
 
 
 def _make_subtitle_clips(subtitles_data, video_size, position="top"):
+    """Convert a list of (start, end, text) subtitle entries into timed MoviePy clips."""
     w_vid, h_vid = video_size
     clips = []
     fontsize = int(h_vid * 0.06)
@@ -350,6 +357,7 @@ def merge_audio_video(
         cta_path=CTA_PATH,
         subtitles_text: Optional[str] = None,
 ):
+    """Assemble the final Short: crop to 9:16, mix voice and music, burn subtitles, overlay CTA, export."""
     print("\n🎬  Starting Video Editor...")
 
     voice_audio = AudioFileClip(audio_path)

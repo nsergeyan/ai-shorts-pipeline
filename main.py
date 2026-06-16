@@ -18,6 +18,7 @@ if not GEMINI_API_KEYS:
 _key_pool = itertools.cycle(GEMINI_API_KEYS)
 
 def _gemini_client():
+    """Return a Gemini client using the next API key in the rotation pool."""
     key = next(_key_pool)
     print(f"🔑 Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
@@ -104,6 +105,7 @@ def trim_video_to_end(
     print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
 
 def evaluate_music_with_genai(music_path, script_text):
+    """Upload generated music to Gemini and score it for mood, energy, and voice compatibility."""
     client = _gemini_client()
 
     # Upload music file
@@ -207,6 +209,7 @@ def evaluate_music_with_genai(music_path, script_text):
         }
 
 def evaluate_video_with_genai(video_path, script_text):
+    """Upload a video to Gemini and score it for relevance, hook potential, and technical quality."""
     client = _gemini_client()
 
     # Upload video
@@ -313,6 +316,7 @@ def evaluate_video_with_genai(video_path, script_text):
 
 
 def find_scene_with_gemini(video_path, query, script):
+    """Ask Gemini to find the best matching timestamp in the video for the given visual query and script."""
     client = _gemini_client()
 
     info = ffmpeg.probe(video_path)
@@ -443,6 +447,7 @@ def find_scene_with_gemini(video_path, query, script):
 
 
 def run_manual_pipeline(data):
+    """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
     try:
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']

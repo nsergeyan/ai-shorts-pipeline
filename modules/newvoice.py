@@ -20,12 +20,14 @@ VOICES = {
 
 
 def clean_text_for_speech(text: str) -> str:
+    """Normalize whitespace and line breaks before sending text to ElevenLabs."""
     text = text.replace("\n", " ").replace("\r", " ")
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 
 def change_audio_speed(input_path: str, output_path: str, speed: float = 1.2):
+    """Use FFmpeg atempo filter to change the playback speed of an audio file."""
     subprocess.run([
         "ffmpeg",
         "-y",
@@ -42,7 +44,7 @@ def _try_generate_with_key(
         voice_id: str,
         lang: str
 ) -> bool:
-
+    """Attempt to generate TTS audio with a single ElevenLabs API key. Returns True on success."""
     client = ElevenLabs(api_key=api_key)
     print(f"🔑 Using key: {api_key[:6]}... for Language: {lang.upper()}")
 
@@ -99,7 +101,7 @@ def generate_voice(
         voice: str = "hamid",
         lang: str = "en"
 ) -> str:
-
+    """Generate narration audio via ElevenLabs and save to AUDIO_DIR. Raises if all keys fail."""
     output_path = os.path.join(AUDIO_DIR, filename)
     voice_id = VOICES.get(voice, VOICES["hamid"])
 

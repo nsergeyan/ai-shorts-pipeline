@@ -64,6 +64,7 @@ def _make_opts(skip_download: bool, use_range: bool = False):
 
 
 def _make_opts_android(skip_download: bool):
+    """yt-dlp options using the Android client — often bypasses YouTube restrictions."""
     opts = {
         "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
@@ -95,6 +96,7 @@ def _make_opts_android(skip_download: bool):
 
 
 def _make_opts_no_cookies(skip_download: bool):
+    """yt-dlp options without browser cookies — used as a fallback when cookie-based download fails."""
     return {
         "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
@@ -199,12 +201,14 @@ def _final_filepath(ydl: yt_dlp.YoutubeDL, info: dict) -> str:
 
 
 def _safe_title(t: str) -> str:
+    """Strip characters that are invalid in filenames and truncate to 200 chars."""
     t = re.sub(r'[\\/*?:"<>|]', " ", t)
     t = re.sub(r"\s+", " ", t).strip()
     return t[:200]
 
 
 def _pick_existing_gameplay() -> Optional[str]:
+    """Return the largest video file already in GAMEPLAY_DIR, or None if empty."""
     os.makedirs(GAMEPLAY_DIR, exist_ok=True)
     candidates = [f for f in os.listdir(GAMEPLAY_DIR) if f.lower().endswith((".mp4", ".webm", ".mkv"))]
     if candidates:

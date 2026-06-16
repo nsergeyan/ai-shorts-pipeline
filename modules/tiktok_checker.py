@@ -6,6 +6,7 @@ from yt_dlp import YoutubeDL
 existing_tiktok_topics_cache = {}
 
 def get_tiktok_videos(username: str, max_results: int = 50):
+    """Fetch video descriptions from a TikTok account using yt-dlp."""
     try:
         url = f"https://www.tiktok.com/@{username}"
 
@@ -36,6 +37,7 @@ def get_tiktok_videos(username: str, max_results: int = 50):
 
 
 def load_existing_topics(cache_file: str) -> Set[str]:
+    """Load previously saved topics from a local cache file."""
     try:
         if os.path.exists(cache_file):
             with open(cache_file, "r", encoding="utf-8") as f:
@@ -46,6 +48,7 @@ def load_existing_topics(cache_file: str) -> Set[str]:
 
 
 def save_existing_topics(topics: List[str], cache_file: str):
+    """Save a list of topics to a local cache file, one per line."""
     try:
         with open(cache_file, "w", encoding="utf-8") as f:
             for topic in topics:
@@ -54,7 +57,8 @@ def save_existing_topics(topics: List[str], cache_file: str):
         print(f"⚠️ Failed to save TikTok cache: {e}")
 
 
-def get_existing_tiktok_topics_by_language(language: str,tiktok_channels: dict,force_refresh: bool = False) -> Set[str]:
+def get_existing_tiktok_topics_by_language(language: str, tiktok_channels: dict, force_refresh: bool = False) -> Set[str]:
+    """Return the set of already-posted topics for a given language, using cache when possible."""
     global existing_tiktok_topics_cache
 
     cache_key = f"tiktok_{language}"
@@ -83,6 +87,7 @@ def get_existing_tiktok_topics_by_language(language: str,tiktok_channels: dict,f
 
 
 def check_duplicate_tiktok_topic(topic: str, existing_topics: Set[str]) -> bool:
+    """Return True if the topic is too similar to any already-posted topic."""
     if not topic or not existing_topics:
         return False
 
