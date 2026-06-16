@@ -33,7 +33,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.1
+MUSIC_VOLUME = 0.07
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -41,18 +41,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "Attack on Titan",
-  "specific_subject": "Hange Zoe's extreme hygiene habits and Levi's solution",
-  "youtube_queries": [
-    "Hange Zoe Attack on Titan screaming at Titan",
-    "Levi Ackerman Attack on Titan cleaning room",
-    "Hange and Levi Attack on Titan arguing"
-  ],
-  "scene_query": "An anime character with a messy brown ponytail and glasses standing next to a short-haired man wearing a green scout cape inside a wooden room.",
-  "music_mood": "curious",
-  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
-  "voice_name": "Hamid",
-  "script": "Have you ever wondered about Hange’s hygiene in Attack on Titan? [excited] Hange is totally obsessed with Titans. In fact, Hange spends days touching Titan skin and slime without stopping. [pauses] Because of this, Hange smells absolutely terrible! [whispering] It gets so bad that the clean freak Levi Ackerman cannot stand it. So, how does Levi solve this smelly problem? [dramatic] He actually knocks Hange unconscious! Yes, Levi hits Hange to sleep, then throws Hange into a hot bathtub to force a wash. [playfully] Talk about extreme teamwork! Who do you think smells worse, Hange or a real Titan?"
+"topic": "Ryomen Sukuna's Stomach Mouth",
+"specific_subject": "How Sukuna uses his second mouth to chant without stopping his breathing",
+"youtube_queries": [
+  "Ryomen Sukuna true form + Jujutsu Kaisen + stomach mouth speaking",
+  "Ryomen Sukuna + Jujutsu Kaisen + fighting Kashimo",
+  "Ryomen Sukuna Heian era + Jujutsu Kaisen + chanting spells"
+],
+"scene_query": "A towering muscular man with pink hair, four arms, and black body tattoos, wearing white baggy pants. A large, grotesque second mouth with sharp teeth is located on his stomach, moving as if chanting, while his top face looks forward.",
+"music_mood": "hype",
+"music_prompt": "Aggressive melodic phonk instrumental, punchy 808 bass, fast energetic tempo 120 BPM, rising tension with sudden drop, dramatic and intense mood, anime fact video background, no lyrics, exclude: vocals, exclude: calm elements",
+"voice_name": "Hamid",
+"script": "[excited] Everyone thinks Sukuna having two faces is just to look scary. [pauses] But his stomach mouth has a genius purpose. [dramatic] In the manga, we learn that his extra mouth is actually his ultimate cheat code for magic. [whispers] When normal sorcerers cast huge spells, they have to chant words. This slows them down and messes up their breathing. [loudly] But Sukuna? [excited] He fights with his main mouth closed, while his stomach mouth sings the magic words for him! [playfully] Imagine getting punched in the face while a belly sings you a deadly lullaby. [curious] But do you know what his four arms actually do?"
 }
 
 def trim_video_to_end(
@@ -490,7 +490,7 @@ def run_manual_pipeline(data):
 
             evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
 
-            if evaluation and evaluation.get("decision") in ("post", "revise"):
+            if evaluation and evaluation.get("decision") in ("post", "revise") and evaluation.get("subject_present", False):
                 print("✅ Video approved by GenAI!")
                 original_video = candidate_video
                 break
