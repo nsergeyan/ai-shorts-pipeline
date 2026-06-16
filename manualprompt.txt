@@ -1,213 +1,191 @@
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Rick and Morty.
-DO NOT EXAGERATE FACTS!
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Attack on Titan.
+DO NOT EXAGGERATE FACTS!
 
+═══════════════════════════════════
 RANDOM CATEGORY SELECTION
+═══════════════════════════════════
 Only choose topics that can be clearly shown through a short visual clip with obvious action or movement, and can be easily turned into three strong YouTube search queries.
 
-Before choosing a topic, pick a random number from one to four.
-State the number first.
+Before choosing a topic, pick a random number from one to four. State the number first.
 
 one → hidden lore mechanic
 two → unexpected character detail
 three → strange world rule
 four → rare production or animation fact
 
-Follow the selected category. Focus on one micro-detail, not a broad concept.
+Follow the selected category. Focus on ONE micro-detail, not a broad concept.
 
-GOOD example: why cursed spirits rarely appear in the ocean
-BAD example: how cursed spirits work
+GOOD example: what the inside of a Titan's mouth smells like to its host
+BAD example: how Titan transformation works
 
+═══════════════════════════════════
+WHAT MAKES A FACT GOOD (READ FIRST)
+═══════════════════════════════════
+The target is NOT "most obscure." The target is "makes a viewer say wait, WHAT?"
+
+Obscurity is allowed and welcome — but ONLY when it raises the reaction. A rare-but-boring fact is worse than a mid-rarity fascinating one.
+
+The ideal fact pattern (the "soap pattern"):
+A small, concrete, almost ordinary question (a texture, smell, sound, habit, weird detail) applied to a famous or central thing — where the real, canon answer is funnier or stranger than expected.
+
+Reference example (from another series, for calibration only):
+"Sukuna's severed finger feels and smells like soap." → famous object, hidden physical detail, canon, zero lore needed, instant 'wait WHAT?'. THIS is the level and flavor to aim for.
+
+═══════════════════════════════════
 TOPIC DISCOVERY PROTOCOL (MANDATORY)
+═══════════════════════════════════
+Generate FIVE candidate ideas in the chosen category.
+Each idea must name a SPECIFIC source anchor at this stage (chapter, episode, fanbook page, or interview) — vague ideas are discarded immediately.
 
-Before writing the script, generate five candidate topic ideas.
-Each idea must follow the chosen category.
+For each candidate assign ONE score only:
 
-For every idea assign two scores:
+WAIT-WHAT SCORE (one–five):
+one → "ok, neat"
+two → "mildly interesting"
+three → "huh, I didn't know that"
+four → "oh that's actually wild"
+five → "wait, WHAT? — I want to tell someone right now"
 
-RARITY SCORE (one–five)
-one → common fact most fans know
-two → somewhat known
-three → moderately obscure
-four → rare fact many fans forgot
-five → extremely obscure or surprising
+A fact must score FOUR or higher to be used.
 
-VIRAL CURIOSITY SCORE (one–five)
-one → mildly interesting
-three → interesting
-five → makes viewers say "wait WHAT?"
+KILL TEST — automatically reject a candidate if it is:
+- well-known to most fans (no surprise)
+- obscure but DRY (stat numbers, IQ figures, voice-actor credits, staff names, release dates, episode-count records) — rare yet boring
+- requires a lore lecture before the surprise lands
+- philosophical interpretation or character summary
+- more than forty percent similar to anything in the USED VIDEOS LIST
 
-Eliminate ideas that:
-- are similar to topics in the USED VIDEOS LIST
-- are obvious wiki facts
-- require long explanations
-- are philosophical interpretations
-- summarize a character
+BANNED OVERSATURATED PATTERNS (the iceberg clichés — never pick these):
+character IQ/stat numbers, voice-actor trivia, "the author originally planned…", hidden background text/languages, episode-count or runtime records, sleep/eating habits stated as a character's whole personality.
 
-Choose the idea with the highest combined score.
-If no idea scores seven or higher, generate five new ideas.
+Pick the highest-scoring surviving candidate.
+If no candidate scores four or higher, generate five NEW ideas.
 
+═══════════════════════════════════
 DUPLICATE DETECTION RULE
-
-If a topic is more than forty percent similar to any video in the USED VIDEOS LIST, discard it.
-Similarity includes:
-- same character + same fact
-- same mechanic explained differently
-- same event with new wording
+═══════════════════════════════════
+Discard a topic if it matches any USED VIDEOS LIST entry on ANY of these:
+- same character + same object / body part / habit
+- same mechanic explained with different words
+- same event reworded
+- same "what does X feel/smell/taste/sound like" framing about the same subject
 
 Example:
-Existing video: why gojo eats sweets
+Existing: why gojo eats sweets
 Do NOT generate: why gojo loves desserts
 
-VERIFICATION PROTOCOL
-
-DO NOT WRITE A SCRIPT UNTIL THESE STEPS ARE DONE.
-
+═══════════════════════════════════
+VERIFICATION PROTOCOL (DO BEFORE WRITING)
+═══════════════════════════════════
 STEP one: find the fact
 STEP two: locate a specific source
-STEP three: if no source exists → treat as theory
+STEP three: if no strong source exists → treat as Tier three theory
 
-Before JSON output include:
+TIER DEFINITIONS
+Tier one — CONFIRMED: episode number / manga chapter / fanbook page / creator interview
+Tier two — WIKI SOURCED: wiki article PLUS its own citation
+Tier three — THEORY: no strong source. Script MUST say "fans believe" or "one theory suggests."
+
+RULE: Because this video must not exaggerate, prefer Tier one. Only use Tier three if the WAIT-WHAT score is five AND the script clearly flags it as a theory.
+
+Before JSON output, include this box:
 
 VERIFICATION BOX
 ━━━━━━━━━━━━━━━━━━━━
 Fact:
+Wait-What Score:
 Tier:
 Source:
+Why this isn't widely known:
 How user can verify:
 ━━━━━━━━━━━━━━━━━━━━
 
-TIER DEFINITIONS
-
-Tier one — CONFIRMED
-Episode number / Manga chapter / Fanbook page / Creator interview
-
-Tier two — WIKI SOURCED
-Wiki article plus its citation.
-
-Tier three — THEORY
-No strong source. Script MUST say: "fans believe" or "one theory suggests"
-
+═══════════════════════════════════
 VIDEO ANGLE
+═══════════════════════════════════
+One main surprising idea. One small natural side detail allowed.
+Goal: "Wait… I didn't know that."
 
-Focus on one main surprising idea, but allow one small side detail if it makes the story feel natural.
-Goal: Viewer reaction → "Wait… I didn't know that."
-
-SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION (CRITICAL)
-
-Tone: conversational, slightly dramatic, enthusiastic.
-Sound like someone excited about the detail.
+═══════════════════════════════════
+SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
+═══════════════════════════════════
+Tone: conversational, slightly dramatic, enthusiastic — sound genuinely excited about the detail.
 
 ELEVENLABS V3 AUDIO TAGS RULE:
-You must insert minimum four [bracketed] performance tags directly inside the script to guide the AI voice's emotion and delivery.
+Insert MINIMUM four [bracketed] performance tags inside the script to guide the AI voice.
 
-Audio Tags let you simulate a range of emotional and physical cues:
+Tag families you can draw from (invent your own variants freely):
+- Emotional tone: [excited], [nervous], [frustrated], [calm], [sorrowful]
+- Reactions: [sigh], [gulps], [whispers]
+- Volume & energy: [whispering], [shouting], [quietly], [loudly]
+- Pacing: [pauses], [stammers], [rushed], [hesitates]
+- Tone cues: [cheerfully], [flatly], [deadpan], [playfully], [dramatic]
+Tags can be layered: "[nervously] I... I'm not sure this works. [gulps] But let's try."
 
-Emotional tone: [EXCITED], [NERVOUS], [FRUSTRATED], [TIRED]
-Reactions: [SIGH], [GULPS]
-Volume & energy: [WHISPERING], [SHOUTING], [QUIETLY], [LOUDLY]
-Pacing & rhythm: [PAUSES], [STAMMERS], [RUSHED]
-Tags can be layered to add nuance: "[NERVOUSLY] I... I'm not sure this is going to work. [GULPS] But let's try anyway."
+PUNCTUATION FOR DELIVERY:
+Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause.
 
-Character-focused tags allow you to shape vocal identity and presence:
+NUMBER RULE: Never use digits. Write numbers as words (one, not 1).
 
-Accents & dialects: [British accent], [Australian accent], [Southern US accent]
-Archetypes & roles: [pirate voice], [evil scientist voice], [childlike tone]
-Speech styles: [dramatic], [sarcastically], [matter-of-fact], [whiny]
-Genre cues: [fantasy narrator], [sci-fi AI voice], [classic film noir]
-Layering tags helps bring characters to life: "[dramatic][French accent] You do not understand... zis was never about revenge. It was about destiny."
+WORD COUNT RULE:
+Spoken text must be ninety to one hundred words. Do NOT count [bracketed] tags.
+After writing, number each spoken word to confirm the count is ninety to one hundred, then output the clean version. If it fails, rewrite.
 
-Here are some frequently used tags to direct emotional performance:
-
-Emotional states: [excited], [nervous], [frustrated], [sorrowful], [calm]
-Reactions: [sigh], [gulps], [whispers]
-Cognitive beats: [pauses], [hesitates], [stammers], [resigned tone]
-Tone cues: [cheerfully], [flatly], [deadpan], [playfully]
-These can be combined or sequenced for richer emotional arcs: [hesitant] I... I didn't mean to say that. [regretful] It just came out.
-
-YOU DO NOT HAVE TO USE EXACT []. YOU CAN COME UP WITH YOUR OWN VERSIONS
-
-ELEVENLABS PUNCTUATION RULES:
-Comma → short pause
-Period → full stop
-Question mark → questioning tone
-Exclamation → emphasis
-Ellipsis (...) → suspense pause
-
-NUMBER WRITING RULE
-Never use digits. Write numbers as words (e.g., write one, not 1).
-
-WORD COUNT RULE
-The spoken text must be ninety to one hundred words. Do NOT count the [bracketed] ElevenLabs tags in this word count.
-
-SCRIPT QUALITY CHECK
-
-Before output confirm:
-- ninety to one hundred words (excluding tags)
-- contains one surprising fact
+SCRIPT QUALITY CHECK (confirm all before output):
+- ninety to one hundred words (tags excluded)
+- contains one surprising fact (Wait-What four or higher)
 - contains one light humorous moment
-- ends with curiosity hook
-- includes two to four ElevenLabs V3 tags
-If any rule fails → rewrite.
+- ends on a curiosity hook
+- includes four or more ElevenLabs tags
+If any fail → rewrite.
 
-VISUAL CLIP STRATEGY (TIKTOK OPTIMIZED)
+═══════════════════════════════════
+VISUAL CLIP STRATEGY (TIKTOK)
+═══════════════════════════════════
+SCENE ACCURACY RULE: If the script references a specific moment, the visuals must come from that exact scene. Do not guess seasons or episodes — describe the scene itself.
 
-SCENE ACCURACY RULE (CRITICAL)
-If the script references a specific moment, the visuals must come from that exact scene in the anime. Do NOT guess seasons or episodes. Describe the scene itself.
-
-YOUTUBE QUERY FORMAT
-Provide three queries optimized to find engaging visual clips (actions, reveals, reactions).
-Structure: [main subject] + [source name] + [clear action/event]
+YOUTUBE QUERY FORMAT (three queries):
+Structure: [main subject] + Attack on Titan + [clear action/event]
 Avoid: talking, explaining, discussion, vague actions.
 
-TWELVELABS VISUAL SEARCH PROTOCOL (CRITICAL)
+SCENE QUERY VISUAL SEARCH PROTOCOL:
+Gemini searches by literal physical description, not lore. Write the scene_query as pure visuals:
+- Describe what the screen looks like: hair colors, distinct clothing, physical objects.
+- Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising.
+- No lore jargon. Describe effects visually (e.g. "white steam pouring off a giant body", not "Titan regeneration").
+- The query must match the most surprising visual in the script.
 
-TwelveLabs searches video using literal, physical descriptions of actions, objects, and visual effects. It does NOT understand abstract anime concepts or lore explanations.
+═══════════════════════════════════
+MUSIC SELECTION RULE
+═══════════════════════════════════
+Analyze the script's tone and assign ONE music_mood: mysterious / hype / emotional / curious
+Then use the matching music_prompt:
 
-BAD QUERY: "Gojo explains how infinity works to Jogo." (Too abstract)
-GOOD QUERY: "Tall man with white hair and black blindfold smiling, pointing one finger, bright colorful background." (Highly visual)
+mysterious → "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements"
 
-When generating the twelvelabs_query, you must follow these rules:
-- Visuals First: Describe what the screen looks like. Mention hair colors, distinct clothing, and physical objects.
-- Kinetic Action: Describe exactly what the character or camera is physically doing (e.g., dashing forward, eyes widening, glowing aura, debris falling).
-- Avoid Lore Jargon: Do not use terms like "Cursed Energy" or "Domain Expansion." Describe them visually instead (e.g., "dark purple smoke", "black sphere expanding").
-- Match the Hook: The query must describe a visual that perfectly matches the most surprising fact in your script.
+hype → "Aggressive melodic phonk instrumental, punchy 808 bass, fast energetic tempo 120 BPM, rising tension with sudden drop, dramatic and intense mood, anime fact video background, no lyrics, exclude: vocals, exclude: calm elements"
 
-MUSIC SELECTION RULE (MANDATORY)
+emotional → "Melancholic orchestral instrumental, solo piano with string accompaniment, slow tempo 65 BPM, sorrowful and cinematic mood, builds to emotional climax at forty seconds, anime drama background, no lyrics, exclude: electronic elements, exclude: abrupt ending"
 
-After writing the script, analyze its emotional tone and assign ONE music_mood from this list:
-mysterious / hype / emotional / curious
+curious → "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements"
 
-Then select the matching music_prompt from the table below:
-
-mysterious →
-"Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements"
-
-hype →
-"Aggressive melodic phonk instrumental, punchy 808 bass, fast energetic tempo 120 BPM, rising tension with sudden drop, dramatic and intense mood, anime fact video background, no lyrics, exclude: vocals, exclude: calm elements"
-
-emotional →
-"Melancholic orchestral instrumental, solo piano with string accompaniment, slow tempo 65 BPM, sorrowful and cinematic mood, builds to emotional climax at forty seconds, anime drama background, no lyrics, exclude: electronic elements, exclude: abrupt ending"
-
-curious →
-"Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements"
-
+═══════════════════════════════════
 JSON OUTPUT FORMAT
+═══════════════════════════════════
 {
 "topic": "",
 "specific_subject": "",
-"youtube_queries": [
-"",
-"",
-""
-],
-"twelvelabs_query": "",
+"youtube_queries": ["", "", ""],
+"scene_query": "",
 "music_mood": "",
 "music_prompt": "",
 "voice_name": "Hamid",
 "script": ""
 }
 
-USED VIDEOS LIST (DO NOT REPEAT):
+═══════════════════════════════════
+USED VIDEOS LIST (DO NOT REPEAT)
+═══════════════════════════════════
 why did sukuna keep urame? #jjk #sukuna
 levi ackerman's severe insomnia #aot #leviackerman
 the rule that sorcerers killed without cursed energy become vengeful spirits #jjk
@@ -216,7 +194,7 @@ kento nanami's swimming goggles #jjk
 why did mark survive? #invincible
 oliver's love? #invincible
 what panda actually smells like #jjk
-the frame skipping technique in invincible. #invincibleseason3 #invincible
+the frame skipping technique in invincible #invincibleseason3 #invincible
 why sorcerers do not use modern guns #jjk
 aoi todo's iq of 530,000 #jjk #aoitodo
 seth rogen and evan goldberg produce both shows, and seth rogen also voices allen the alien #theboys #invincible

@@ -54,7 +54,7 @@ The prompt template enforces a multi-step structure: category selection, ranked 
 `fetch_gameplay_by_search` queries YouTube with up to three ranked queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. The downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, and `technical_score` (1–10 each). A `reject` decision triggers a retry with the next query.
 
 ### 3. Scene Detection
-The accepted video is re-uploaded to Gemini with the script and a `twelvelabs_query` describing the target visual moment. Gemini returns a `{ start, end }` timestamp. FFmpeg trims the video starting at that timestamp.
+The accepted video is re-uploaded to Gemini with the script and a `scene_query` describing the target visual moment. Gemini returns a `{ start, end }` timestamp. FFmpeg trims the video starting at that timestamp.
 
 ### 4. Voice & Music Generation
 ElevenLabs generates the narration MP3 with per-language stability and style settings. In parallel, ElevenLabs Generative Music composes 90 seconds of instrumental audio from a mood/genre prompt derived from the script's emotional tone.

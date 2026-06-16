@@ -41,18 +41,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "Rick and Morty animation secrets",
-  "specific_subject": "The origin of the asterisk-shaped pupils",
+  "topic": "Attack on Titan",
+  "specific_subject": "Hange Zoe's extreme hygiene habits and Levi's solution",
   "youtube_queries": [
-    "Rick and Morty close up eyes character expressions",
-    "Doc and Mharti original animated short video clip",
-    "Rick yelling at Morty funny scene animation"
+    "Hange Zoe Attack on Titan screaming at Titan",
+    "Levi Ackerman Attack on Titan cleaning room",
+    "Hange and Levi Attack on Titan arguing"
   ],
-  "twelvelabs_query": "Close up of an animated character with spiky light blue hair and an old gray man face, looking shocked with messy scribble asterisk shapes inside his round white eyes",
+  "scene_query": "An anime character with a messy brown ponytail and glasses standing next to a short-haired man wearing a green scout cape inside a wooden room.",
   "music_mood": "curious",
   "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
   "voice_name": "Hamid",
-  "script": "Have you ever looked closely at the eyes in Rick and Morty? [EXCITED] Every single character has strange, scribble pupils that look like little asterisks! This is not a random mistake. It is a deliberate production secret. The show started as a very messy, ugly parody short called Doc and Mharti. When the network cleaned up the animation for television, the creators kept these chaotic star-shaped pupils. [playfully] They wanted to keep a piece of the original ugly spirit alive. Next time you see Rick yell at Morty, look at their eyes! [whispers] What other hidden animation details are they hiding from us?"
+  "script": "Have you ever wondered about Hange’s hygiene in Attack on Titan? [excited] Hange is totally obsessed with Titans. In fact, Hange spends days touching Titan skin and slime without stopping. [pauses] Because of this, Hange smells absolutely terrible! [whispering] It gets so bad that the clean freak Levi Ackerman cannot stand it. So, how does Levi solve this smelly problem? [dramatic] He actually knocks Hange unconscious! Yes, Levi hits Hange to sleep, then throws Hange into a hot bathtub to force a wash. [playfully] Talk about extreme teamwork! Who do you think smells worse, Hange or a real Titan?"
 }
 
 def trim_video_to_end(
@@ -226,50 +226,56 @@ def evaluate_video_with_genai(video_path, script_text):
 
     # Build prompt
     prompt = f"""
-        You are an AI Video Editor Assistant. 
-        Your job is to evaluate if this RAW SOURCE FOOTAGE is usable as background B-roll for a short-form video.
-
-        Do NOT judge this as a final, edited TikTok/Reel. Judge it based on its POTENTIAL.
-
-        SCRIPT EXCERPT:
-        \"\"\"{script_text}\"\"\"
-        
-        THe video has to be only with actual footages it means no subsccribe to chanel, no promotions in between stuff. Just raw moments
-
-        EVALUATION GUIDELINES (1-10 Scale):
-
-        1. Visual-Script Alignment (relevance_score)
-           Be highly forgiving — this is raw source footage, not a finished edit.
-           - If the video shows the correct character, show, or setting from the script, give it an 8-10.
-           - Thematic atmosphere, character close-ups, or general action is acceptable for B-roll.
-           - Only score below 5 if the footage is the wrong show, wrong character, or completely unrelated.
-
-        2. Usable Action / Hook Potential (hook_score)
-           Does this raw footage contain cool, dynamic, or interesting scenes we could *use* to make a hook?
-           - 8-10: Contains great action scenes, cool character close-ups, or intense moments.
-           - 5-7: Standard talking scenes, panning shots, average animation.
-           - 1-4: Mostly black screens, text overlays, fan-edits with heavy watermarks, or unusable static menus.
-
-        3. Raw Technical Quality (technical_score)
-           Is the footage visually clear enough to be cropped for a phone screen?
-           - 8-10: Clean footage, minimal watermarks, acceptable visual clarity.
-           - 5-7: Slightly blurry or has minor subtitles/watermarks, but usable.
-           - 1-4: Extremely pixelated, completely ruined by heavy editing/watermarks, or unwatchable.
-
-        DECISION RULES:
-        - "post":   relevance_score >= 5 AND hook_score >= 5 AND technical_score >= 5
-        - "reject": relevance_score <= 4 OR technical_score <= 4
-        - "revise": Use this if you are unsure.
-
-        OUTPUT FORMAT:
-        Respond ONLY with valid JSON. No explanations, no markdown blocks.
-
-        {{
-          "relevance_score": <1-10>,
-          "hook_score": <1-10>,
-          "technical_score": <1-10>,
-          "decision": "post" | "revise" | "reject"
-        }}
+    You are an AI Video Editor Assistant.
+    Evaluate whether this RAW SOURCE FOOTAGE is usable as background B-roll for a short-form video.
+    
+    Judge it on POTENTIAL as raw source footage — not as a finished edit.
+    
+    SCRIPT EXCERPT:
+    \"\"\"{script_text}\"\"\"
+    
+    STEP 0 — REQUIRED SUBJECT (do this first):
+    From the script, identify the ESSENTIAL subject the footage must show. This is usually a specific named character, and may also include a specific object, location, or action central to the script.
+    State it internally as REQUIRED_SUBJECT before scoring.
+    Example: if the script is about Hange Zoë's hygiene, REQUIRED_SUBJECT = "Hange Zoë" (the footage must actually show Hange, not just the show in general).
+    
+    The footage must contain ONLY real source moments — no "subscribe" cards, no promos, no reaction-cam overlays. Raw clips only.
+    
+    EVALUATION (1-10):
+    
+    1. Visual-Script Alignment (relevance_score)
+       - The footage MUST visibly contain REQUIRED_SUBJECT to score above 4.
+       - Correct show but WRONG/MISSING character or subject → relevance_score 1-3, regardless of how cool it looks. (A clip of a different character does NOT count, even from the same series.)
+       - REQUIRED_SUBJECT clearly on screen → 8-10. Briefly/partially present → 5-7.
+       - Be forgiving on edit quality, NOT on whether the right subject is present.
+    
+    2. Usable Action / Hook Potential (hook_score)
+       - 8-10: dynamic action, strong close-ups, intense moments featuring the subject.
+       - 5-7: standard scenes, panning shots, average animation.
+       - 1-4: black screens, text overlays, heavy-watermark fan-edits, static menus.
+    
+    3. Raw Technical Quality (technical_score)
+       - 8-10: clean, minimal watermarks, clear enough to crop for phone.
+       - 5-7: slightly blurry or minor subtitles/watermarks, still usable.
+       - 1-4: heavily pixelated, ruined by editing/watermarks, unwatchable.
+    
+    DECISION RULES (apply in order):
+    - "reject": relevance_score <= 4  (wrong/missing subject is an automatic reject, even with high hook/technical)
+    - "reject": technical_score <= 4
+    - "post":   relevance_score >= 5 AND hook_score >= 5 AND technical_score >= 5
+    - "revise": anything else / unsure
+    
+    OUTPUT FORMAT:
+    Respond ONLY with valid JSON. No explanations, no markdown.
+    
+    {{
+      "required_subject": "<the subject you identified>",
+      "subject_present": <true|false>,
+      "relevance_score": <1-10>,
+      "hook_score": <1-10>,
+      "technical_score": <1-10>,
+      "decision": "post" | "revise" | "reject"
+    }}
     """
 
     max_attempts = 5
@@ -501,7 +507,7 @@ def run_manual_pipeline(data):
 
         print("🤖 Searching scene with Gemini...")
 
-        scene = find_scene_with_gemini(original_video, data.get("twelvelabs_query"), SCRIPT_TEXT)
+        scene = find_scene_with_gemini(original_video, data.get("scene_query"), SCRIPT_TEXT)
         print(scene)
 
         if scene["start"] == 0 and scene["end"] == 0:
