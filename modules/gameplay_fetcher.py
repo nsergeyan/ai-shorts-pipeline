@@ -398,6 +398,8 @@ def fetch_gameplay_by_search(
                     print(f"   ✅ Method 3 succeeded!")
                 else:
                     print(f"   ⚠️ Method 3: File not created or too small")
+                    if result.returncode != 0 and result.stderr:
+                        print(f"   yt-dlp error: {result.stderr[:200]}")
 
             except Exception as e3:
                 print(f"   ⚠️ Method 3 failed: {str(e3)[:100]}")

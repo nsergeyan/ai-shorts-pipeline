@@ -36,23 +36,22 @@ MUSIC_VOLUME = 0.1
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
-MODEL_OPTIONS = ["visual", "audio"]
 SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "strange world rule",
-"specific_subject": "Rick and Morty bury their own dead bodies in the backyard after switching dimensions in Rick Potion #9",
-"youtube_queries": [
-"Rick and Morty burying bodies backyard Rick Potion 9",
-"Rick and Morty Cronenberg world escape portal scene",
-"Rick and Morty dead Morty corpse backyard ending"
-],
-"twelvelabs_query": "Old man with spiky blue hair and a young boy in a yellow shirt digging in a dark backyard at night, dragging two bodies wrapped on the ground, shocked wide eyes, dim house lights behind them",
-"music_mood": "mysterious",
-"music_prompt": "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements",
-"voice_name": "Hamid",
-"script": "[intrigued] Okay, this one is dark. In Rick and Morty, there is a strange rule about broken worlds. If Rick destroys a dimension, he does not fix it. He just... leaves. [pauses] In one episode, Rick turns everyone on Earth into monsters. The cure makes it worse. So what does he do? [whispering] He finds a new dimension where he and Morty just died. Then they walk in, take their place, and bury their own dead bodies in the backyard. [nervous] Morty has to watch himself get buried. [matter-of-fact] And nobody else notices. He just... lives there now. So here is the question. How many dead Mortys are buried in backyards across the multiverse?"
+  "topic": "Rick and Morty animation secrets",
+  "specific_subject": "The origin of the asterisk-shaped pupils",
+  "youtube_queries": [
+    "Rick and Morty close up eyes character expressions",
+    "Doc and Mharti original animated short video clip",
+    "Rick yelling at Morty funny scene animation"
+  ],
+  "twelvelabs_query": "Close up of an animated character with spiky light blue hair and an old gray man face, looking shocked with messy scribble asterisk shapes inside his round white eyes",
+  "music_mood": "curious",
+  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
+  "voice_name": "Hamid",
+  "script": "Have you ever looked closely at the eyes in Rick and Morty? [EXCITED] Every single character has strange, scribble pupils that look like little asterisks! This is not a random mistake. It is a deliberate production secret. The show started as a very messy, ugly parody short called Doc and Mharti. When the network cleaned up the animation for television, the creators kept these chaotic star-shaped pupils. [playfully] They wanted to keep a piece of the original ugly spirit alive. Next time you see Rick yell at Morty, look at their eyes! [whispers] What other hidden animation details are they hiding from us?"
 }
 
 def trim_video_to_end(
@@ -270,8 +269,8 @@ def evaluate_video_with_genai(video_path, script_text):
         }}
     """
 
-    attempt = 0
-    while True:
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -280,18 +279,18 @@ def evaluate_video_with_genai(video_path, script_text):
             break
         except Exception as e:
             if "503" in str(e):
-                attempt += 1
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt})")
+                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                attempt += 1
-                print(f"⚠️ Gemini 429 quota hit, rotating key... (attempt {attempt})")
+                print(f"⚠️ Gemini 429 quota hit, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
                 time.sleep(5)
             else:
                 raise
+        if attempt == max_attempts:
+            raise RuntimeError("Gemini failed after max retries.")
 
-    # Ensure we have the text string
+    raw_text = response.text if hasattr(response, "text") else str(response)
     raw_text = response.text if hasattr(response, "text") else str(response)
 
     try:
@@ -396,8 +395,8 @@ def find_scene_with_gemini(video_path, query, script):
     - start must be within [0, {video_duration}]
     """
 
-    attempt = 0
-    while True:
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
@@ -406,11 +405,12 @@ def find_scene_with_gemini(video_path, query, script):
             break
         except Exception as e:
             if "503" in str(e):
-                attempt += 1
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt})")
+                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             else:
                 raise
+        if attempt == max_attempts:
+            raise RuntimeError("Gemini scene detection failed after max retries.")
 
     try:
         text = response.text
@@ -479,7 +479,7 @@ def run_manual_pipeline(data):
 
             evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
 
-            if evaluation and evaluation.get("decision") == "post" or evaluation.get("decision") == "revise":
+            if evaluation and evaluation.get("decision") in ("post", "revise"):
                 print("✅ Video approved by GenAI!")
                 original_video = candidate_video
                 break
@@ -516,6 +516,7 @@ def run_manual_pipeline(data):
 
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
         audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
+        # Voice is required — generate_voice raises RuntimeError if all keys fail
         audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
 
         print(f"📝 Generating word-level subtitles...")

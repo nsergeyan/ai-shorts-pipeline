@@ -40,6 +40,7 @@ def generate_music(prompt: str) -> str | None:
         if os.path.exists(output_path):
             os.remove(output_path)
 
+    # Returns None so the pipeline can continue without music
     return None
 
 

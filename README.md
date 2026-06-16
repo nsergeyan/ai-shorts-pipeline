@@ -25,7 +25,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **AI music evaluation** — Generated music is scored against the script for mood match, energy, and voice compatibility before being mixed in
 - **Chroma key compositing** — Green screen call-to-action overlays are keyed out with a NumPy-based green-dominance algorithm and composited over the final frame
 - **Multi-method YouTube download** — Three fallback download strategies (Android client, no-cookies, CLI) to handle YouTube's bot detection
-- **Multi-language support** — English, Russian, and Spanish voice and subtitle generation with language-specific ElevenLabs model settings
+- **Multi-language support** — English, Russian, and Spanish voice generation with language-specific ElevenLabs model settings; word-level subtitles for English and Russian
 
 ---
 
