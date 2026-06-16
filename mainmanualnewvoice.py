@@ -470,8 +470,8 @@ def run_manual_pipeline(data):
                 used_video_ids=set()
             )
             if not video_paths:
-                print("❌ No visuals found. Check your YouTube queries.")
-                return False
+                print(f"❌ No results for query '{query}', trying next...")
+                continue
 
             candidate_video = video_paths[0]
             video_attempts += 1
@@ -489,6 +489,10 @@ def run_manual_pipeline(data):
                     print("❌ Maximum attempts reached. Stopping pipeline.")
                     return False
                 print("🔁 Retrying with next video...")
+
+        if not original_video:
+            print("❌ All queries failed. No suitable video found.")
+            return False
 
         print("🤖 Searching scene with Gemini...")
 
