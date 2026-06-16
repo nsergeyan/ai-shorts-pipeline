@@ -2,6 +2,9 @@
 .env
 client_secret.json
 
+# Claude Code instructions
+CLAUDE.md
+
 .venv/
 __pycache__/
 *.pyc
