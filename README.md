@@ -77,7 +77,7 @@ Whisper `large-v3` transcribes the narration with `word_timestamps=True`, return
 
 ```
 YOutuber/
-├── mainmanualnewvoice.py   # Main pipeline entrypoint
+├── main.py   # Main pipeline entrypoint
 ├── manualprompt.txt        # Structured script prompt template
 ├── config.py               # Directory and API configuration
 └── modules/
@@ -121,10 +121,10 @@ GEMINI_API_KEY
 
 ## Usage
 
-Paste a completed JSON script object into `MANUAL_DATA` in `mainmanualnewvoice.py`, then run:
+Paste a completed JSON script object into `MANUAL_DATA` in `main.py`, then run:
 
 ```bash
-python mainmanualnewvoice.py
+python main.py
 ```
 
 The pipeline runs fully automatically and saves the final `.mp4` to `data/final/`.
