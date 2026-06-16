@@ -92,6 +92,16 @@ YOutuber/
 
 ---
 
+## Design Decisions
+
+- **Gemini 2.5 Flash over local models** — Ollama (Gemma 27B) was tested for script generation but response quality and speed weren't consistent enough for production. Gemini 2.5 Flash with Google Search grounding produces more accurate, fact-checked scripts.
+- **Web scraping for script research** — Early versions scraped animation/lore sites to feed raw facts into the AI before script generation. Replaced by Gemini's native Search grounding which handles research and writing in one step.
+- **ElevenLabs over open-source TTS** — Local TTS models produced robotic narration. ElevenLabs `eleven_v3` with a 1.2x speed boost gives the natural, fast-paced delivery that works for Shorts.
+- **yt-dlp with 3 fallback methods** — YouTube actively blocks bots. A single download strategy failed too often; the fallback chain (Android client → no-cookies → CLI) brings the success rate high enough for production use.
+- **Whisper `large-v3` over smaller models** — Smaller Whisper models produced inaccurate word timestamps, breaking the word-level subtitle sync. The accuracy of `large-v3` justifies the slower load time.
+
+---
+
 ## Setup
 
 **Requirements:** Python 3.11+, FFmpeg, ImageMagick
