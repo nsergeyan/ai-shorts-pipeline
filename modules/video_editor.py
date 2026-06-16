@@ -6,12 +6,7 @@ import uuid
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
-# ---------------------------------------------------------
-# 1. FIX: Auto-detect ImageMagick on macOS
-# ---------------------------------------------------------
 import moviepy.config as mp_config
-
-
 import re
 
 from moviepy.audio.AudioClip import AudioClip
@@ -53,7 +48,7 @@ except ImportError:
     audio_loop = None
     volumex = None
 
-from config import DATA_DIR
+from config import DATA_DIR, CTA_PATH
 
 FINAL_DIR = os.path.join(DATA_DIR, "final")
 os.makedirs(FINAL_DIR, exist_ok=True)
@@ -148,10 +143,7 @@ def _loop_audio_to_duration(audio_clip, target_duration: float):
 
 
 def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: float) -> List[VideoFileClip]:
-    """
-    ✅ THE LOGIC YOU ASKED FOR:
-    If we have a 5-minute video and need 1 minute, pick a RANDOM 1-minute chunk.
-    """
+    """If we have a long video and need only part of it, pick a random chunk."""
     if not clips: return []
 
     # Scenario 1: We have a single long background video (the 5min download)
@@ -341,7 +333,6 @@ def _make_subtitle_clips(subtitles_data, video_size, position="top"):
         clips.append(txt_clip)
     return clips
 
-cta_path = "/Users/nareksergeyan/YOutuber/Green_Screen_Footage_for_Follow_Button_Boost_Your_Video_Engagement_1080P.mp4"
 def merge_audio_video(
         video_paths: Union[str, List[str]],
         audio_path: str,
@@ -356,8 +347,8 @@ def merge_audio_video(
         subtitles_data: Optional[list] = None,
         subtitles_position: str = "bottom",
         words_data: Optional[list] = None,
-        cta_path=cta_path,
-        subtitles_text: Optional[str] = None
+        cta_path=CTA_PATH,
+        subtitles_text: Optional[str] = None,
 ):
     print("\n🎬  Starting Video Editor...")
 
@@ -366,14 +357,11 @@ def merge_audio_video(
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    # 1. Load Clips and MUTE them immediately
     raw_clips = [VideoFileClip(p).without_audio() for p in video_paths]
 
-    # 2. Vertical Crop
     if vertical:
         raw_clips = [_make_vertical_9x16(c, target_w, target_h) for c in raw_clips]
 
-    # 3. Calculate Durations
     CTA_DURATION = 8
     final_dur = voice_audio.duration
     if shorts_cap:
@@ -385,7 +373,6 @@ def merge_audio_video(
 
         final_dur = final_len
 
-    # 4. Trim/Concat Video (THIS CALLS THE RANDOM LOGIC)
     clips_ready = _trim_clips_to_total_duration(raw_clips, final_dur)
 
     if len(clips_ready) > 1:
@@ -395,8 +382,6 @@ def merge_audio_video(
 
     video = _loop_video_to_duration(video, final_dur)
 
-    # 4.5 CTA (OVERLAY LAST 8 SECONDS)
-    # 4.5 CTA (OVERLAY LAST 8 SECONDS)
     if cta_path:
         cta_clip = load_cta_clip(
             cta_path=cta_path,
@@ -413,7 +398,6 @@ def merge_audio_video(
             size=video.size
         )
 
-    # 5. Subtitles
     if words_data:
         try:
             subs = _make_word_highlight_clips(words_data, video.size)
@@ -429,7 +413,6 @@ def merge_audio_video(
         except Exception as e:
             print(f"⚠️ Subtitle generation failed: {e}")
 
-    # 6. Music Mixing
     final_audio = voice_audio
     if music_path:
         try:
@@ -437,7 +420,6 @@ def merge_audio_video(
             if volumex:
                 bg_music = bg_music.fx(volumex, music_volume)
 
-            # Random music start logic (Optional bonus)
             if bg_music.duration > final_dur:
                 start_m = random.uniform(0, bg_music.duration - final_dur)
                 bg_music = bg_music.subclip(start_m, start_m + final_dur)

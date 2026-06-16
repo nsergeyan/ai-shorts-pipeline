@@ -4,6 +4,7 @@ import random
 import re
 import sys
 import time
+import traceback
 import uuid
 import subprocess
 import itertools
@@ -20,7 +21,6 @@ def _gemini_client():
     key = next(_key_pool)
     print(f"🔑 Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
-sys.path.append(os.path.join(os.path.dirname(__file__), "modules"))
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
     from modules.music_generator import generate_music
@@ -41,17 +41,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "JJK Production Fact — Nanami Death Scene Animator Tribute",
-  "specific_subject": "Fans believe a MAPPA animator personally volunteered to animate Nanami Kento's death scene as an emotional tribute",
-  "youtube_queries": [
-    "Nanami Kento death scene jujutsu kaisen season two",
-    "MAPPA jujutsu kaisen season two animation breakdown behind the scenes",
-    "Nanami final moments sukuna shibuya jujutsu kaisen scene"
-  ],
-  "twelvelabs_query": "Nanami Kento standing calmly as cursed spirits close in around him, his body breaking apart in golden light during the Shibuya Incident arc",
-  "music_prompt": "Emotional and bittersweet orchestral instrumental, soft piano melody with gentle strings, slow tempo around 60 BPM, quiet build with a sense of tribute and melancholy, anime dramatic atmosphere, no lyrics. Do not start with quiet music.",
-  "voice_name": "Hamid",
-  "script": "Jujutsu Kaisen hides its heart inside its credits. Nanami Kento's death in Shibuya, that quiet, heartbreaking moment, might feel extra personal. And fans believe there is a reason. According to the animation community, one animator at MAPPA personally asked to handle that scene themselves, as a tribute to the character. I always thought the emotion in those frames felt different, almost too real. And honestly, knowing someone poured their own grief into every drawing? That hits completely different. Which is kind of wild, when you think about it. The saddest scene in the show might be the most personal thing MAPPA ever made. Follow for more Jujutsu Kaisen secrets you never noticed!"
+"topic": "strange world rule",
+"specific_subject": "Rick and Morty bury their own dead bodies in the backyard after switching dimensions in Rick Potion #9",
+"youtube_queries": [
+"Rick and Morty burying bodies backyard Rick Potion 9",
+"Rick and Morty Cronenberg world escape portal scene",
+"Rick and Morty dead Morty corpse backyard ending"
+],
+"twelvelabs_query": "Old man with spiky blue hair and a young boy in a yellow shirt digging in a dark backyard at night, dragging two bodies wrapped on the ground, shocked wide eyes, dim house lights behind them",
+"music_mood": "mysterious",
+"music_prompt": "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements",
+"voice_name": "Hamid",
+"script": "[intrigued] Okay, this one is dark. In Rick and Morty, there is a strange rule about broken worlds. If Rick destroys a dimension, he does not fix it. He just... leaves. [pauses] In one episode, Rick turns everyone on Earth into monsters. The cure makes it worse. So what does he do? [whispering] He finds a new dimension where he and Morty just died. Then they walk in, take their place, and bury their own dead bodies in the backyard. [nervous] Morty has to watch himself get buried. [matter-of-fact] And nobody else notices. He just... lives there now. So here is the question. How many dead Mortys are buried in backyards across the multiverse?"
 }
 
 def trim_video_to_end(
@@ -119,7 +120,6 @@ def evaluate_music_with_genai(music_path, script_text):
 
     print("Music file ACTIVE ✅")
 
-    # 🔥 PROMPT (this is the important part)
     prompt = f"""
     You are a short-form content audio expert.
 
@@ -237,10 +237,10 @@ def evaluate_video_with_genai(video_path, script_text):
         EVALUATION GUIDELINES (1-10 Scale):
 
         1. Visual-Script Alignment (relevance_score)
-           Since this is raw anime footage, be highly forgiving. 
-           - If the video shows the correct character (Levi Ackerman) or the correct show (Attack on Titan), give it an 8-10. 
-           - It does NOT need to show literal insomnia or the exact actions in the script. Thematic atmosphere, the character's face, or general action is perfectly acceptable for background B-roll.
-           - Only score below 5 if it is the wrong show, wrong character entirely, or completely unrelated to the anime.
+           Be highly forgiving — this is raw source footage, not a finished edit.
+           - If the video shows the correct character, show, or setting from the script, give it an 8-10.
+           - Thematic atmosphere, character close-ups, or general action is acceptable for B-roll.
+           - Only score below 5 if the footage is the wrong show, wrong character, or completely unrelated.
 
         2. Usable Action / Hook Potential (hook_score)
            Does this raw footage contain cool, dynamic, or interesting scenes we could *use* to make a hook?
@@ -424,21 +424,18 @@ def find_scene_with_gemini(video_path, query, script):
 
     except Exception as e:
         print("Gemini response error:", e)
-        print("Full response:", response)
         return None
-    print("Raw model output:", text)
 
     text = re.sub(r"```json|```", "", text).strip()
 
     try:
         return json.loads(text)
-    except:
-        # extract JSON block if extra text exists
+    except Exception:
         match = re.search(r"\{.*?\}", text, re.DOTALL)
         if match:
             try:
                 return json.loads(match.group(0))
-            except:
+            except Exception:
                 pass
 
     print("Failed parsing:", text)
@@ -447,7 +444,6 @@ def find_scene_with_gemini(video_path, query, script):
 
 def run_manual_pipeline(data):
     try:
-        # 1️⃣ Unpack Data
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
@@ -459,7 +455,6 @@ def run_manual_pipeline(data):
         print(f"topic: {TOPIC}")
         print(f"   Script Length: {len(SCRIPT_TEXT)} chars")
 
-        # 2️⃣ VISUALS - Download and evaluate with retry
         print(f"🎮 Fetching visuals...")
 
         video_attempts = 0
@@ -504,33 +499,25 @@ def run_manual_pipeline(data):
             print("⚠️ No scene found. Using full video.")
             trimmed_video = original_video
         else:
-            # compute safe start
             ai_start = scene["start"]
-
-            # output file
             trimmed_video = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-
-            # call your method
             trim_video_to_end(
                 input_file=original_video,
                 output_file=trimmed_video,
                 ai_start=ai_start,
-                prepad=0.02,  # same as your previous prepad
-                max_duration=61.0  # max clip length
+                prepad=0.02,
+                max_duration=61.0
             )
 
-        # 4️⃣ MUSIC
         print(f"🎵 Generating music with ElevenLabs...")
         music_path = generate_music(MUSIC_PROMPT)
         if not music_path:
             print("⚠️ Music generation failed, continuing without music.")
 
-        # 5️⃣ VOICE
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
         audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
         audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
 
-        # 6️⃣ SUBTITLES
         print(f"📝 Generating word-level subtitles...")
         if LANGUAGE == "es":
             print("🇪🇸 Spanish detected — skipping subtitles.")
@@ -538,7 +525,6 @@ def run_manual_pipeline(data):
         else:
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
-        # 7️⃣ EDIT
         final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
         print(f"🎬 Starting video editing...")
         final_path = merge_audio_video(
@@ -555,7 +541,6 @@ def run_manual_pipeline(data):
 
         print(f"\n✅ DONE! Saved to: {final_path}")
 
-        # 8️⃣ CLEANUP
         if CLEANUP_FILES:
             for path in [audio_path, music_path, original_video, trimmed_video]:
                 if path and os.path.exists(path):
@@ -567,7 +552,6 @@ def run_manual_pipeline(data):
         print(f"❌ Missing Key in JSON: {e}")
     except Exception as e:
         print(f"❌ Pipeline Error: {e}")
-        import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":

@@ -19,14 +19,12 @@ VOICES = {
 }
 
 
-# ---------------- TEXT CLEANING ----------------
 def clean_text_for_speech(text: str) -> str:
     text = text.replace("\n", " ").replace("\r", " ")
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
 
-# ---------------- SPEED FUNCTION (FFMPEG) ----------------
 def change_audio_speed(input_path: str, output_path: str, speed: float = 1.2):
     subprocess.run([
         "ffmpeg",
@@ -37,7 +35,6 @@ def change_audio_speed(input_path: str, output_path: str, speed: float = 1.2):
     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-# ---------------- MAIN GENERATION ----------------
 def _try_generate_with_key(
         api_key: str,
         script_text: str,
@@ -52,7 +49,6 @@ def _try_generate_with_key(
     tmp_path = output_path + ".partial"
     final_fast_path = output_path.replace(".mp3", "_fast.mp3")
 
-    # ---------------- MODEL SETTINGS ----------------
     if lang in ["ru", "es"]:
         model_id = "eleven_multilingual_v2"
         voice_settings = {
@@ -70,7 +66,6 @@ def _try_generate_with_key(
     try:
         cleaned_text = clean_text_for_speech(script_text)
 
-        # ---------------- GENERATE AUDIO ----------------
         audio_stream = client.text_to_speech.convert(
             text=cleaned_text,
             voice_id=voice_id,
@@ -85,10 +80,7 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        # ---------------- APPLY SPEED ----------------
         change_audio_speed(output_path, final_fast_path, speed=1.2)
-
-        # 🔥 IMPORTANT: return the FAST file as the main output
         os.replace(final_fast_path, output_path)
 
         print(f"⚡ FAST version ready → {output_path}")
@@ -101,7 +93,6 @@ def _try_generate_with_key(
         return False
 
 
-# ---------------- PUBLIC FUNCTION ----------------
 def generate_voice(
         script_text: str,
         filename: str = "narration.mp3",
@@ -129,7 +120,6 @@ def generate_voice(
     raise RuntimeError("All ElevenLabs keys failed.")
 
 
-# ---------------- TEST ----------------
 if __name__ == "__main__":
     print("🧪 Starting High-Speed V3 Test...\n")
 

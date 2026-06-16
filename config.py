@@ -3,9 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-OLLAMA_MODEL = "gemma2:27b"
 
-#max shorts lenght for video
+#max shorts length for video
 VIDEO_LENGTH_SEC = 60
 
 # Paths
@@ -18,6 +17,8 @@ AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 
 for d in [GAMEPLAY_DIR, MUSIC_DIR, FINAL_DIR, AUDIO_DIR]:
     os.makedirs(d, exist_ok=True)
+
+CTA_PATH = os.path.join(BASE_DIR, "Green_Screen_Footage_for_Follow_Button_Boost_Your_Video_Engagement_1080P.mp4")
 
 # API Keys — set these in a .env file (see .env.example)
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")

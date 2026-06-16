@@ -1,21 +1,9 @@
-# modules/tiktok_checker.py
-import requests
-import json
 import os
 from typing import List, Set
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/120.0.0.0 Safari/537.36"
-    )
-}
-
-# In-memory cache (same idea as YouTube)
-existing_tiktok_topics_cache = {}
-
 from yt_dlp import YoutubeDL
+
+existing_tiktok_topics_cache = {}
 
 def get_tiktok_videos(username: str, max_results: int = 50):
     try:

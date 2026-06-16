@@ -8,7 +8,6 @@ from typing import Optional
 import yt_dlp
 from config import GAMEPLAY_DIR
 
-# Browser cookies - IMPORTANT: Use the browser you're logged into YouTube with
 BROWSER = "chrome"  # Try: "chrome", "firefox", "safari", "edge"
 PROFILE = "Default"
 COOKIEFILE = ""
@@ -40,32 +39,21 @@ def _make_opts(skip_download: bool, use_range: bool = False):
         "overwrites": True,
         "nopart": True,
 
-        # CRITICAL: Avoid HLS/DASH formats that cause 403 errors
-        # Use progressive download formats instead
+        # Progressive formats only — HLS/DASH cause 403s
         "format": "18/best[ext=mp4][protocol=https]/best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
-
-        # Avoid the problematic manifest-based downloads
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web"],  # Use Android client to get direct URLs
-                "skip": ["hls", "dash"],  # Skip HLS/DASH to avoid 403
+                "player_client": ["android", "web"],
+                "skip": ["hls", "dash"],
             }
         },
-
-        # Use Node.js for JS challenge solving
         "js_runtimes": {"node": {}},
-
-        # Rate limiting to avoid detection
         "sleep_interval": 3,
         "max_sleep_interval": 6,
         "sleep_interval_requests": 1,
 
-        # User agent
         "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     }
-
-    # Don't use download_ranges - it forces HLS which causes 403
-    # We'll trim AFTER download instead
 
     if COOKIEFILE and os.path.exists(COOKIEFILE):
         opts["cookiefile"] = COOKIEFILE
@@ -76,7 +64,6 @@ def _make_opts(skip_download: bool, use_range: bool = False):
 
 
 def _make_opts_android(skip_download: bool):
-    """Fallback options using Android client (often bypasses restrictions)"""
     opts = {
         "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
@@ -87,14 +74,11 @@ def _make_opts_android(skip_download: bool):
         "overwrites": True,
         "nopart": True,
 
-        # Force Android client - often bypasses restrictions
         "extractor_args": {
             "youtube": {
                 "player_client": ["android"],
             }
         },
-
-        # Get any working format
         "format": "18/best",
         "js_runtimes": {"node": {}},
 
@@ -111,7 +95,6 @@ def _make_opts_android(skip_download: bool):
 
 
 def _make_opts_no_cookies(skip_download: bool):
-    """Options without cookies - sometimes works better"""
     return {
         "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
@@ -187,33 +170,29 @@ def _final_filepath(ydl: yt_dlp.YoutubeDL, info: dict) -> str:
     """Get the final filepath of downloaded video"""
     vid_id = info.get("id", "unknown")
 
-    # Check requested_downloads first
     if info.get("requested_downloads"):
         rd = info["requested_downloads"][0]
         path = rd.get("filepath") or rd.get("_filename")
         if path and os.path.exists(path):
             return path
 
-    # Try prepared filename
     try:
         path = ydl.prepare_filename(info)
         if os.path.exists(path):
             return path
-    except:
+    except Exception:
         pass
 
-    # Search for file by video ID
     for ext in ['.mp4', '.webm', '.mkv', '.m4a']:
         candidate = os.path.join(GAMEPLAY_DIR, f"{vid_id}{ext}")
         if os.path.exists(candidate):
             return candidate
 
-    # Search for any file containing the video ID
     try:
         for f in os.listdir(GAMEPLAY_DIR):
             if vid_id in f and f.endswith(('.mp4', '.webm', '.mkv')):
                 return os.path.join(GAMEPLAY_DIR, f)
-    except:
+    except Exception:
         pass
 
     return os.path.join(GAMEPLAY_DIR, f"{vid_id}.mp4")
@@ -274,7 +253,6 @@ def fetch_gameplay_by_search(
     used_video_ids = used_video_ids or set()
     filtered_entries = []
 
-    # PHASE 1: Search for videos
     while attempts < retry_searches:
         attempts += 1
         query = search_queries[query_index % len(search_queries)]
@@ -345,7 +323,6 @@ def fetch_gameplay_by_search(
 
     if not filtered_entries:
         print("❌ No suitable videos found after all retries.")
-        # Return existing video if available
         existing = _pick_existing_gameplay()
         if existing:
             print(f"📁 Using existing video: {existing}")
@@ -354,7 +331,6 @@ def fetch_gameplay_by_search(
 
     paths = []
 
-    # PHASE 2: Download videos with multiple fallback methods
     for e in filtered_entries:
         vid_id = e.get("id")
         title = _safe_title(e.get("title", "untitled"))
@@ -367,7 +343,6 @@ def fetch_gameplay_by_search(
         download_success = False
         filepath = None
 
-        # Method 1: Standard download with Android client
         if not download_success:
             try:
                 print("   📱 Method 1: Android client...")
@@ -384,7 +359,6 @@ def fetch_gameplay_by_search(
             except Exception as e1:
                 print(f"   ⚠️ Method 1 failed: {str(e1)[:100]}")
 
-        # Method 2: Without cookies
         if not download_success:
             try:
                 print("   🔓 Method 2: No cookies...")
@@ -402,7 +376,6 @@ def fetch_gameplay_by_search(
             except Exception as e2:
                 print(f"   ⚠️ Method 2 failed: {str(e2)[:100]}")
 
-        # Method 3: Direct URL with yt-dlp CLI
         if not download_success:
             try:
                 print("   🖥️ Method 3: CLI fallback...")
@@ -434,13 +407,11 @@ def fetch_gameplay_by_search(
             file_size = os.path.getsize(filepath) / (1024 * 1024)
             print(f"   📁 Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
 
-            # Trim to 5 minutes if needed
             filepath = _trim_video_after_download(filepath, max_duration=300)
             paths.append(filepath)
         else:
             print(f"   ❌ All methods failed for: {vid_id}")
 
-            # Try to find any recently downloaded file
             latest = _find_latest_video()
             if latest and vid_id in latest:
                 print(f"   📁 Found partial download: {latest}")
@@ -449,69 +420,8 @@ def fetch_gameplay_by_search(
     return paths
 
 
-def fetch_gameplay_by_channel(channel_url: str, keyword: str, max_videos: int = 1) -> list[str]:
-    os.makedirs(GAMEPLAY_DIR, exist_ok=True)
-    try:
-        with yt_dlp.YoutubeDL(_make_opts(skip_download=True)) as ydl:
-            print(f"\n🔍 Searching channel: {channel_url}")
-            info = ydl.extract_info(f"{channel_url}/videos", download=False)
-    except Exception as e:
-        print(f"❌ Channel search failed: {e}")
-        return []
-
-    entries = info.get("entries", []) or []
-    matching = [e for e in entries if e and e.get("title") and keyword.lower() in e["title"].lower()][:max_videos]
-
-    paths = []
-    for v in matching:
-        try:
-            with yt_dlp.YoutubeDL(_make_opts_android(skip_download=False)) as ydl:
-                title = _safe_title(v["title"])
-                print(f"⬇️  Downloading: {title}")
-                info = ydl.extract_info(v["webpage_url"], download=True)
-                filepath = _final_filepath(ydl, info)
-                if os.path.exists(filepath):
-                    filepath = _trim_video_after_download(filepath)
-                    paths.append(filepath)
-        except Exception as e:
-            print(f"❌ Download error: {e}")
-    return paths
 
 
-def pick_existing_gameplay_multi(limit=3) -> list[str]:
-    os.makedirs(GAMEPLAY_DIR, exist_ok=True)
-    candidates = [os.path.join(GAMEPLAY_DIR, f) for f in os.listdir(GAMEPLAY_DIR)
-                  if f.lower().endswith((".mp4", ".webm", ".mkv"))]
-    # Filter out small/empty files
-    candidates = [c for c in candidates if os.path.getsize(c) > 100000]  # >100KB
-    if not candidates:
-        return []
-    random.shuffle(candidates)
-    return candidates[:limit]
-
-
-def fetch_random_gameplay(**kwargs):
-    if kwargs.get("reuse_path") and os.path.exists(kwargs["reuse_path"]):
-        return kwargs["reuse_path"]
-    if kwargs.get("offline"):
-        return _pick_existing_gameplay() or "placeholder.mp4"
-    if kwargs.get("search_query") or kwargs.get("search_queries"):
-        search_queries = kwargs.get("search_queries") or [kwargs.get("search_query")]
-        used_video_ids = kwargs.get("used_video_ids", set())
-
-        res = fetch_gameplay_by_search(
-            search_queries=search_queries,
-            max_videos=1,
-            retry_searches=20,
-            used_video_ids=used_video_ids
-        )
-        return res[0] if res else "placeholder.mp4"
-    return "placeholder.mp4"
-
-
-# ============================================================================
-# TEST SECTION
-# ============================================================================
 if __name__ == "__main__":
     import sys
 
