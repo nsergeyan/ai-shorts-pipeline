@@ -41,18 +41,14 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Ryomen Sukuna's Stomach Mouth",
-"specific_subject": "How Sukuna uses his second mouth to chant without stopping his breathing",
-"youtube_queries": [
-  "Ryomen Sukuna true form + Jujutsu Kaisen + stomach mouth speaking",
-  "Ryomen Sukuna + Jujutsu Kaisen + fighting Kashimo",
-  "Ryomen Sukuna Heian era + Jujutsu Kaisen + chanting spells"
-],
-"scene_query": "A towering muscular man with pink hair, four arms, and black body tattoos, wearing white baggy pants. A large, grotesque second mouth with sharp teeth is located on his stomach, moving as if chanting, while his top face looks forward.",
-"music_mood": "hype",
-"music_prompt": "Aggressive melodic phonk instrumental, punchy 808 bass, fast energetic tempo 120 BPM, rising tension with sudden drop, dramatic and intense mood, anime fact video background, no lyrics, exclude: vocals, exclude: calm elements",
+"topic": "Attack on Titan",
+"specific_subject": "Bertholdt's sleeping habits predicting the weather",
+"youtube_queries": ["Bertholdt sleeping poses Attack on Titan", "104th training corps sleeping Attack on Titan", "Bertholdt meteorology Attack on Titan"],
+"scene_query": "tall dark haired anime boy sleeping in a very strange twisted pose on a wooden bed in a wooden cabin next to other sleeping boys",
+"music_mood": "curious",
+"music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
 "voice_name": "Hamid",
-"script": "[excited] Everyone thinks Sukuna having two faces is just to look scary. [pauses] But his stomach mouth has a genius purpose. [dramatic] In the manga, we learn that his extra mouth is actually his ultimate cheat code for magic. [whispers] When normal sorcerers cast huge spells, they have to chant words. This slows them down and messes up their breathing. [loudly] But Sukuna? [excited] He fights with his main mouth closed, while his stomach mouth sings the magic words for him! [playfully] Imagine getting punched in the face while a belly sings you a deadly lullaby. [curious] But do you know what his four arms actually do?"
+"script": "[excited] Did you know the other cadets used Bertholdt to predict the weather? [pauses] Yes, seriously. While everyone was busy training for their lives, Bertholdt had a massive secret. No, not that he was the Colossal Titan. [whispers] It was his sleeping habits. Bertholdt slept in the most strange, twisted poses every single night. [laughs] He looked like modern art! This joke among the soldiers became so popular that they literally used his weird sleeping positions to guess if it would rain. [dramatic] They called it Bertholdt's meteorology. [playfully] Could you imagine the Colossal Titan acting like a weather app?"
 }
 
 def trim_video_to_end(

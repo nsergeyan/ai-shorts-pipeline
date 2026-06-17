@@ -26,7 +26,7 @@ def clean_text_for_speech(text: str) -> str:
     return text
 
 
-def change_audio_speed(input_path: str, output_path: str, speed: float = 1.2):
+def change_audio_speed(input_path: str, output_path: str, speed: float = 1.1):
     """Use FFmpeg atempo filter to change the playback speed of an audio file."""
     subprocess.run([
         "ffmpeg",
@@ -82,7 +82,7 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        change_audio_speed(output_path, final_fast_path, speed=1.2)
+        change_audio_speed(output_path, final_fast_path, speed=1.1)
         os.replace(final_fast_path, output_path)
 
         print(f"⚡ FAST version ready → {output_path}")
