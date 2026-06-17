@@ -171,16 +171,17 @@ def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: fl
     if total_source < total_duration:
         extended = []
         accum = 0
-        for c in clips:
-            if accum >= total_duration: break
-            needed = total_duration - accum
-            if c.duration >= needed:
-                extended.append(c.subclip(0, needed))
-                accum += needed
+        i = 0
+        while accum < total_duration:
+            c = clips[i % len(clips)]
+            remaining = total_duration - accum
+            if c.duration <= remaining:
+                extended.append(c)
+                accum += c.duration
             else:
-                looped = _loop_video_to_duration(c, needed)
-                extended.append(looped)
-                accum += needed
+                extended.append(c.subclip(0, remaining))
+                accum = total_duration
+            i += 1
         return extended
 
     ratio = total_duration / total_source

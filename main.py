@@ -40,15 +40,19 @@ CLIP_DURATION = 60.0
 SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
-MANUAL_DATA = {
-"topic": "Attack on Titan",
-"specific_subject": "Bertholdt's sleeping habits predicting the weather",
-"youtube_queries": ["Bertholdt sleeping poses Attack on Titan", "104th training corps sleeping Attack on Titan", "Bertholdt meteorology Attack on Titan"],
-"scene_query": "tall dark haired anime boy sleeping in a very strange twisted pose on a wooden bed in a wooden cabin next to other sleeping boys",
-"music_mood": "curious",
-"music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
-"voice_name": "Hamid",
-"script": "[excited] Did you know the other cadets used Bertholdt to predict the weather? [pauses] Yes, seriously. While everyone was busy training for their lives, Bertholdt had a massive secret. No, not that he was the Colossal Titan. [whispers] It was his sleeping habits. Bertholdt slept in the most strange, twisted poses every single night. [laughs] He looked like modern art! This joke among the soldiers became so popular that they literally used his weird sleeping positions to guess if it would rain. [dramatic] They called it Bertholdt's meteorology. [playfully] Could you imagine the Colossal Titan acting like a weather app?"
+MANUAL_DATA ={
+  "topic": "Jujutsu Kaisen unexpected character detail",
+  "specific_subject": "The real taste of Sukuna's fingers",
+  "youtube_queries": [
+    "jujutsu kaisen official yuji eats sukuna finger MAPPA",
+    "jujutsu kaisen yuji itadori raw footage first episode",
+    "jujutsu kaisen sukuna finger object compilation"
+  ],
+  "scene_query": "Yuji Itadori with pink hair swallowing a dark purple creepy finger with long fingernails in a dark school room",
+  "music_mood": "curious",
+  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo ninety BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
+  "voice_name": "Hamid",
+  "script": "Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. [curious] This means when Yuji swallows one, his mouth gets squeaky clean, even if the curse is deadly. [laughs] It is so weird because they look like rotten beef jerky. [chuckles] Would you eat a soapy finger to gain absolute power? Tell me below!"
 }
 
 def trim_video_to_end(
@@ -256,9 +260,10 @@ def evaluate_video_with_genai(video_path, script_text):
        - 1-4: heavily pixelated, ruined by editing/watermarks, unwatchable.
     
     DECISION RULES (apply in order):
-    - "reject": relevance_score <= 4  (wrong/missing subject is an automatic reject, even with high hook/technical)
+    - "reject": subject_present = false (subject not visible → automatic reject, no exceptions)
+    - "reject": relevance_score <= 6  (subject barely visible, wrong character, or wrong show → reject)
     - "reject": technical_score <= 4
-    - "post":   relevance_score >= 5 AND hook_score >= 5 AND technical_score >= 5
+    - "post":   relevance_score >= 7 AND hook_score >= 5 AND technical_score >= 5 AND subject_present = true
     - "revise": anything else / unsure
     
     OUTPUT FORMAT:
@@ -295,7 +300,6 @@ def evaluate_video_with_genai(video_path, script_text):
         if attempt == max_attempts:
             raise RuntimeError("Gemini failed after max retries.")
 
-    raw_text = response.text if hasattr(response, "text") else str(response)
     raw_text = response.text if hasattr(response, "text") else str(response)
 
     try:
@@ -448,6 +452,172 @@ def find_scene_with_gemini(video_path, query, script):
     return {"start": 0, "end": 0}
 
 
+def segment_by_sentences(words_data):
+    """Split word-level timestamps into sentence segments on punctuation boundaries."""
+    segments = []
+    current = []
+
+    for word, start, end in words_data:
+        current.append((word, start, end))
+        if word.rstrip().endswith(('.', '?', '!')):
+            seg_start = current[0][1]
+            seg_end = current[-1][2]
+            seg_text = ' '.join(w for w, s, e in current)
+            segments.append({
+                "text": seg_text,
+                "start": seg_start,
+                "end": seg_end,
+                "duration": seg_end - seg_start,
+            })
+            current = []
+
+    if current:
+        seg_start = current[0][1]
+        seg_end = current[-1][2]
+        seg_text = ' '.join(w for w, s, e in current)
+        segments.append({
+            "text": seg_text,
+            "start": seg_start,
+            "end": seg_end,
+            "duration": seg_end - seg_start,
+        })
+
+    return segments
+
+
+def find_scenes_with_gemini(video_path, script_segments):
+    """
+    Analyze the video and decide editing mode:
+    - "multi": video has diverse scenes → return one timestamp per segment
+    - "continuous": video is one continuous scene → return the best single start point
+    """
+    client = _gemini_client()
+
+    info = ffmpeg.probe(video_path)
+    video_stream = next(s for s in info["streams"] if s["codec_type"] == "video")
+    video_duration = float(video_stream["duration"])
+
+    uploaded_file = client.files.upload(file=video_path)
+    print(f"Uploaded file: {uploaded_file.name}")
+
+    file_info = client.files.get(name=uploaded_file.name)
+    while file_info.state != "ACTIVE":
+        print(f"File state: {file_info.state}, waiting...")
+        time.sleep(2)
+        file_info = client.files.get(name=uploaded_file.name)
+    print("File ACTIVE ✅")
+
+    n = len(script_segments)
+    zone_size = video_duration / n
+    zones = [
+        (round(i * zone_size, 1), round(min((i + 1) * zone_size - 1.0, video_duration - 2.0), 1))
+        for i in range(n)
+    ]
+    zones_text = "\n".join(
+        f"  Segment {i} → [{z[0]}s – {z[1]}s]"
+        for i, z in enumerate(zones)
+    )
+
+    segments_json = json.dumps(
+        [{"index": i, "text": s["text"], "duration": round(s["duration"], 2)}
+         for i, s in enumerate(script_segments)],
+        indent=2
+    )
+
+    prompt = f"""
+You are a professional video editor. Analyze this source video and the narration script, then decide the best editing approach.
+
+VIDEO DURATION: {video_duration:.1f} seconds
+
+NARRATION SEGMENTS:
+{segments_json}
+
+STEP 1 — ASSESS VISUAL DIVERSITY:
+Watch the full video and ask: does it contain genuinely different scenes, locations, or moments that would look visually distinct when cut together?
+
+Choose "multi" if:
+- The video has multiple different scenes, angles, or visual moments
+- Different parts of the video look noticeably different from each other
+- Cutting between sections would create an interesting dynamic edit
+
+Choose "continuous" if:
+- The video is one continuous action/scene with little visual variety
+- All parts of the video look similar (same location, same action, same shot)
+- Cutting between sections would feel repetitive or jarring
+
+STEP 2 — PICK TIMESTAMPS based on your decision:
+
+If "multi": pick one timestamp per segment within its assigned zone:
+{zones_text}
+Rules: stay within zone, each timestamp must have at least [duration]s of footage, avoid intros/outros/transitions, prefer dynamic action shots.
+
+If "continuous": pick the single best start timestamp for a clean {min(61.0, video_duration - 5):.0f}s continuous clip.
+Rules: avoid intros/outros, pick where the most relevant action begins.
+
+TIMESTAMP FORMAT: seconds only (e.g. 90.0 not 1:30).
+
+OUTPUT: Return ONLY valid JSON — no explanation, no markdown.
+
+If "multi":
+{{"mode": "multi", "scenes": [{{"index": 0, "start": 12.5}}, {{"index": 1, "start": 45.0}}, ...]}}
+
+If "continuous":
+{{"mode": "continuous", "start": 23.0}}
+"""
+
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[uploaded_file, prompt]
+            )
+            break
+        except Exception as e:
+            if "503" in str(e):
+                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
+                time.sleep(20)
+            elif "429" in str(e):
+                print(f"⚠️ Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
+                client = _gemini_client()
+                time.sleep(5)
+            else:
+                raise
+        if attempt == max_attempts:
+            raise RuntimeError("Gemini scene detection failed after max retries.")
+
+    text = re.sub(r"```json|```", "", response.text).strip()
+    print(f"🤖 Gemini scene decision:\n{text}\n")
+
+    try:
+        result = json.loads(text)
+        mode = result.get("mode", "continuous")
+
+        if mode == "multi":
+            scenes = result.get("scenes", [])
+            scenes.sort(key=lambda x: x["index"])
+            # Hard-clamp each timestamp into its zone (guard against out-of-range indices)
+            clamped = []
+            for scene in scenes:
+                idx = scene.get("index", 0)
+                if idx >= len(zones):
+                    print(f"⚠️ Scene index {idx} out of range, skipping")
+                    continue
+                zone_start, zone_end = zones[idx]
+                scene["start"] = round(max(zone_start, min(scene["start"], zone_end)), 2)
+                clamped.append(scene)
+            print(f"✂️ Multi-scene mode: {len(clamped)} cuts")
+            return {"mode": "multi", "scenes": clamped}
+        else:
+            start = float(result.get("start", 0.0))
+            print(f"▶️ Continuous mode: starting at {start}s")
+            return {"mode": "continuous", "start": start}
+
+    except Exception as e:
+        print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
+        return {"mode": "continuous", "start": 0.0}
+
+
 def run_manual_pipeline(data):
     """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
     try:
@@ -471,7 +641,7 @@ def run_manual_pipeline(data):
         for i, query in enumerate(YOUTUBE_QUERIES):
             print(f"📌 Attempt {i + 1}: Searching YouTube for query: '{query}'")
             video_paths = fetch_gameplay_by_search(
-                search_queries=[query],  # use the current query
+                search_queries=[query],
                 max_videos=1,
                 retry_searches=5,
                 used_video_ids=set()
@@ -486,7 +656,7 @@ def run_manual_pipeline(data):
 
             evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
 
-            if evaluation and evaluation.get("decision") in ("post", "revise") and evaluation.get("subject_present", False):
+            if evaluation and evaluation.get("decision") == "post" and evaluation.get("subject_present", False):
                 print("✅ Video approved by GenAI!")
                 original_video = candidate_video
                 break
@@ -501,46 +671,65 @@ def run_manual_pipeline(data):
             print("❌ All queries failed. No suitable video found.")
             return False
 
-        print("🤖 Searching scene with Gemini...")
-
-        scene = find_scene_with_gemini(original_video, data.get("scene_query"), SCRIPT_TEXT)
-        print(scene)
-
-        if scene["start"] == 0 and scene["end"] == 0:
-            print("⚠️ No scene found. Using full video.")
-            trimmed_video = original_video
-        else:
-            ai_start = scene["start"]
-            trimmed_video = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-            trim_video_to_end(
-                input_file=original_video,
-                output_file=trimmed_video,
-                ai_start=ai_start,
-                prepad=0.02,
-                max_duration=61.0
-            )
-
-        print(f"🎵 Generating music with ElevenLabs...")
-        music_path = generate_music(MUSIC_PROMPT)
-        if not music_path:
-            print("⚠️ Music generation failed, continuing without music.")
-
+        # Voice must come before scene finding so Whisper timestamps drive the cuts
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
         audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
-        # Voice is required — generate_voice raises RuntimeError if all keys fail
         audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
 
-        print(f"📝 Generating word-level subtitles...")
+        print(f"📝 Transcribing for scene sync...")
         if LANGUAGE == "es":
             print("🇪🇸 Spanish detected — skipping subtitles.")
             words_data = None
         else:
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
+        clip_paths = []
+        if words_data is not None and len(words_data) > 0:
+            script_segments = segment_by_sentences(words_data)
+            print(f"🎬 {len(script_segments)} sentence segments — analyzing video...")
+            result = find_scenes_with_gemini(original_video, script_segments)
+
+            if result["mode"] == "multi":
+                scenes = result["scenes"]
+                if len(scenes) < len(script_segments):
+                    print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
+                for scene, segment in zip(scenes, script_segments):
+                    clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
+                    success = trim_video_to_end(
+                        input_file=original_video,
+                        output_file=clip_path,
+                        ai_start=scene["start"],
+                        prepad=0.0,
+                        max_duration=segment["duration"],
+                    )
+                    if success is not False and os.path.exists(clip_path):
+                        clip_paths.append(clip_path)
+            else:
+                clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
+                success = trim_video_to_end(original_video, clip_path, result["start"], prepad=0.02, max_duration=61.0)
+                if success is not False and os.path.exists(clip_path):
+                    clip_paths = [clip_path]
+
+        if not clip_paths:
+            # Fallback for Spanish or failed transcription
+            print("🤖 Falling back to single-scene Gemini search...")
+            scene = find_scene_with_gemini(original_video, data.get("scene_query"), SCRIPT_TEXT)
+            if scene and not (scene["start"] == 0 and scene["end"] == 0):
+                clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
+                trim_video_to_end(original_video, clip_path, scene["start"], prepad=0.02, max_duration=61.0)
+                clip_paths = [clip_path]
+            else:
+                clip_paths = [original_video]
+
+        print(f"🎵 Generating music with ElevenLabs...")
+        music_path = generate_music(MUSIC_PROMPT)
+        if not music_path:
+            print("⚠️ Music generation failed, continuing without music.")
+
         final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
         print(f"🎬 Starting video editing...")
         final_path = merge_audio_video(
-            video_paths=[trimmed_video],
+            video_paths=clip_paths,
             audio_path=audio_path,
             output_name=final_filename,
             vertical=True,
@@ -554,9 +743,13 @@ def run_manual_pipeline(data):
         print(f"\n✅ DONE! Saved to: {final_path}")
 
         if CLEANUP_FILES:
-            for path in [audio_path, music_path, original_video, trimmed_video]:
+            to_delete = {audio_path, music_path, original_video} | set(clip_paths)
+            for path in to_delete:
                 if path and os.path.exists(path):
-                    os.remove(path)
+                    try:
+                        os.remove(path)
+                    except Exception:
+                        pass
 
         return True
 

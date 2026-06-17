@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 from elevenlabs.client import ElevenLabs
+from elevenlabs.types import DialogueInput
 from config import DATA_DIR, ELEVENLABS_API_KEY
 
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
@@ -26,17 +27,6 @@ def clean_text_for_speech(text: str) -> str:
     return text
 
 
-def change_audio_speed(input_path: str, output_path: str, speed: float = 1.1):
-    """Use FFmpeg atempo filter to change the playback speed of an audio file."""
-    subprocess.run([
-        "ffmpeg",
-        "-y",
-        "-i", input_path,
-        "-filter:a", f"atempo={speed}",
-        output_path
-    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-
 def _try_generate_with_key(
         api_key: str,
         script_text: str,
@@ -49,32 +39,22 @@ def _try_generate_with_key(
     print(f"🔑 Using key: {api_key[:6]}... for Language: {lang.upper()}")
 
     tmp_path = output_path + ".partial"
-    final_fast_path = output_path.replace(".mp3", "_fast.mp3")
-
-    if lang in ["ru", "es"]:
-        model_id = "eleven_multilingual_v2"
-        voice_settings = {
-            "stability": 0.7,
-            "similarity_boost": 0.8,
-            "style": 0.2,
-            "use_speaker_boost": True,
-        }
-    else:
-        model_id = "eleven_v3"
-        voice_settings = {
-            "stability": 0.9
-        }
 
     try:
         cleaned_text = clean_text_for_speech(script_text)
 
-        audio_stream = client.text_to_speech.convert(
-            text=cleaned_text,
-            voice_id=voice_id,
-            model_id=model_id,
-            voice_settings=voice_settings,
-            output_format="mp3_44100_128"
-        )
+        if lang in ["ru", "es"]:
+            audio_stream = client.text_to_speech.convert(
+                text=cleaned_text,
+                voice_id=voice_id,
+                model_id="eleven_multilingual_v2",
+                output_format="mp3_44100_192",
+            )
+        else:
+            audio_stream = client.text_to_dialogue.convert(
+                inputs=[DialogueInput(text=cleaned_text, voice_id=voice_id)],
+                output_format="mp3_44100_192",
+            )
 
         with open(tmp_path, "wb") as f:
             for chunk in audio_stream:
@@ -82,10 +62,15 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        change_audio_speed(output_path, final_fast_path, speed=1.1)
-        os.replace(final_fast_path, output_path)
+        # Speed up 1.1x via FFmpeg atempo
+        sped_path = output_path + ".fast.mp3"
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.1", sped_path],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+        )
+        os.replace(sped_path, output_path)
 
-        print(f"⚡ FAST version ready → {output_path}")
+        print(f"✅ Voice ready → {output_path}")
         return True
 
     except Exception as e:
@@ -125,9 +110,7 @@ def generate_voice(
 if __name__ == "__main__":
     print("🧪 Starting High-Speed V3 Test...\n")
 
-    test_script ="[disgusted] Have you ever looked closely at Caine from The Amazing Digital Circus? [leans in] He is literally just a floating mouth with eyes inside. Naturally, you would think his teeth are made of hard bone, like a normal skeleton. [dramatic pause] But the creator revealed a secret that makes him incredibly creepy. Gooseworx confirmed that Caine’s teeth are actually soft and squishy. They feel just like marshmallows. [shuddering] If you touch his teeth, they bend. Which is kind of wild, right? Imagine a giant mouth made of soft jelly grabbing you. [curiously] What other terrifying secrets is the circus hiding?"
-
-
+    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. [curious] This means when Yuji swallows one, his mouth gets squeaky clean, even if the curse is deadly. [laughs] It is so weird because they look like rotten beef jerky. [chuckles] Would you eat a soapy finger to gain absolute power? Tell me below!"
     try:
         for i in range(1, 3):
             path = generate_voice(
