@@ -1,10 +1,10 @@
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about Attack on Titan.
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about jjk.
 DO NOT EXAGGERATE FACTS!
 
 ═══════════════════════════════════
 RANDOM CATEGORY SELECTION
 ═══════════════════════════════════
-Only choose topics that can be clearly shown through a short visual clip with obvious action or movement, and can be easily turned into three strong YouTube search queries.
+Only choose topics that can be clearly shown through a short visual clip with obvious action or movement.
 
 Before choosing a topic, pick a random number from one to four. State the number first.
 
@@ -53,6 +53,7 @@ KILL TEST — automatically reject a candidate if it is:
 - obscure but DRY (stat numbers, IQ figures, voice-actor credits, staff names, release dates, episode-count records) — rare yet boring
 - requires a lore lecture before the surprise lands
 - philosophical interpretation or character summary
+- a character trait or personality quirk reworded as a surprising fact (e.g. "Gojo is actually really competitive" — this is characterization, not a fact)
 - more than forty percent similar to anything in the USED VIDEOS LIST
 
 BANNED OVERSATURATED PATTERNS (the iceberg clichés — never pick these):
@@ -88,7 +89,7 @@ Tier three — THEORY: no strong source. Script MUST say "fans believe" or "one 
 
 RULE: Because this video must not exaggerate, prefer Tier one. Only use Tier three if the WAIT-WHAT score is five AND the script clearly flags it as a theory.
 
-Before JSON output, include this box:
+Before moving on, fill this box in full. If "Flag if theory" is YES, the script must contain a theory disclaimer:
 
 VERIFICATION BOX
 ━━━━━━━━━━━━━━━━━━━━
@@ -98,6 +99,7 @@ Tier:
 Source:
 Why this isn't widely known:
 How user can verify:
+Flag if theory (YES / NO):
 ━━━━━━━━━━━━━━━━━━━━
 
 ═══════════════════════════════════
@@ -107,6 +109,20 @@ One main surprising idea. One small natural side detail allowed.
 Goal: "Wait… I didn't know that."
 
 ═══════════════════════════════════
+MUSIC SELECTION RULE
+═══════════════════════════════════
+Analyze the script's topic, tone, and emotional arc BEFORE writing it. Assign ONE music_mood: mysterious / hype / emotional / curious.
+
+Then write a CUSTOM music_prompt for THIS script specifically. Do NOT copy a generic preset — the prompt must feel like it was written for this exact script.
+
+The prompt must include:
+- A specific genre + sub-genre (e.g. "dark atmospheric trap", "melodic phonk", "orchestral cinematic")
+- Tempo in BPM
+- two to three instruments or sounds that fit the script's world (e.g. "eerie koto plucks", "punchy 808 bass", "solo piano with strings")
+- The emotional arc (e.g. "builds from quiet tension to sudden reveal", "steady driving energy with a climax at thirty seconds")
+- End with: "anime short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
+
+═══════════════════════════════════
 SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
 ═══════════════════════════════════
 Tone: conversational, slightly dramatic, enthusiastic — sound genuinely excited about the detail.
@@ -114,96 +130,100 @@ Tone: conversational, slightly dramatic, enthusiastic — sound genuinely excite
 ELEVENLABS V3 AUDIO TAGS RULE:
 Insert MINIMUM four [bracketed] performance tags inside the script to guide the AI voice.
 
-Tag families you can draw from (invent your own variants freely):
-- Emotional tone: [excited], [nervous], [frustrated], [calm], [sorrowful]
-- Reactions: [sigh], [gulps], [whispers]
-- Volume & energy: [whispering], [shouting], [quietly], [loudly]
-- Pacing: [pauses], [stammers], [rushed], [hesitates]
-- Tone cues: [cheerfully], [flatly], [deadpan], [playfully], [dramatic]
-Tags can be layered: "[nervously] I... I'm not sure this works. [gulps] But let's try."
+Tags are drawn from the official ElevenLabs v3 confirmed categories (non-exhaustive — invent descriptive variants freely, but anchor to these families):
+
+Emotional states (confirmed): [excited], [nervous], [frustrated], [sorrowful], [calm],
+  [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy],
+  [annoyed], [appalled], [thoughtful], [surprised]
+
+Laughter & breath reactions (confirmed): [laughs], [laughs harder], [starts laughing],
+  [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
+
+Delivery direction (confirmed): [whispers], [shouts]
+
+Non-verbal reactions (confirmed): [clears throat], [gulps], [swallows], [snorts]
+
+Sound effects (use sparingly, confirmed): [gunshot], [applause], [clapping], [explosion]
+
+Experimental / combinable (invent freely within reason): [frustrated sigh], [happy gasp],
+  [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly]
+  — these are NOT in the official list but ElevenLabs confirms the model accepts
+  descriptive variants. Mark them as experimental if noting to client.
+
+Tags can be layered: "[nervously] I... I'm not sure this works. [sighs] But let's try."
 
 PUNCTUATION FOR DELIVERY:
-Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause.
+Comma → short pause. Period → full stop. Question mark → questioning tone.
+Exclamation → emphasis. Ellipsis (...) → suspense pause.
+CAPITALIZATION → adds spoken emphasis on a word (e.g. "it's EVERYWHERE").
 
-NUMBER RULE: Never use digits. Write numbers as words (one, not 1).
+NUMBER RULE: Never use digit characters anywhere in the script. Write all numbers as words (one, not 1; twenty, not 20). This applies to every number including years, counts, and percentages.
 
 WORD COUNT RULE:
 Spoken text must be ninety to one hundred words. Do NOT count [bracketed] tags.
-After writing, number each spoken word to confirm the count is ninety to one hundred, then output the clean version. If it fails, rewrite.
+While drafting, number each spoken word inline as you write (e.g. "So(1) here(2) is(3)...") to track the count in real time. Once confirmed between ninety and one hundred, output the clean version with numbering removed.
+If the count fails, rewrite immediately — do not round up or approximate.
 
 SCRIPT QUALITY CHECK (confirm all before output):
-- ninety to one hundred words (tags excluded)
-- contains one surprising fact (Wait-What four or higher)
-- contains one light humorous moment
-- ends on a curiosity hook
-- includes four or more ElevenLabs tags
-If any fail → rewrite.
+☐ ninety to one hundred spoken words (tags excluded, numbered inline during draft)
+☐ zero digit characters anywhere in the script
+☐ contains one surprising fact (Wait-What four or higher)
+☐ contains one light humorous moment
+☐ ends on a curiosity hook
+☐ includes four or more ElevenLabs v3 confirmed tags
+☐ theory disclaimer present IF Flag if theory is YES
+If any box is unchecked → rewrite before outputting JSON.
 
 ═══════════════════════════════════
 VISUAL CLIP STRATEGY (TIKTOK)
 ═══════════════════════════════════
-SCENE ACCURACY RULE: If the script references a specific moment, the visuals must come from that exact scene. Do not guess seasons or episodes — describe the scene itself.
 
-YOUTUBE QUERY FORMAT (three queries):
-Structure: [main subject] + Attack on Titan + [clear action/event]
-Avoid: talking, explaining, discussion, vague actions.
+── SCENE QUERY (for Gemini / visual search) ──────────────────
+scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the anime. It is NOT a YouTube search query.
 
-SCENE QUERY VISUAL SEARCH PROTOCOL:
-Gemini searches by literal physical description, not lore. Write the scene_query as pure visuals:
-- Describe what the screen looks like: hair colors, distinct clothing, physical objects.
-- Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising.
-- No lore jargon. Describe effects visually (e.g. "white steam pouring off a giant body", not "Titan regeneration").
-- The query must match the most surprising visual in the script.
+Write scene_query as a pure physical description of what the screen looks like:
+- Describe colors, clothing, hair, and objects visible on screen
+- Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising
+- No lore jargon. Translate effects into visuals (e.g. "white steam pouring off a large body", not "Titan regeneration")
+- Anchor to the most visually surprising moment the script references
+- If the script references a specific scene, the scene_query must match that exact scene — do not guess or generalize
 
-═══════════════════════════════════
-MUSIC SELECTION RULE
-═══════════════════════════════════
-Analyze the script's tone and assign ONE music_mood: mysterious / hype / emotional / curious
-Then use the matching music_prompt:
+── YOUTUBE QUERIES (for sourcing raw footage) ────────────────
+Generate exactly three YouTube queries. Each query must target a DIFFERENT source type to maximize your chance of finding clean, editable footage. Use the strategies below in this order:
 
-mysterious → "Dark atmospheric trap instrumental, deep melodic 808 bass, eerie synth hook, slow build tension, medium tempo 85 BPM, anime narration background, no lyrics, exclude: abrupt ending, exclude: upbeat elements"
+Query one — OFFICIAL SOURCE
+Target: MAPPA's official YouTube channel uploads, official trailers, or official clips.
+Format: jujutsu kaisen official [scene description] MAPPA
+Goal: pull footage released by the studio itself — lowest copyright friction.
 
-hype → "Aggressive melodic phonk instrumental, punchy 808 bass, fast energetic tempo 120 BPM, rising tension with sudden drop, dramatic and intense mood, anime fact video background, no lyrics, exclude: vocals, exclude: calm elements"
+Query two — CREDITLESS / ISOLATED FOOTAGE
+Target: creditless openings, creditless endings, or character highlight reels without commentary.
+Format: jujutsu kaisen [character or arc name] [NC / creditless / raw / no commentary] [action]
+Goal: clean isolated footage with no streamer face, no commentary audio, no reaction overlay.
 
-emotional → "Melancholic orchestral instrumental, solo piano with string accompaniment, slow tempo 65 BPM, sorrowful and cinematic mood, builds to emotional climax at forty seconds, anime drama background, no lyrics, exclude: electronic elements, exclude: abrupt ending"
+Query three — FAN COMPILATION (visuals only)
+Target: fan-made AMV or scene compilation focused on the visual moment, no full-episode rips.
+Format: jujutsu kaisen [character or power name] [visual moment] AMV / compilation
+Goal: find footage that shows the moment from multiple angles or cuts, already trimmed.
 
-curious → "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo 90 BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements"
+SCENE ACCURACY RULE: If the script references a specific moment, all three queries must chase that exact moment — not the arc, not the character in general.
+
+DO NOT generate three queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool of results.
 
 ═══════════════════════════════════
 JSON OUTPUT FORMAT
 ═══════════════════════════════════
 {
-"topic": "",
-"specific_subject": "",
-"youtube_queries": ["", "", ""],
-"scene_query": "",
-"music_mood": "",
-"music_prompt": "",
-"voice_name": "Hamid",
-"script": ""
+  "topic": "",
+  "specific_subject": "",
+  "youtube_queries": ["", "", ""],
+  "scene_query": "",
+  "music_mood": "",
+  "music_prompt": "",
+  "voice_name": "Hamid",
+  "script": ""
 }
 
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
-why did sukuna keep urame? #jjk #sukuna
-levi ackerman's severe insomnia #aot #leviackerman
-the rule that sorcerers killed without cursed energy become vengeful spirits #jjk
-what sukuna's fingers actually taste like #sukuna #jjk
-kento nanami's swimming goggles #jjk
-why did mark survive? #invincible
-oliver's love? #invincible
-what panda actually smells like #jjk
-the frame skipping technique in invincible #invincibleseason3 #invincible
-why sorcerers do not use modern guns #jjk
-aoi todo's iq of 530,000 #jjk #aoitodo
-seth rogen and evan goldberg produce both shows, and seth rogen also voices allen the alien #theboys #invincible
-how the director acts out the fights #jjk
-jujutsu high pays students a monthly salary #jjk
-the cursed energy spark #jjk
-hidden lore mechanic viltrumite burial pillars in invincible s4e6 #invincible
-cecil stedman's lack of sleep #invincible
-hidden transformers voice actor rivalry easter egg in invincible s4e7 #invincible
-the secret written language is upside-down japanese #aot
-the trailer's tiny end-card reveals a two-weeks-early theater premiere #tadc #pomni #jax
-why levi ackerman holds his tea weirdly #aot #leviackerman

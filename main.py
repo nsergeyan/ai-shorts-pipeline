@@ -41,18 +41,18 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "topic": "Jujutsu Kaisen unexpected character detail",
-  "specific_subject": "The real taste of Sukuna's fingers",
+  "topic": "unexpected character detail",
+  "specific_subject": "Gojo's Six Eyes never turn off — even while sleeping, he constantly processes cursed energy, which is why his brain tires and needs sugar",
   "youtube_queries": [
-    "jujutsu kaisen official yuji eats sukuna finger MAPPA",
-    "jujutsu kaisen yuji itadori raw footage first episode",
-    "jujutsu kaisen sukuna finger object compilation"
+    "jujutsu kaisen official Gojo Satoru Six Eyes scene clip MAPPA",
+    "jujutsu kaisen Gojo Six Eyes creditless raw no commentary hidden inventory",
+    "jujutsu kaisen Gojo Satoru Six Eyes compilation AMV"
   ],
-  "scene_query": "Yuji Itadori with pink hair swallowing a dark purple creepy finger with long fingernails in a dark school room",
+  "scene_query": "Close-up of Gojo's covered eyes, blue glow faintly visible through the blindfold, calm expression, white hair, relaxed indoors scene with soft lighting, transition to him eating a candy or sweet",
   "music_mood": "curious",
-  "music_prompt": "Upbeat lo-fi hip hop instrumental, warm Rhodes piano, light percussion, playful and curious mood, medium tempo ninety BPM, relaxed anime trivia background, no lyrics, exclude: heavy bass, exclude: aggressive elements",
+  "music_prompt": "light playful orchestral with electronic undertones, 90 BPM, soft pizzicato strings with gentle synth pads and a subtle ticking clock rhythm, builds a sense of 'always on' awareness, then a light playful drop at the candy reveal, anime short-form video background, no lyrics, exclude: dark ambient drones, heavy percussion",
   "voice_name": "Hamid",
-  "script": "Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. [curious] This means when Yuji swallows one, his mouth gets squeaky clean, even if the curse is deadly. [laughs] It is so weird because they look like rotten beef jerky. [chuckles] Would you eat a soapy finger to gain absolute power? Tell me below!"
+  "script": "Here's something wild about Gojo. [curiously] You know his Six Eyes? The thing that makes him so powerful? [whispers] They never turn off. [sighs] Even when he's sleeping, his Six Eyes are still processing everything. Every bit of cursed energy around him. All the time. [excitedly] That's WHY his brain gets so tired. Imagine never closing your eyes. Never. Not even for one second. [laughs] No wonder he eats so many sweets. His brain is basically running a supercomputer nonstop. It needs fuel. [thoughtful] So next time you see Gojo with a candy bar? He's not being silly. He's recharging."
 }
 
 def trim_video_to_end(
