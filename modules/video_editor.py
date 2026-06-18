@@ -1,459 +1,268 @@
+import http.server
+import json
+import math
 import os
-import sys
 import random
-from typing import List, Union, Optional
-import uuid
-
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
-import moviepy.config as mp_config
-import re
-
-from moviepy.audio.AudioClip import AudioClip
-from moviepy.video.VideoClip import ImageClip, ColorClip, VideoClip
-
-CYRILLIC_RE = re.compile(r'[\u0400-\u04FF]')
-
-def contains_cyrillic(text: str) -> bool:
-    """Return True if the text contains any Cyrillic characters."""
-    return bool(CYRILLIC_RE.search(text))
-
-
-if sys.platform == "darwin":
-    possible_paths = [
-        "/opt/homebrew/bin/magick",
-        "/usr/local/bin/magick",
-        "/opt/homebrew/bin/convert",
-        "/usr/local/bin/convert",
-    ]
-    for p in possible_paths:
-        if os.path.exists(p):
-            # Prefer magick over convert
-            binary = p if "magick" in p else p
-            mp_config.change_settings({"IMAGEMAGICK_BINARY": binary})
-            break
-
-from moviepy.editor import (
-    VideoFileClip,
-    AudioFileClip,
-    TextClip,
-    CompositeVideoClip,
-    CompositeAudioClip,
-    concatenate_videoclips,
-    vfx
-)
-
-try:
-    from moviepy.audio.fx.all import audio_loop, volumex
-except ImportError:
-    audio_loop = None
-    volumex = None
+import socket
+import subprocess
+import tempfile
+import threading
+from typing import List, Optional, Union
 
 from config import DATA_DIR, CTA_PATH
 
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FINAL_DIR = os.path.join(DATA_DIR, "final")
+REMOTION_DIR = os.path.join(PROJECT_ROOT, "remotion")
 os.makedirs(FINAL_DIR, exist_ok=True)
 
 
-# ----------------------- Helper functions ----------------------- #
-def chroma_key_green_dominance(clip, threshold=45):
-    """
-    Proper MoviePy-compatible green-dominance chroma key.
-    Returns RGB clip + mask (no RGBA frames).
-    """
-
-    def make_rgb(frame):
-        return frame[:, :, :3]
-
-    def make_mask(frame):
-        frame = frame.astype(np.float32)
-        r = frame[:, :, 0]
-        g = frame[:, :, 1]
-        b = frame[:, :, 2]
-
-        # green dominance → transparent
-        mask = ~((g > r + threshold) & (g > b + threshold))
-
-        # MoviePy mask must be float 0..1
-        return mask.astype(np.float32)
-
-    rgb = clip.fl_image(make_rgb)
-
-    mask = VideoClip(
-        make_frame=lambda t: make_mask(clip.get_frame(t)),
-        ismask=True,
-        duration=clip.duration
-    ).set_fps(clip.fps)
-
-    return rgb.set_mask(mask)
-def load_cta_clip(
-    cta_path: str,
-    target_size: tuple,
-    duration: Optional[float] = None,
-    green_screen: bool = True
-):
-    """Load the CTA overlay clip, resize it, and optionally remove the green background."""
-    cta = VideoFileClip(cta_path).without_audio()
-
-    # Resize CTA to match video
-    cta = cta.resize(height=int(target_size[1] * 0.5))
-    cta = cta.set_position(("center", "bottom"))
-
-    # Remove green background
-    if green_screen:
-        cta = chroma_key_green_dominance(cta, threshold=45)
-
-    if duration:
-        cta = cta.subclip(0, min(duration, cta.duration))
-
-    return cta
+class _SilentFileServer(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
 
 
-def _make_vertical_9x16(clip, target_w=1080, target_h=1920, bg_color=(0, 0, 0)):
-    """Resize a clip to fit 9:16 aspect ratio with black letterboxing."""
-    w, h = clip.size
-    src_ratio = w / h
-    tgt_ratio = target_w / target_h
+def _start_asset_server(serve_dir: str):
+    """Start a local HTTP server to serve project files to Remotion. Returns (httpd, port)."""
+    s = socket.socket()
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
 
-    if src_ratio > tgt_ratio:
-        new_w = target_w
-        new_h = int(new_w / src_ratio)
-    else:
-        new_h = target_h
-        new_w = int(new_h * src_ratio)
+    def handler(*args, **kwargs):
+        return _SilentFileServer(*args, directory=serve_dir, **kwargs)
 
-    resized = clip.resize((new_w, new_h))
-    return resized.on_color(size=(target_w, target_h), color=bg_color, pos=("center", "center"))
-
-
-def _loop_video_to_duration(clip, target_duration: float):
-    """Loop or trim a video clip to exactly target_duration seconds."""
-    if clip.duration and clip.duration >= target_duration:
-        return clip.subclip(0, target_duration)
-    return clip.fx(vfx.loop, duration=target_duration).subclip(0, target_duration)
+    httpd = http.server.HTTPServer(("127.0.0.1", port), handler)
+    t = threading.Thread(target=httpd.serve_forever, daemon=True)
+    t.start()
+    return httpd, port
 
 
-def _loop_audio_to_duration(audio_clip, target_duration: float):
-    """Loop or trim an audio clip to exactly target_duration seconds."""
-    if audio_clip.duration and audio_clip.duration >= target_duration:
-        return audio_clip.subclip(0, target_duration)
-
-    if audio_loop:
-        return audio_clip.fx(audio_loop, duration=target_duration).subclip(0, target_duration)
-
-    import math
-    n = math.ceil(target_duration / audio_clip.duration)
-    clips = [audio_clip.set_start(i * audio_clip.duration) for i in range(n)]
-    return CompositeAudioClip(clips).subclip(0, target_duration)
+def _probe_duration(path: str) -> float:
+    result = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+         "-of", "json", path],
+        capture_output=True, text=True, check=True
+    )
+    return float(json.loads(result.stdout)["format"]["duration"])
 
 
-def _trim_clips_to_total_duration(clips: List[VideoFileClip], total_duration: float) -> List[VideoFileClip]:
-    """If we have a long video and need only part of it, pick a random chunk."""
-    if not clips: return []
-
-    # Scenario 1: We have a single long background video (the 5min download)
-    if len(clips) == 1:
-        c = clips[0]
-        if c.duration > total_duration:
-            # Calculate the latest possible start time
-            max_start_time = c.duration - total_duration
-
-            # Pick a random start time
-            random_start = random.uniform(0, max_start_time)
-            random_end = random_start + total_duration
-
-            print(f"🎲 RANDOM CUT: Selecting video segment from {int(random_start)}s to {int(random_end)}s")
-            return [c.subclip(random_start, random_end)]
-
-    # Scenario 2: Video is shorter than audio, or multiple clips (Fallback)
-    total_source = sum(c.duration for c in clips)
-
-    if total_source < total_duration:
-        extended = []
-        accum = 0
-        i = 0
-        while accum < total_duration:
-            c = clips[i % len(clips)]
-            remaining = total_duration - accum
-            if c.duration <= remaining:
-                extended.append(c)
-                accum += c.duration
-            else:
-                extended.append(c.subclip(0, remaining))
-                accum = total_duration
-            i += 1
-        return extended
-
-    ratio = total_duration / total_source
-    processed = []
-    for c in clips:
-        new_dur = c.duration * ratio
-        processed.append(c.subclip(0, new_dur))
-    return processed
+def _prepare_cta_transparent(cta_path: str) -> Optional[str]:
+    """Convert green-screen CTA to transparent WebM, stored inside DATA_DIR."""
+    out_path = os.path.join(DATA_DIR, "cta_transparent.webm")
+    if os.path.exists(out_path):
+        return out_path
+    if not cta_path or not os.path.exists(cta_path):
+        return None
+    try:
+        subprocess.run([
+            "ffmpeg", "-y",
+            "-i", cta_path,
+            "-vf", "chromakey=color=0x00FF00:similarity=0.35:blend=0.05",
+            "-pix_fmt", "yuva420p",
+            "-c:v", "libvpx-vp9",
+            "-b:v", "2M",
+            "-an",
+            out_path
+        ], check=True, capture_output=True)
+        print(f"✅ CTA transparent: {out_path}")
+        return out_path
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ CTA chromakey failed, using original: {e.stderr.decode()[-200:]}")
+        return cta_path
 
 
-def _create_text_image(text: str, video_size: tuple, font_path: str, fontsize: int):
-    """Render a text string onto a transparent image using Pillow, auto-scaling if too wide."""
-    w_vid, h_vid = video_size
-    img = Image.new('RGBA', (w_vid, h_vid), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
+def _prepare_music(music_path: str, target_dur: float) -> Optional[str]:
+    """Trim or loop music to exactly target_dur seconds."""
+    if not music_path or not os.path.exists(music_path):
+        return None
+    try:
+        music_dur = _probe_duration(music_path)
+    except Exception:
+        return None
 
-    # Auto-scale: Shrink font if text is wider than 85% of screen
-    max_width = int(w_vid * 0.85)
-    current_fontsize = fontsize
-
-    while current_fontsize > 20:
-        font = ImageFont.truetype(font_path, current_fontsize)
-        bbox = draw.textbbox((0, 0), text, font=font)
-        tw = bbox[2] - bbox[0]
-        if tw <= max_width:
-            break
-        current_fontsize -= 5
-
-    font = ImageFont.truetype(font_path, current_fontsize)
-    bbox = draw.textbbox((0, 0), text, font=font)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-
-    # Position at TOP (12% down)
-    x = (w_vid - tw) / 2
-    y = int(h_vid * 0.12)
-
-    # Draw Outline
-    for dx in range(-4, 5):
-        for dy in range(-4, 5):
-            draw.text((x + dx, y + dy), text, font=font, fill="black")
-
-    # Draw Main Text
-    draw.text((x, y), text, font=font, fill="white")
-
-    temp_path = f"temp_sub_{uuid.uuid4().hex}.png"
-    img.save(temp_path)
-    return temp_path
-
-
-def _render_word_highlight_image(words_in_line, active_idx, video_size, fontsize):
-    """Render a line of words with the active word in yellow using Pillow."""
-    w_vid, h_vid = video_size
-    img = Image.new('RGBA', (w_vid, h_vid), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-
-    font_path = "/System/Library/Fonts/Helvetica.ttc"
-    font = ImageFont.truetype(font_path, fontsize)
-
-    space_w = draw.textbbox((0, 0), " ", font=font)[2]
-    word_widths = [draw.textbbox((0, 0), w, font=font)[2] - draw.textbbox((0, 0), w, font=font)[0]
-                   for w in words_in_line]
-    total_w = sum(word_widths) + space_w * (len(words_in_line) - 1)
-
-    max_w = int(w_vid * 0.9)
-    if total_w > max_w:
-        fontsize = int(fontsize * (max_w / total_w))
-        font = ImageFont.truetype(font_path, fontsize)
-        space_w = draw.textbbox((0, 0), " ", font=font)[2]
-        word_widths = [draw.textbbox((0, 0), w, font=font)[2] - draw.textbbox((0, 0), w, font=font)[0]
-                       for w in words_in_line]
-        total_w = sum(word_widths) + space_w * (len(words_in_line) - 1)
-
-    x = (w_vid - total_w) / 2
-    y = int(h_vid * 0.10)
-
-    for i, (word, ww) in enumerate(zip(words_in_line, word_widths)):
-        color = "#FFE000" if i == active_idx else "white"
-        for dx in range(-3, 4):
-            for dy in range(-3, 4):
-                draw.text((x + dx, y + dy), word, font=font, fill="black")
-        draw.text((x, y), word, font=font, fill=color)
-        x += ww + space_w
-
-    temp_path = f"temp_wh_{uuid.uuid4().hex}.png"
-    img.save(temp_path)
-    return temp_path
-
-
-def _make_word_highlight_clips(words_data, video_size, words_per_line=3):
-    """
-    words_data: [(word, start, end)]
-    Groups words into lines and renders each word's highlight frame.
-    Cleans up temp PNG files after creating clips.
-    """
-    h_vid = video_size[1]
-    fontsize = int(h_vid * 0.065)
-    clips = []
-    temp_files = []
-
-    lines = [words_data[i:i + words_per_line] for i in range(0, len(words_data), words_per_line)]
-
-    for line in lines:
-        words_in_line = [w for w, s, e in line]
-        for active_idx, (word, start, end) in enumerate(line):
-            dur = end - start
-            if dur <= 0:
-                continue
-            img_path = _render_word_highlight_image(words_in_line, active_idx, video_size, fontsize)
-            temp_files.append(img_path)
-            clip = ImageClip(img_path).set_start(start).set_duration(dur).set_position((0, 0))
-            clips.append(clip)
-
-    # Clean up temp PNGs
-    for f in temp_files:
-        try:
-            os.remove(f)
-        except:
-            pass
-
-    return clips
-
-
-def _make_subtitle_clips(subtitles_data, video_size, position="top"):
-    """Convert a list of (start, end, text) subtitle entries into timed MoviePy clips."""
-    w_vid, h_vid = video_size
-    clips = []
-    fontsize = int(h_vid * 0.06)
-
-    FONT_EN = "/System/Library/Fonts/Arial.ttf"
-    FONT_RU = "/opt/homebrew/share/fonts/dejavu/DejaVuSans.ttf"
-    if not os.path.exists(FONT_RU):
-        FONT_RU = "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
-
-    for start, end, txt in subtitles_data:
-        dur = end - start
-        if dur <= 0: continue
-
-        if contains_cyrillic(txt):
-            # Use Pillow for Russian (Auto-scales and stays at TOP)
-            img_path = _create_text_image(txt.upper(), video_size, FONT_RU, fontsize)
-            txt_clip = ImageClip(img_path).set_start(start).set_duration(dur).set_position((0,0))
+    out_path = music_path + "_final.mp3"
+    try:
+        if music_dur >= target_dur:
+            start = random.uniform(0, music_dur - target_dur)
+            subprocess.run([
+                "ffmpeg", "-y",
+                "-ss", str(start), "-t", str(target_dur),
+                "-i", music_path,
+                "-c", "copy",
+                out_path
+            ], check=True, capture_output=True)
         else:
-            # English uses standard MoviePy TextClip at TOP
-            pos_arg = ('center', int(h_vid * 0.12))
-            txt_clip = TextClip(
-                txt.upper(),
-                fontsize=fontsize,
-                color='white',
-                font=FONT_EN,
-                method='caption',
-                size=(int(w_vid * 0.85), None),
-                stroke_color='black',
-                stroke_width=4,
-                align='center'
-            ).set_start(start).set_duration(dur).set_position(pos_arg)
+            loops = math.ceil(target_dur / music_dur)
+            subprocess.run([
+                "ffmpeg", "-y",
+                "-stream_loop", str(loops),
+                "-i", music_path,
+                "-t", str(target_dur),
+                "-c", "copy",
+                out_path
+            ], check=True, capture_output=True)
+        return out_path
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ Music prep failed: {e}")
+        return music_path
 
-        clips.append(txt_clip)
+
+def _build_clips(video_paths: List[str], target_dur: float, base_url: str) -> List[dict]:
+    """
+    Build {path (http URL), duration} dicts summing to target_dur.
+    Paths are served via the local asset HTTP server.
+    """
+    clips = []
+    remaining = target_dur
+
+    for vp in video_paths:
+        if remaining <= 0:
+            break
+        try:
+            dur = _probe_duration(vp)
+        except Exception:
+            dur = target_dur
+        take = min(dur, remaining)
+        rel = os.path.relpath(os.path.abspath(vp), PROJECT_ROOT)
+        clips.append({"path": f"{base_url}/{rel}", "duration": round(take, 3)})
+        remaining -= take
+
+    if remaining > 0.05 and clips:
+        last = clips[-1]
+        abs_path = os.path.join(PROJECT_ROOT,
+                                last["path"].split(base_url + "/", 1)[1])
+        while remaining > 0.05:
+            dur = _probe_duration(abs_path)
+            take = min(dur, remaining)
+            clips.append({"path": last["path"], "duration": round(take, 3)})
+            remaining -= take
+
     return clips
+
+
+def _asset_url(abs_path: str, base_url: str) -> str:
+    rel = os.path.relpath(os.path.abspath(abs_path), PROJECT_ROOT)
+    return f"{base_url}/{rel}"
+
+
+def _composite_cta(base_video: str, cta_path: str, cta_start: float, cta_duration: float, out_path: str):
+    """Overlay green-screen CTA onto base_video starting at cta_start using FFmpeg chromakey."""
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-i", base_video,
+        "-i", cta_path,
+        "-filter_complex",
+        f"[1:v]trim=duration={cta_duration},setpts=PTS-STARTPTS+{cta_start}/TB,"
+        f"chromakey=color=0x00FF00:similarity=0.35:blend=0.1[ck];"
+        f"[0:v][ck]overlay=0:500[v]",
+        "-map", "[v]", "-map", "0:a",
+        "-c:v", "libx264", "-crf", "18", "-preset", "fast", "-pix_fmt", "yuv420p",
+        "-c:a", "copy",
+        out_path,
+    ], check=True, capture_output=True)
+
 
 def merge_audio_video(
-        video_paths: Union[str, List[str]],
-        audio_path: str,
-        output_name: str = "final_short.mp4",
-        vertical: bool = False,
-        target_w: int = 1080,
-        target_h: int = 1920,
-        shorts_cap: bool = True,
-        cap_seconds: float = 82,
-        music_path: Optional[str] = None,
-        music_volume: float = 0.01,
-        subtitles_data: Optional[list] = None,
-        subtitles_position: str = "bottom",
-        words_data: Optional[list] = None,
-        cta_path=CTA_PATH,
-        subtitles_text: Optional[str] = None,
-):
-    """Assemble the final Short: crop to 9:16, mix voice and music, burn subtitles, overlay CTA, export."""
-    print("\n🎬  Starting Video Editor...")
-
-    voice_audio = AudioFileClip(audio_path)
+    video_paths: Union[str, List[str]],
+    audio_path: str,
+    output_name: str = "final_short.mp4",
+    vertical: bool = False,
+    target_w: int = 1080,
+    target_h: int = 1920,
+    shorts_cap: bool = True,
+    cap_seconds: float = 82,
+    music_path: Optional[str] = None,
+    music_volume: float = 0.07,
+    subtitles_data: Optional[list] = None,
+    subtitles_position: str = "top",
+    words_data: Optional[list] = None,
+    cta_path: str = CTA_PATH,
+    subtitles_text: Optional[str] = None,
+    hook_text: Optional[str] = None,
+    punch_times: Optional[List[float]] = None,
+) -> str:
+    """Render final Short via Remotion (background + audio + subtitles), then composite CTA via FFmpeg."""
+    print("\n🎬  Starting Remotion render...")
 
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
-    raw_clips = [VideoFileClip(p).without_audio() for p in video_paths]
-
-    if vertical:
-        raw_clips = [_make_vertical_9x16(c, target_w, target_h) for c in raw_clips]
-
-    CTA_DURATION = 8
-    final_dur = voice_audio.duration
-    if shorts_cap:
-        max_voice_len = cap_seconds - CTA_DURATION
-        final_len = min(final_dur, max_voice_len)
-
-        if final_len < final_dur:
-            voice_audio = voice_audio.subclip(0, final_len)
-
-        final_dur = final_len
-
-    clips_ready = _trim_clips_to_total_duration(raw_clips, final_dur)
-
-    if len(clips_ready) > 1:
-        video = concatenate_videoclips(clips_ready, method="compose")
-    else:
-        video = clips_ready[0]
-
-    video = _loop_video_to_duration(video, final_dur)
-
-    if cta_path:
-        cta_clip = load_cta_clip(
-            cta_path=cta_path,
-            target_size=video.size,
-            duration=CTA_DURATION,
-            green_screen=True
-        ).set_start(final_dur - CTA_DURATION)
-
-        # Move CTA a bit up from bottom
-        cta_clip = cta_clip.set_position(("center", video.size[1] - cta_clip.h - 100))
-
-        video = CompositeVideoClip(
-            [video, cta_clip],
-            size=video.size
-        )
-
-    if words_data:
-        try:
-            subs = _make_word_highlight_clips(words_data, video.size)
-            if subs:
-                video = CompositeVideoClip([video] + subs)
-        except Exception as e:
-            print(f"⚠️ Word highlight generation failed: {e}")
-    elif subtitles_data:
-        try:
-            subs = _make_subtitle_clips(subtitles_data, video.size, subtitles_position)
-            if subs:
-                video = CompositeVideoClip([video] + subs)
-        except Exception as e:
-            print(f"⚠️ Subtitle generation failed: {e}")
-
-    final_audio = voice_audio
-    if music_path:
-        try:
-            bg_music = AudioFileClip(music_path)
-            if volumex:
-                bg_music = bg_music.fx(volumex, music_volume)
-
-            if bg_music.duration > final_dur:
-                start_m = random.uniform(0, bg_music.duration - final_dur)
-                bg_music = bg_music.subclip(start_m, start_m + final_dur)
-            else:
-                bg_music = _loop_audio_to_duration(bg_music, final_dur)
-
-            final_audio = CompositeAudioClip([voice_audio, bg_music])
-        except Exception as e:
-            print(f"⚠️ Music failed: {e}")
-
-    video = video.set_audio(final_audio)
+    httpd, port = _start_asset_server(PROJECT_ROOT)
+    base_url = f"http://127.0.0.1:{port}"
+    print(f"📡 Asset server: {base_url}")
 
     out_path = os.path.join(FINAL_DIR, output_name)
-    video.write_videofile(
-        out_path,
-        codec="libx264",
-        audio_codec="aac",
-        fps=30,
-        logger=None
-    )
+    prepared_music = None
 
-    voice_audio.close()
-    for c in raw_clips: c.close()
+    try:
+        audio_dur = _probe_duration(audio_path)
+
+        CTA_DURATION = 8.0
+        voice_dur = min(audio_dur, cap_seconds) if shorts_cap else audio_dur
+        total_dur = voice_dur
+        cta_start = max(0.0, voice_dur - CTA_DURATION)
+
+        clips = _build_clips(video_paths, total_dur, base_url)
+        prepared_music = _prepare_music(music_path, total_dur) if music_path else None
+
+        words_dicts: List[dict] = []
+        if words_data:
+            words_dicts = [
+                {"word": w, "start": round(s, 3), "end": round(e, 3)}
+                for w, s, e in words_data
+            ]
+
+        props = {
+            "clips": clips,
+            "audioPath": _asset_url(audio_path, base_url),
+            "musicPath": _asset_url(prepared_music, base_url) if prepared_music else None,
+            "musicVolume": music_volume,
+            "wordsData": words_dicts,
+            "punchTimes": punch_times or [],
+            "totalDurationSec": round(total_dur, 3),
+        }
+
+        props_path = os.path.join(REMOTION_DIR, "props.json")
+        with open(props_path, "w") as f:
+            json.dump(props, f, indent=2)
+
+        has_cta = cta_path and os.path.exists(cta_path)
+        remotion_out = out_path + "_base.mp4" if has_cta else out_path
+
+        print(f"🎞️  Rendering {total_dur:.1f}s @ 1080×1920 via Remotion...")
+        subprocess.run(
+            [
+                "npx", "remotion", "render",
+                "ShortVideo",
+                "--props", props_path,
+                "--output", remotion_out,
+                "--width", str(target_w),
+                "--height", str(target_h),
+                "--fps", "30",
+                "--codec", "h264",
+                "--jpeg-quality", "95",
+                "--concurrency", "4",
+            ],
+            check=True,
+            cwd=REMOTION_DIR,
+        )
+    finally:
+        httpd.shutdown()
+        if prepared_music and prepared_music != music_path and os.path.exists(prepared_music):
+            try:
+                os.remove(prepared_music)
+            except Exception:
+                pass
+
+    if has_cta:
+        print(f"🎭  Compositing CTA (starts at {cta_start:.1f}s)...")
+        try:
+            _composite_cta(remotion_out, cta_path, cta_start, CTA_DURATION, out_path)
+            os.remove(remotion_out)
+        except subprocess.CalledProcessError as e:
+            print(f"⚠️  CTA composite failed, using base render: {e.stderr.decode()[-300:]}")
+            os.rename(remotion_out, out_path)
 
     print(f"✅  Saved: {out_path}")
     return out_path
-
-

@@ -1,8 +1,7 @@
-# Environment / secrets
+
 .env
 client_secret.json
 
-# Claude Code instructions
 CLAUDE.md
 
 .venv/
@@ -10,7 +9,7 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Data directories
+
 data/
 
 # macOS
@@ -23,8 +22,25 @@ data/
 # Cache files
 *_topics_cache*.txt
 
-# Temp pipeline files
+
 trimmed_scene_*.mp4
 temp_wh_*.png
 temp_sub_*.png
 token.json
+clip_*.mp4
+
+
+Green_Screen_Footage_*.mp4
+manualprompt.txt
+
+
+remotion/node_modules/
+remotion/.cache/
+remotion/props.json
+
+
+skills-lock.json
+.agents/
+
+
+.pytest_cache/
