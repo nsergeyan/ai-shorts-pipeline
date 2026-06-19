@@ -8,6 +8,7 @@ import traceback
 import uuid
 import subprocess
 import itertools
+from concurrent.futures import ThreadPoolExecutor
 from google import genai
 import ffmpeg
 from config import GEMINI_API_KEYS
@@ -41,21 +42,21 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "Jujutsu Kaisen Animation Secrets",
-  "specific_subject": "Gojo Satoru domain expansion hand sign reference origin",
-  "youtube_queries": [
-    "jujutsu kaisen official trailer MAPPA gojo",
-    "jujutsu kaisen gojo domain expansion unlimited void raw",
-    "jujutsu kaisen gojo satoru crosses fingers hand sign clip",
-    "jujutsu kaisen season one episode seven gojo scene",
-    "jujutsu kaisen gojo satoru best moments tribute edit",
-    "jujutsu kaisen unlimited void 4K HD remaster"
-  ],
-  "scene_query": "Gojo Satoru with bright glowing blue eyes and no blindfold, crossing his middle finger over his index finger close up as a cosmic dark space background opens behind him",
-  "music_mood": "hype",
-  "music_prompt": "Fast-paced energetic trap beat, 140 BPM, sharp synthetic brass hits combined with a driving 808 bass drum line and rapid hi-hats that sharply drop out for a funny realization, anime short-form video background, no lyrics, exclude: dark ambient drone, classical piano",
-  "voice_name": "Hamid",
-  "script": "Gojo Satoru’s powerful domain expansion looks completely perfect, but its real origin is actually pretty painful. [chuckles] You know that famous hand sign where he crosses his fingers to trap his enemies? [curious] To draw those lines, the animators did not use a fancy computer program. Instead, the main director sat at his desk and forced his own real hand into that awkward shape! [surprised] The artists literally traced over photos of his cramped fingers to make Gojo look cool. [excited] So, the ultimate sorcerer is just copy pasting a tired animator. Does that ruin the magic for you?"
+"topic": "Jujutsu Kaisen",
+"specific_subject": "The horrifying taste of Suguru Geto's cursed spirit manipulation",
+"youtube_queries": [
+  "jujutsu kaisen official geto swallowing curse MAPPA",
+  "jujutsu kaisen hidden inventory creditless raw Geto",
+  "jujutsu kaisen suguru geto curse manipulation AMV",
+  "jujutsu kaisen season two episode two geto curse clip",
+  "jujutsu kaisen suguru geto tribute best moments",
+  "jujutsu kaisen geto swallowing curse 4K HD remaster"
+],
+"scene_query": "Teenage Suguru Geto with long dark hair looking exhausted and disgusted, holding a small dark glowing orb of cursed energy near his mouth, dark shadowy background.",
+"music_mood": "mysterious",
+"music_prompt": "dark atmospheric trap, ninety BPM, eerie koto plucks, punchy bass, solo piano with strings, quiet tension under the hook, builds through the payload, hits hardest with a distorted bass drop on the turn around twenty seconds, anime short-form video background, no lyrics, exclude: upbeat pop, cheerful flutes",
+"voice_name": "Hamid",
+"script": "[curious] Suguru Geto hides a horrifying physical secret about his powers that the anime barely touches on. [thoughtful] We all know he consumes cursed spirits to control them. [sighs] It looks as easy as swallowing a piece of candy. [nervous] But the actual taste is pure torture. Geto canonically stated that every single time he absorbs a curse, [appalled] it tastes exactly like swallowing a wet rag that was just used to wipe up VOMIT. [laughs] Imagine eating thousands of those just to do your job! [curious] Knowing this absolute nightmare flavor, do you finally understand why he went completely evil?"
 }
 
 def trim_video_to_end(
@@ -508,13 +509,17 @@ def find_scenes_with_gemini(video_paths, script_segments):
         print(f"📤 Uploaded Video {i}: {uf.name}")
         uploaded_files.append(uf)
 
-    for i, uf in enumerate(uploaded_files):
-        fi = client.files.get(name=uf.name)
-        while fi.state != "ACTIVE":
-            print(f"Video {i} state: {fi.state}, waiting...")
-            time.sleep(2)
-            fi = client.files.get(name=uf.name)
-        print(f"Video {i} ACTIVE ✅")
+    pending = list(range(len(uploaded_files)))
+    while pending:
+        time.sleep(2)
+        still_pending = []
+        for i in pending:
+            fi = client.files.get(name=uploaded_files[i].name)
+            if fi.state == "ACTIVE":
+                print(f"Video {i} ACTIVE ✅")
+            else:
+                still_pending.append(i)
+        pending = still_pending
 
     n = len(script_segments)
     segments_json = json.dumps(
@@ -663,6 +668,11 @@ def run_manual_pipeline(data):
 
         print(f"✅ {len(approved_videos)} video(s) approved for editing.")
 
+        # Kick off music generation immediately — it has no dependencies on voice/scene
+        print(f"🎵 Starting music generation in background...")
+        executor = ThreadPoolExecutor(max_workers=1)
+        music_future = executor.submit(generate_music, MUSIC_PROMPT)
+
         # Voice must come before scene finding so Whisper timestamps drive the cuts
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
         audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
@@ -708,8 +718,9 @@ def run_manual_pipeline(data):
             else:
                 clip_paths = [approved_videos[0]]
 
-        print(f"🎵 Generating music with ElevenLabs...")
-        music_path = generate_music(MUSIC_PROMPT)
+        print(f"🎵 Waiting for music generation...")
+        music_path = music_future.result()
+        executor.shutdown(wait=False)
         if not music_path:
             print("⚠️ Music generation failed, continuing without music.")
 

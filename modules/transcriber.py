@@ -8,8 +8,14 @@ warnings.filterwarnings("ignore")
 
 MODEL_NAME = os.getenv("WHISPER_MODEL", "large-v3")
 
-print(f"⏳ Loading Whisper AI model ({MODEL_NAME}) once...")
-model = whisper.load_model(MODEL_NAME)
+_model = None
+
+def _get_model():
+    global _model
+    if _model is None:
+        print(f"⏳ Loading Whisper model ({MODEL_NAME})...")
+        _model = whisper.load_model(MODEL_NAME)
+    return _model
 
 
 def _cleanup_text(text: str) -> str:
@@ -107,7 +113,7 @@ def transcribe_audio_to_groups(
     if language:
         transcribe_kwargs["language"] = language  # e.g., "ru"
 
-    result = model.transcribe(audio_path, **transcribe_kwargs)
+    result = _get_model().transcribe(audio_path, **transcribe_kwargs)
     segments = result.get("segments", []) or []
 
     # Try true word-level timestamps first
@@ -172,7 +178,7 @@ def transcribe_audio_to_words(
     if language:
         transcribe_kwargs["language"] = language
 
-    result = model.transcribe(audio_path, **transcribe_kwargs)
+    result = _get_model().transcribe(audio_path, **transcribe_kwargs)
 
     words = _build_word_list_from_result(result)
     if not words:
