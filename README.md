@@ -20,7 +20,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 
 - **Structured prompt system** — A detailed prompt template enforces word count, fact-checking tiers, duplicate avoidance, and topic category rotation for consistent, non-repetitive content
 - **AI video evaluation** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality before it's used; only high-relevance clips with the subject visually confirmed are accepted
-- **Multi-scene editing** — Gemini watches the full video and decides between two modes: *multi* (diverse scenes → one clip per sentence, stitched together) or *continuous* (single action sequence → best start point, plays uncut); clips are zone-distributed across the video to avoid repetition
+- **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
 - **Script-specific music** — The music prompt is custom-generated per script (genre, tempo, instruments, emotional arc) rather than a fixed preset, so the background music matches the tone of each individual video
 - **Remotion rendering** — Video is composed and rendered in React/TypeScript via Remotion (Chrome Headless Shell). Each frame is pixel-accurate, fully programmable, and GPU-accelerated
@@ -56,15 +56,13 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit exactly 90–100 words. The output is a JSON object consumed directly by the pipeline.
 
 ### 2. Video Sourcing & Evaluation
-`fetch_gameplay_by_search` queries YouTube with up to three ranked queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. The downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, and `technical_score` (1–10 each). Only a `post` decision with `relevance_score >= 7` and confirmed subject presence passes. Anything else triggers a retry with the next query.
+`fetch_gameplay_by_search` queries YouTube with up to six ranked queries (official source, creditless footage, fan compilation, specific episode/arc clip, character tribute, and 4K remaster), filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, and `technical_score` (1–10 each). Only a `post` decision with confirmed subject presence passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
 
 ### 3. Voice & Transcription
 ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endpoint (ElevenLabs v3) which natively processes bracketed performance tags for natural delivery. Russian and Spanish use `eleven_multilingual_v2`. The narration is transcribed by Whisper with `word_timestamps=True` immediately after, producing per-word `(word, start, end)` tuples used for both subtitle rendering and scene segmentation.
 
-### 4. Multi-Scene Detection
-The accepted video and Whisper-segmented sentences are sent to Gemini. Gemini watches the full video and decides:
-- **Multi mode** — video contains visually diverse scenes → returns one timestamp window per sentence segment → each clip is trimmed and zone-clamped to avoid repetition
-- **Continuous mode** — video is a single action sequence → returns one best start point → video plays uncut for the full narration duration
+### 4. Multi-Source Scene Detection
+All approved videos and the Whisper-segmented sentences are sent to Gemini in a single call. Gemini watches every video and returns an edit plan: for each narration segment it picks the best `(video_index, start)` pair from whichever source has the strongest matching moment. Each clip is then trimmed from its assigned source video at the chosen timestamp. Gemini is instructed to vary which source it pulls from across segments to maximise visual diversity.
 
 ### 5. Music Generation
 ElevenLabs Generative Music composes 90 seconds of instrumental audio. The music prompt is custom-written per script by the prompt system — specifying genre, tempo, instruments, and emotional arc — so the music actually matches the content of the video.

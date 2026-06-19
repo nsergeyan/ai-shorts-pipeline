@@ -189,7 +189,7 @@ Write scene_query as a pure physical description of what the screen looks like:
 - If the script references a specific scene, the scene_query must match that exact scene — do not guess or generalize
 
 ── YOUTUBE QUERIES (for sourcing raw footage) ────────────────
-Generate exactly three YouTube queries. Each query must target a DIFFERENT source type to maximize your chance of finding clean, editable footage. Use the strategies below in this order:
+Generate exactly six YouTube queries. Each query must target a DIFFERENT source type to maximize your chance of finding at least three clean, editable clips. Use the strategies below in this order:
 
 Query one — OFFICIAL SOURCE
 Target: MAPPA's official YouTube channel uploads, official trailers, or official clips.
@@ -206,9 +206,24 @@ Target: fan-made AMV or scene compilation focused on the visual moment, no full-
 Format: jujutsu kaisen [character or power name] [visual moment] AMV / compilation
 Goal: find footage that shows the moment from multiple angles or cuts, already trimmed.
 
-SCENE ACCURACY RULE: If the script references a specific moment, all three queries must chase that exact moment — not the arc, not the character in general.
+Query four — SPECIFIC EPISODE / ARC CLIP
+Target: uploads focused on a specific episode number or arc name that contains the relevant scene.
+Format: jujutsu kaisen [episode number or arc name] [scene description] clip / scene
+Goal: pull from full-episode or arc-specific uploads — different pool from compilations.
 
-DO NOT generate three queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool of results.
+Query five — CHARACTER TRIBUTE / SHOWCASE
+Target: tribute videos or character showcase edits dedicated to this character, not a general AMV.
+Format: jujutsu kaisen [character name] tribute / best moments / character edit
+Goal: tribute edits tend to focus tightly on the character with clean cuts and no commentary.
+
+Query six — 4K / HD REMASTER
+Target: upscaled or remastered uploads of the relevant scene or episode.
+Format: jujutsu kaisen [character or scene] 4K / HD remaster / upscale
+Goal: remastered uploads are often clean, long, and watermark-free — a different pool from standard rips.
+
+SCENE ACCURACY RULE: If the script references a specific moment, all six queries must chase that exact moment — not the arc, not the character in general.
+
+DO NOT generate queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool of results.
 
 ═══════════════════════════════════
 JSON OUTPUT FORMAT
@@ -216,7 +231,7 @@ JSON OUTPUT FORMAT
 {
   "topic": "",
   "specific_subject": "",
-  "youtube_queries": ["", "", ""],
+  "youtube_queries": ["", "", "", "", "", ""],
   "scene_query": "",
   "music_mood": "",
   "music_prompt": "",
@@ -227,3 +242,8 @@ JSON OUTPUT FORMAT
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
+1. yuji itadori sleeping habit trivia #jjk #yuji
+2. telling your enemy exactly how your technique works is a binding vow that makes the technique stronger #jjk #gojo
+3. gojos six eyes secret #gojo
+4. why gojo satoru wears the blindfold — the six eyes overload mechanic from the jujutsu kaisen fanbook #gojo #jjk
+5. the real taste of sukuna's fingers #jjk  #sukuna

@@ -48,7 +48,7 @@ export const WordHighlight: React.FC<{ wordsData: WordEntry[] }> = ({
     <div
       style={{
         position: "absolute",
-        top: "20%",
+        top: "25%",
         left: 0,
         right: 0,
         display: "flex",

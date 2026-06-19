@@ -40,19 +40,22 @@ CLIP_DURATION = 60.0
 SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
-MANUAL_DATA ={
-  "topic": "unexpected character detail",
-  "specific_subject": "Gojo's Six Eyes never turn off — even while sleeping, he constantly processes cursed energy, which is why his brain tires and needs sugar",
+MANUAL_DATA = {
+  "topic": "Jujutsu Kaisen Animation Secrets",
+  "specific_subject": "Gojo Satoru domain expansion hand sign reference origin",
   "youtube_queries": [
-    "jujutsu kaisen official Gojo Satoru Six Eyes scene clip MAPPA",
-    "jujutsu kaisen Gojo Six Eyes creditless raw no commentary hidden inventory",
-    "jujutsu kaisen Gojo Satoru Six Eyes compilation AMV"
+    "jujutsu kaisen official trailer MAPPA gojo",
+    "jujutsu kaisen gojo domain expansion unlimited void raw",
+    "jujutsu kaisen gojo satoru crosses fingers hand sign clip",
+    "jujutsu kaisen season one episode seven gojo scene",
+    "jujutsu kaisen gojo satoru best moments tribute edit",
+    "jujutsu kaisen unlimited void 4K HD remaster"
   ],
-  "scene_query": "Close-up of Gojo's covered eyes, blue glow faintly visible through the blindfold, calm expression, white hair, relaxed indoors scene with soft lighting, transition to him eating a candy or sweet",
-  "music_mood": "curious",
-  "music_prompt": "light playful orchestral with electronic undertones, 90 BPM, soft pizzicato strings with gentle synth pads and a subtle ticking clock rhythm, builds a sense of 'always on' awareness, then a light playful drop at the candy reveal, anime short-form video background, no lyrics, exclude: dark ambient drones, heavy percussion",
+  "scene_query": "Gojo Satoru with bright glowing blue eyes and no blindfold, crossing his middle finger over his index finger close up as a cosmic dark space background opens behind him",
+  "music_mood": "hype",
+  "music_prompt": "Fast-paced energetic trap beat, 140 BPM, sharp synthetic brass hits combined with a driving 808 bass drum line and rapid hi-hats that sharply drop out for a funny realization, anime short-form video background, no lyrics, exclude: dark ambient drone, classical piano",
   "voice_name": "Hamid",
-  "script": "Here's something wild about Gojo. [curiously] You know his Six Eyes? The thing that makes him so powerful? [whispers] They never turn off. [sighs] Even when he's sleeping, his Six Eyes are still processing everything. Every bit of cursed energy around him. All the time. [excitedly] That's WHY his brain gets so tired. Imagine never closing your eyes. Never. Not even for one second. [laughs] No wonder he eats so many sweets. His brain is basically running a supercomputer nonstop. It needs fuel. [thoughtful] So next time you see Gojo with a candy bar? He's not being silly. He's recharging."
+  "script": "Gojo Satoru’s powerful domain expansion looks completely perfect, but its real origin is actually pretty painful. [chuckles] You know that famous hand sign where he crosses his fingers to trap his enemies? [curious] To draw those lines, the animators did not use a fancy computer program. Instead, the main director sat at his desk and forced his own real hand into that awkward shape! [surprised] The artists literally traced over photos of his cramped fingers to make Gojo look cool. [excited] So, the ultimate sorcerer is just copy pasting a tired animator. Does that ruin the magic for you?"
 }
 
 def trim_video_to_end(
@@ -485,92 +488,87 @@ def segment_by_sentences(words_data):
     return segments
 
 
-def find_scenes_with_gemini(video_path, script_segments):
+def find_scenes_with_gemini(video_paths, script_segments):
     """
-    Analyze the video and decide editing mode:
-    - "multi": video has diverse scenes → return one timestamp per segment
-    - "continuous": video is one continuous scene → return the best single start point
+    Upload all approved source videos to Gemini in one call.
+    Returns a flat list of scenes: [{index, video_index, start}, ...]
+    Gemini picks the best (video, timestamp) for each narration segment.
     """
     client = _gemini_client()
 
-    info = ffmpeg.probe(video_path)
-    video_stream = next(s for s in info["streams"] if s["codec_type"] == "video")
-    video_duration = float(video_stream["duration"])
+    video_durations = []
+    for vp in video_paths:
+        info = ffmpeg.probe(vp)
+        vs = next(s for s in info["streams"] if s["codec_type"] == "video")
+        video_durations.append(float(vs["duration"]))
 
-    uploaded_file = client.files.upload(file=video_path)
-    print(f"Uploaded file: {uploaded_file.name}")
+    uploaded_files = []
+    for i, vp in enumerate(video_paths):
+        uf = client.files.upload(file=vp)
+        print(f"📤 Uploaded Video {i}: {uf.name}")
+        uploaded_files.append(uf)
 
-    file_info = client.files.get(name=uploaded_file.name)
-    while file_info.state != "ACTIVE":
-        print(f"File state: {file_info.state}, waiting...")
-        time.sleep(2)
-        file_info = client.files.get(name=uploaded_file.name)
-    print("File ACTIVE ✅")
+    for i, uf in enumerate(uploaded_files):
+        fi = client.files.get(name=uf.name)
+        while fi.state != "ACTIVE":
+            print(f"Video {i} state: {fi.state}, waiting...")
+            time.sleep(2)
+            fi = client.files.get(name=uf.name)
+        print(f"Video {i} ACTIVE ✅")
 
     n = len(script_segments)
-    zone_size = video_duration / n
-    zones = [
-        (round(i * zone_size, 1), round(min((i + 1) * zone_size - 1.0, video_duration - 2.0), 1))
-        for i in range(n)
-    ]
-    zones_text = "\n".join(
-        f"  Segment {i} → [{z[0]}s – {z[1]}s]"
-        for i, z in enumerate(zones)
-    )
-
     segments_json = json.dumps(
         [{"index": i, "text": s["text"], "duration": round(s["duration"], 2)}
          for i, s in enumerate(script_segments)],
         indent=2
     )
+    videos_info = "\n".join(
+        f"  Video {i} (duration: {dur:.1f}s)"
+        for i, dur in enumerate(video_durations)
+    )
 
     prompt = f"""
-You are a professional video editor. Analyze this source video and the narration script, then decide the best editing approach.
+You are a professional video editor. You have {len(video_paths)} source video(s) and a narration script split into segments.
+Your job is to build the most visually engaging edit by choosing the right clip from the right video for each segment.
 
-VIDEO DURATION: {video_duration:.1f} seconds
+SOURCE VIDEOS (in the order they were provided above):
+{videos_info}
 
 NARRATION SEGMENTS:
 {segments_json}
 
-STEP 1 — ASSESS VISUAL DIVERSITY:
-Watch the full video and ask: does it contain genuinely different scenes, locations, or moments that would look visually distinct when cut together?
+INSTRUCTIONS:
+For each narration segment, pick the BEST matching timestamp from any of the source videos.
 
-Choose "multi" if:
-- The video has multiple different scenes, angles, or visual moments
-- Different parts of the video look noticeably different from each other
-- Cutting between sections would create an interesting dynamic edit
+RULES:
+- For each segment assign a video_index (0 to {len(video_paths) - 1}) and a start time in seconds
+- The clip starting at `start` must have at least `duration` seconds of usable footage remaining in that video
+- Avoid the first 3 seconds and last 8 seconds of any video (intros/outros)
+- Prefer dynamic action shots, close-ups, and visually interesting moments
+- Vary which video you pull from across segments when possible — visual diversity keeps viewers engaged
+- If one video is clearly superior for a segment, use it — do not force variety at the cost of quality
 
-Choose "continuous" if:
-- The video is one continuous action/scene with little visual variety
-- All parts of the video look similar (same location, same action, same shot)
-- Cutting between sections would feel repetitive or jarring
-
-STEP 2 — PICK TIMESTAMPS based on your decision:
-
-If "multi": pick one timestamp per segment within its assigned zone:
-{zones_text}
-Rules: stay within zone, each timestamp must have at least [duration]s of footage, avoid intros/outros/transitions, prefer dynamic action shots.
-
-If "continuous": pick the single best start timestamp for a clean {min(61.0, video_duration - 5):.0f}s continuous clip.
-Rules: avoid intros/outros, pick where the most relevant action begins.
-
-TIMESTAMP FORMAT: seconds only (e.g. 90.0 not 1:30).
+TIMESTAMP FORMAT: seconds only (e.g. 90.0, not 1:30)
 
 OUTPUT: Return ONLY valid JSON — no explanation, no markdown.
 
-If "multi":
-{{"mode": "multi", "scenes": [{{"index": 0, "start": 12.5}}, {{"index": 1, "start": 45.0}}, ...]}}
-
-If "continuous":
-{{"mode": "continuous", "start": 23.0}}
+{{
+  "scenes": [
+    {{"index": 0, "video_index": 0, "start": 12.5}},
+    {{"index": 1, "video_index": 1, "start": 8.0}},
+    ...
+  ]
+}}
 """
+
+    contents = uploaded_files + [prompt]
 
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=[uploaded_file, prompt]
+                contents=contents
             )
             break
         except Exception as e:
@@ -587,35 +585,23 @@ If "continuous":
             raise RuntimeError("Gemini scene detection failed after max retries.")
 
     text = re.sub(r"```json|```", "", response.text).strip()
-    print(f"🤖 Gemini scene decision:\n{text}\n")
+    print(f"🤖 Gemini multi-source edit plan:\n{text}\n")
 
     try:
         result = json.loads(text)
-        mode = result.get("mode", "continuous")
-
-        if mode == "multi":
-            scenes = result.get("scenes", [])
-            scenes.sort(key=lambda x: x["index"])
-            # Hard-clamp each timestamp into its zone (guard against out-of-range indices)
-            clamped = []
-            for scene in scenes:
-                idx = scene.get("index", 0)
-                if idx >= len(zones):
-                    print(f"⚠️ Scene index {idx} out of range, skipping")
-                    continue
-                zone_start, zone_end = zones[idx]
-                scene["start"] = round(max(zone_start, min(scene["start"], zone_end)), 2)
-                clamped.append(scene)
-            print(f"✂️ Multi-scene mode: {len(clamped)} cuts")
-            return {"mode": "multi", "scenes": clamped}
-        else:
-            start = float(result.get("start", 0.0))
-            print(f"▶️ Continuous mode: starting at {start}s")
-            return {"mode": "continuous", "start": start}
-
+        scenes = sorted(result.get("scenes", []), key=lambda x: x["index"])
+        validated = []
+        for scene in scenes:
+            vi = min(max(scene.get("video_index", 0), 0), len(video_paths) - 1)
+            scene["video_index"] = vi
+            max_start = max(video_durations[vi] - 2.0, 0.0)
+            scene["start"] = round(min(max(scene.get("start", 0.0), 0.0), max_start), 2)
+            validated.append(scene)
+        print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s)")
+        return validated
     except Exception as e:
         print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
-        return {"mode": "continuous", "start": 0.0}
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)]
 
 
 def run_manual_pipeline(data):
@@ -634,12 +620,12 @@ def run_manual_pipeline(data):
 
         print(f"🎮 Fetching visuals...")
 
-        video_attempts = 0
-        max_attempts = len(YOUTUBE_QUERIES)
-        original_video = None
+        approved_videos = []
+        rejected_videos = []
+        MAX_SOURCE_VIDEOS = 3
 
         for i, query in enumerate(YOUTUBE_QUERIES):
-            print(f"📌 Attempt {i + 1}: Searching YouTube for query: '{query}'")
+            print(f"📌 Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
             video_paths = fetch_gameplay_by_search(
                 search_queries=[query],
                 max_videos=1,
@@ -647,29 +633,35 @@ def run_manual_pipeline(data):
                 used_video_ids=set()
             )
             if not video_paths:
-                print(f"❌ No results for query '{query}', trying next...")
+                print(f"❌ No results for query '{query}', skipping...")
                 continue
 
             candidate_video = video_paths[0]
-            video_attempts += 1
-            print(f"📌 Attempt {video_attempts}: Evaluating video...")
-
+            print(f"🔍 Evaluating video...")
             evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
 
             if evaluation and evaluation.get("decision") == "post" and evaluation.get("subject_present", False):
-                print("✅ Video approved by GenAI!")
-                original_video = candidate_video
-                break
+                print(f"✅ Video {i + 1} approved!")
+                approved_videos.append(candidate_video)
+                if len(approved_videos) >= MAX_SOURCE_VIDEOS:
+                    print(f"🎯 Reached {MAX_SOURCE_VIDEOS} approved videos — skipping remaining queries.")
+                    break
             else:
-                print(f"❌ Video rejected by GenAI: {evaluation.get('decision') if evaluation else 'unknown'}")
-                if video_attempts >= max_attempts:
-                    print("❌ Maximum attempts reached. Stopping pipeline.")
-                    return False
-                print("🔁 Retrying with next video...")
+                print(f"❌ Video rejected: {evaluation.get('decision') if evaluation else 'unknown'}")
+                rejected_videos.append(candidate_video)
 
-        if not original_video:
+        for path in rejected_videos:
+            if os.path.exists(path):
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
+
+        if not approved_videos:
             print("❌ All queries failed. No suitable video found.")
             return False
+
+        print(f"✅ {len(approved_videos)} video(s) approved for editing.")
 
         # Voice must come before scene finding so Whisper timestamps drive the cuts
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
@@ -686,40 +678,35 @@ def run_manual_pipeline(data):
         clip_paths = []
         if words_data is not None and len(words_data) > 0:
             script_segments = segment_by_sentences(words_data)
-            print(f"🎬 {len(script_segments)} sentence segments — analyzing video...")
-            result = find_scenes_with_gemini(original_video, script_segments)
+            print(f"🎬 {len(script_segments)} sentence segments — analyzing {len(approved_videos)} video(s)...")
+            scenes = find_scenes_with_gemini(approved_videos, script_segments)
 
-            if result["mode"] == "multi":
-                scenes = result["scenes"]
-                if len(scenes) < len(script_segments):
-                    print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
-                for scene, segment in zip(scenes, script_segments):
-                    clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
-                    success = trim_video_to_end(
-                        input_file=original_video,
-                        output_file=clip_path,
-                        ai_start=scene["start"],
-                        prepad=0.0,
-                        max_duration=segment["duration"],
-                    )
-                    if success is not False and os.path.exists(clip_path):
-                        clip_paths.append(clip_path)
-            else:
-                clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-                success = trim_video_to_end(original_video, clip_path, result["start"], prepad=0.02, max_duration=61.0)
+            if len(scenes) < len(script_segments):
+                print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
+            for scene, segment in zip(scenes, script_segments):
+                vi = scene.get("video_index", 0)
+                source_video = approved_videos[vi]
+                clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
+                success = trim_video_to_end(
+                    input_file=source_video,
+                    output_file=clip_path,
+                    ai_start=scene["start"],
+                    prepad=0.0,
+                    max_duration=segment["duration"],
+                )
                 if success is not False and os.path.exists(clip_path):
-                    clip_paths = [clip_path]
+                    clip_paths.append(clip_path)
 
         if not clip_paths:
             # Fallback for Spanish or failed transcription
             print("🤖 Falling back to single-scene Gemini search...")
-            scene = find_scene_with_gemini(original_video, data.get("scene_query"), SCRIPT_TEXT)
+            scene = find_scene_with_gemini(approved_videos[0], data.get("scene_query"), SCRIPT_TEXT)
             if scene and not (scene["start"] == 0 and scene["end"] == 0):
                 clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-                trim_video_to_end(original_video, clip_path, scene["start"], prepad=0.02, max_duration=61.0)
+                trim_video_to_end(approved_videos[0], clip_path, scene["start"], prepad=0.02, max_duration=61.0)
                 clip_paths = [clip_path]
             else:
-                clip_paths = [original_video]
+                clip_paths = [approved_videos[0]]
 
         print(f"🎵 Generating music with ElevenLabs...")
         music_path = generate_music(MUSIC_PROMPT)
@@ -743,7 +730,7 @@ def run_manual_pipeline(data):
         print(f"\n✅ DONE! Saved to: {final_path}")
 
         if CLEANUP_FILES:
-            to_delete = {audio_path, music_path, original_video} | set(clip_paths)
+            to_delete = {audio_path, music_path} | set(approved_videos) | set(clip_paths)
             for path in to_delete:
                 if path and os.path.exists(path):
                     try:
