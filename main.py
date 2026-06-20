@@ -34,7 +34,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.07
+MUSIC_VOLUME = 0.08
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -42,21 +42,21 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Jujutsu Kaisen",
-"specific_subject": "The horrifying taste of Suguru Geto's cursed spirit manipulation",
-"youtube_queries": [
-  "jujutsu kaisen official geto swallowing curse MAPPA",
-  "jujutsu kaisen hidden inventory creditless raw Geto",
-  "jujutsu kaisen suguru geto curse manipulation AMV",
-  "jujutsu kaisen season two episode two geto curse clip",
-  "jujutsu kaisen suguru geto tribute best moments",
-  "jujutsu kaisen geto swallowing curse 4K HD remaster"
-],
-"scene_query": "Teenage Suguru Geto with long dark hair looking exhausted and disgusted, holding a small dark glowing orb of cursed energy near his mouth, dark shadowy background.",
-"music_mood": "mysterious",
-"music_prompt": "dark atmospheric trap, ninety BPM, eerie koto plucks, punchy bass, solo piano with strings, quiet tension under the hook, builds through the payload, hits hardest with a distorted bass drop on the turn around twenty seconds, anime short-form video background, no lyrics, exclude: upbeat pop, cheerful flutes",
-"voice_name": "Hamid",
-"script": "[curious] Suguru Geto hides a horrifying physical secret about his powers that the anime barely touches on. [thoughtful] We all know he consumes cursed spirits to control them. [sighs] It looks as easy as swallowing a piece of candy. [nervous] But the actual taste is pure torture. Geto canonically stated that every single time he absorbs a curse, [appalled] it tastes exactly like swallowing a wet rag that was just used to wipe up VOMIT. [laughs] Imagine eating thousands of those just to do your job! [curious] Knowing this absolute nightmare flavor, do you finally understand why he went completely evil?"
+  "topic": "Shoko's Fake License",
+  "specific_subject": "Shoko Ieiri never went to medical school and cheated to get her medical license",
+  "youtube_queries": [
+    "jujutsu kaisen official shoko ieiri healing MAPPA",
+    "jujutsu kaisen shoko reverse cursed technique raw no commentary",
+    "jujutsu kaisen shoko ieiri compilation AMV",
+    "jujutsu kaisen hidden inventory arc shoko clip",
+    "jujutsu kaisen shoko ieiri best moments character edit",
+    "jujutsu kaisen shoko healing characters HD remaster"
+  ],
+  "scene_query": "a tired woman with brown hair and dark circles under her eyes wearing a white lab coat, smoking a cigarette, anime style",
+  "music_mood": "curious",
+  "music_prompt": "lofi hip hop, eighty five BPM, smooth upright bass, chill electric piano chords, steady relaxed energy with a slightly mischievous bounce, anime short-form video background, no lyrics, exclude: aggressive drums, intense orchestral strings",
+  "voice_name": "Hamid",
+  "script": "[curious] Did you know that the only doctor at Jujutsu High is actually a massive fraud? [surprised] Shoko Ieiri is famous for saving our favorite characters using reverse cursed technique. [thoughtful] But if you read the official creator fanbook, there is a wild secret about her. [laughs] She never went to medical school and completely cheated on her national medical exam! Because her healing powers are so incredibly rare, the corrupt jujutsu leaders used their political money and power to forge all her qualifications so she could legally operate. [whispers] Makes you wonder, does she even know basic anatomy?"
 }
 
 def trim_video_to_end(
@@ -498,10 +498,16 @@ def find_scenes_with_gemini(video_paths, script_segments):
     client = _gemini_client()
 
     video_durations = []
+    valid_video_paths = []
     for vp in video_paths:
-        info = ffmpeg.probe(vp)
-        vs = next(s for s in info["streams"] if s["codec_type"] == "video")
-        video_durations.append(float(vs["duration"]))
+        try:
+            info = ffmpeg.probe(vp)
+            vs = next(s for s in info["streams"] if s["codec_type"] == "video")
+            video_durations.append(float(vs["duration"]))
+            valid_video_paths.append(vp)
+        except Exception as e:
+            print(f"⚠️ Skipping bad video {vp}: {e}")
+    video_paths = valid_video_paths
 
     uploaded_files = []
     for i, vp in enumerate(video_paths):
