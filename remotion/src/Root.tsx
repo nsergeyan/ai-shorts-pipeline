@@ -1,11 +1,13 @@
 import React from "react";
 import { Composition } from "remotion";
 import { ShortVideo, ShortVideoProps } from "./compositions/ShortVideo";
+import { SubtitlePreview } from "./compositions/SubtitlePreview";
 
 const DEFAULT_FPS = 30;
 
 export const RemotionRoot: React.FC = () => {
   return (
+    <>
     <Composition
       id="ShortVideo"
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,5 +32,14 @@ export const RemotionRoot: React.FC = () => {
         };
       }}
     />
+    <Composition
+      id="SubtitlePreview"
+      component={SubtitlePreview}
+      durationInFrames={270}
+      fps={DEFAULT_FPS}
+      width={1080}
+      height={1920}
+    />
+    </>
   );
 };
