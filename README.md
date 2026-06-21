@@ -18,8 +18,8 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 
 ## Features
 
-- **Structured prompt system** — A detailed prompt template enforces word count, fact-checking tiers, duplicate avoidance, and topic category rotation for consistent, non-repetitive content
-- **AI video evaluation** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality before it's used; only high-relevance clips with the subject visually confirmed are accepted
+- **Structured prompt system** — Two prompt templates (`manualprompt.txt` for anime/cartoon, `sportsPrompt` for sports). Both enforce a hype-check step (searches for current trending events before picking a topic), mandatory live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, fact-checking tiers, and duplicate avoidance
+- **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
 - **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
 - **Script-specific music** — The music prompt is custom-generated per script (genre, tempo, instruments, emotional arc) rather than a fixed preset, so the background music matches the tone of each individual video
@@ -56,7 +56,9 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit exactly 90–100 words. The output is a JSON object consumed directly by the pipeline.
 
 ### 2. Video Sourcing & Evaluation
-`fetch_gameplay_by_search` queries YouTube with up to six ranked queries (official source, creditless footage, fan compilation, specific episode/arc clip, character tribute, and 4K remaster), filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, and `technical_score` (1–10 each). Only a `post` decision with confirmed subject presence passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
+`fetch_gameplay_by_search` queries YouTube with up to six queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
+
+Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. Only a `post` decision with confirmed subject presence passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
 
 ### 3. Voice & Transcription
 ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endpoint (ElevenLabs v3) which natively processes bracketed performance tags for natural delivery. Russian and Spanish use `eleven_multilingual_v2`. The narration is transcribed by Whisper with `word_timestamps=True` immediately after, producing per-word `(word, start, end)` tuples used for both subtitle rendering and scene segmentation.
@@ -99,7 +101,8 @@ The CTA overlaps the last 8 seconds of the narration (not appended after).
 YOutuber/
 ├── main.py                    # Main pipeline entrypoint
 ├── config.py                  # Directory and API configuration
-├── manualprompt.txt           # Structured script prompt template
+├── manualprompt.txt           # Structured script prompt template (anime/cartoon)
+├── sportsPrompt               # Structured script prompt template (sports)
 ├── modules/
 │   ├── video_editor.py        # Remotion render orchestration + FFmpeg CTA composite
 │   ├── gameplay_fetcher.py    # YouTube search and download
@@ -143,7 +146,7 @@ YOutuber/
 
 ```bash
 # Python dependencies
-pip install yt-dlp openai-whisper elevenlabs google-genai ffmpeg-python
+pip install -r requirements.txt
 
 # Remotion
 cd remotion && npm install
