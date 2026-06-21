@@ -1,6 +1,6 @@
 # AI Shorts Pipeline
 
-An automated end-to-end pipeline that produces YouTube Shorts and TikTok videos from a single structured prompt. The system chains together five AI services — script generation, video sourcing, scene detection, voice synthesis, and music composition — then assembles and edits the final vertical video without any manual intervention.
+An automated end-to-end pipeline that produces YouTube Shorts and TikTok videos from a single structured prompt. The system chains together five AI services — script generation, video sourcing, scene detection, voice synthesis, and music — then assembles and edits the final vertical video without any manual intervention.
 
 ---
 
@@ -22,7 +22,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
 - **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
-- **Script-specific music** — The music prompt is custom-generated per script (genre, tempo, instruments, emotional arc) rather than a fixed preset, so the background music matches the tone of each individual video
+- **Smart music sourcing** — The prompt system generates both a `music_query` (YouTube search for an official OST/instrumental) and a `music_prompt` (ElevenLabs generation spec). The pipeline tries YouTube first; if Gemini approves the track (no lyrics, topic-relevant, voice-compatible) it uses it for free. If the track is rejected or no query is provided, ElevenLabs composes a custom 90-second instrumental instead
 - **Remotion rendering** — Video is composed and rendered in React/TypeScript via Remotion (Chrome Headless Shell). Each frame is pixel-accurate, fully programmable, and GPU-accelerated
 - **Blurred letterbox layout** — Landscape source footage is displayed at its native aspect ratio (nothing cropped) with a blurred, darkened copy filling the top and bottom bars. Subtitles sit in the top bar, CTA in the bottom bar
 - **Word-level subtitles** — Whisper `large-v3` transcribes narration at the word level; each spoken word highlights in yellow with a spring-animated pop, 3 words per line, inside a semi-transparent pill
@@ -42,7 +42,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 | Video sourcing | `yt-dlp` with Android client + fallbacks |
 | Video evaluation & scene detection | Google Gemini 2.5 Flash (multimodal) |
 | Voice synthesis | ElevenLabs `eleven_v3` (`text_to_dialogue`) for English; `eleven_multilingual_v2` for RU/ES |
-| Music composition | ElevenLabs Generative Music API with script-derived custom prompt |
+| Music | YouTube (yt-dlp audio-only) evaluated by Gemini, with ElevenLabs Generative Music as fallback |
 | Audio transcription | OpenAI Whisper `large-v3` |
 | Video rendering | Remotion 4.0 (React/TypeScript, Chrome Headless Shell) |
 | CTA compositing | FFmpeg `chromakey` + `overlay` filter |
@@ -66,8 +66,8 @@ ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endp
 ### 4. Multi-Source Scene Detection
 All approved videos and the Whisper-segmented sentences are sent to Gemini in a single call. Gemini watches every video and returns an edit plan: for each narration segment it picks the best `(video_index, start)` pair from whichever source has the strongest matching moment. Each clip is then trimmed from its assigned source video at the chosen timestamp. Gemini is instructed to vary which source it pulls from across segments to maximise visual diversity.
 
-### 5. Music Generation
-ElevenLabs Generative Music composes 90 seconds of instrumental audio. The music prompt is custom-written per script by the prompt system — specifying genre, tempo, instruments, and emotional arc — so the music actually matches the content of the video.
+### 5. Music
+The pipeline resolves music in two stages. First it checks for a `music_query` field in the script JSON. If present, yt-dlp searches YouTube and downloads the first result as audio-only MP3. That track is uploaded to Gemini, which scores it on three criteria: no vocals/lyrics, topic relevance (≥7/10), and voice compatibility (≥6/10). If all three pass, the track is used as-is — free. If the track is rejected, the download fails, or no query was provided, ElevenLabs Generative Music composes a custom 90-second instrumental from the `music_prompt` field, which is written per script by the prompt system specifying genre, tempo, instruments, and emotional arc.
 
 ### 6. Video Rendering (Remotion)
 `merge_audio_video` in `modules/video_editor.py` orchestrates the render:
@@ -107,7 +107,7 @@ YOutuber/
 │   ├── video_editor.py        # Remotion render orchestration + FFmpeg CTA composite
 │   ├── gameplay_fetcher.py    # YouTube search and download
 │   ├── newvoice.py            # ElevenLabs TTS (v3 dialogue + multilingual)
-│   ├── music_generator.py     # ElevenLabs generative music
+│   ├── music_generator.py     # YouTube audio fetch + ElevenLabs generative music fallback
 │   ├── transcriber.py         # Whisper word-level transcription
 │   ├── youtube_uploader.py    # YouTube Data API v3 upload
 │   └── tiktok_checker.py      # TikTok duplicate detection
