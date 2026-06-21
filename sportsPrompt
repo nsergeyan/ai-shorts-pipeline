@@ -249,6 +249,13 @@ The prompt must include:
 - The emotional arc, timed to the five beats (e.g. "low tension under the hook, builds through the payload, explodes on the turn around twenty seconds")
 - End with: "sports short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
 
+MUSIC QUERY RULE:
+Sports content rarely has a single iconic OST. Use this rule to decide:
+- IF the script is about an athlete or event with a famous, widely-known walk-out song, theme, or cinematic instrumental tied to them (e.g. a boxer's iconic walk-out track, a league's official anthem instrumental, a well-known documentary score) → write music_query: a short YouTube search query to find that specific instrumental (e.g. "[athlete] walkout song instrumental" / "[league] official anthem no lyrics").
+- FOR ALL OTHER CASES → set music_query to null. Generic sports energy music is better generated via music_prompt than sourced from YouTube.
+
+The pipeline tries YouTube music FIRST and only falls back to ElevenLabs generation if the query fails or the music is rejected. Only provide a query when you are confident a specific, recognizable, lyrics-free track for this athlete or moment exists on YouTube.
+
 ═══════════════════════════════════
 SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
 ═══════════════════════════════════
@@ -390,6 +397,7 @@ JSON OUTPUT FORMAT
   "scene_query": "",
   "footage_source": "official_or_press | stills_and_broll | single_rare_source",
   "music_mood": "",
+  "music_query": "<short YouTube search query for iconic instrumental, or null>",
   "music_prompt": "",
   "voice_name": "Hamid",
   "script": ""

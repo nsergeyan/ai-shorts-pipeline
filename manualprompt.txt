@@ -1,7 +1,7 @@
 ═══════════════════════════════════
-SERIES: [PUT ANIME/CARTOON NAME HERE]
+SERIES: [JUJUTSUKAISEN]
 ═══════════════════════════════════
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about the SERIES The amazing digital circus.
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about the SERIES [SERIES].
 DO NOT EXAGGERATE FACTS!
 
 Everywhere below, [SERIES] means the name written above. Adapt all searches, queries, and examples to that series.
@@ -181,6 +181,39 @@ The prompt must include:
 - End with: "short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
 
 ═══════════════════════════════════
+MUSIC QUERY RULE
+═══════════════════════════════════
+Run these checks IN ORDER. Stop at the first match.
+
+STEP A — FANDOM ANTHEM CHECK (run first, before official OST):
+Search whether fans have already adopted a non-official song as the
+unofficial theme for this exact character, moment, or matchup —
+check fan-edit culture (TikTok edit captions, YouTube AMVs, Know Your
+Meme, fan petitions). This is common for iconic 1v1s and viral
+character moments (e.g. "Judas" by Lady Gaga for Gojo vs Sukuna,
+"Tuca Donka" for Hakari).
+  - Confirm dominance: multiple independent high-view edits credit
+    the SAME song for the SAME scene, not just one creator's pick.
+  - IF a dominant fandom-anthem track exists → set it as music_query.
+    Add "is_fan_anthem": true to the output so downstream editors
+    know to caption it as fan-favorite, not canon score.
+
+STEP B — OFFICIAL OST CHECK (only if Step A finds nothing dominant):
+Decide whether [SERIES] has a recognizable official OST or
+instrumental track that matches the script's mood.
+  - IF YES → write music_query as before. Set "is_fan_anthem": false.
+
+STEP C — GENERATE (fallback, only if A and B both fail):
+Set music_query to null, write music_prompt as before.
+
+TRADE-OFF NOTE: A fandom-anthem track is the most algorithmically
+recognizable option, but it's also the MOST overused — thousands of
+edits already exist with that exact song. This cuts against the
+script's own obscurity/wait-what goals. If the fact itself is the
+hook (not the matchup), prefer Step B or C so the audio doesn't feel
+like a retread. Use Step A mainly when the visual matchup itself
+(not the trivia) is doing the heavy lifting.
+═══════════════════════════════════
 SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
 ═══════════════════════════════════
 Tone: conversational, slightly dramatic, enthusiastic — sound genuinely excited about the detail.
@@ -311,6 +344,7 @@ JSON OUTPUT FORMAT
   "youtube_queries": ["", "", "", "", "", ""],
   "scene_query": "",
   "music_mood": "",
+  "music_query": "<short YouTube search query for official OST, or null>",
   "music_prompt": "",
   "voice_name": "Hamid",
   "script": ""

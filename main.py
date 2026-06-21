@@ -11,6 +11,8 @@ import itertools
 from concurrent.futures import ThreadPoolExecutor
 from google import genai
 import ffmpeg
+from sympy.parsing.sympy_parser import null
+
 from config import GEMINI_API_KEYS
 
 if not GEMINI_API_KEYS:
@@ -25,7 +27,7 @@ def _gemini_client():
     return genai.Client(api_key=key)
 try:
     from modules.gameplay_fetcher import fetch_gameplay_by_search
-    from modules.music_generator import generate_music
+    from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
     from modules.video_editor import merge_audio_video
     from modules.transcriber import transcribe_audio_to_words
@@ -42,17 +44,23 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "series": "The Amazing Digital Circus",
-  "topic": "Google hid a working glitch mini-game in its search results to celebrate the finale",
-  "specific_subject": "Google search easter egg featuring Caine and Bubble",
+  "series": "Jujutsu Kaisen",
+  "topic": "Megumi Fushiguro's name is actually a girl's name in Japan",
+  "specific_subject": "Megumi's first name and his father's careless naming, from Season 1 Episode 9",
   "youtube_queries": [
-    "https://www.youtube.com/watch?v=YDWUNyZPN5c"
-],
-"scene_query": "Close-up of Caine's red and blue ringmaster face glitching and flickering on a black computer terminal screen, his wide cartoon grin multiplying and overlapping across the frame, static lines flashing, then the screen cutting to black for a split second",
-  "music_mood": "mysterious",
-  "music_prompt": "Dark glitch-pop with a twisted music-box edge, one hundred ten BPM, built around a detuned music-box melody, digital static stutters, and a deep pulsing sub-bass. The arc opens hushed and curious, ticks tighter through the middle, then glitches hard at the 'Delete' reveal before settling into one looping teaser pulse for the hook. short-form video background, no lyrics, exclude: cheerful acoustic guitar, generic EDM drop",
+    "Megumi Fushiguro name scene",
+    "Megumi Fushiguro best moments",
+    "Megumi Fushiguro edit",
+    "jujutsu kaisen episode 9",
+    "Megumi Fushiguro english dub",
+    "jujutsu kaisen season 1 official clip"
+  ],
+  "scene_query": "Close-up of Megumi Fushiguro, dark-haired teen sorcerer in his Tokyo Jujutsu High uniform, calm unimpressed expression talking quietly, soft indoor lighting, Yuji nearby reacting with surprise",
+  "music_mood": "curious",
+  "music_query": null,
+  "music_prompt": "Playful indie-pop with a touch of mystery, around ninety-two BPM, featuring plucky ukulele or marimba, a soft shuffling hi-hat, and a curious rising synth blip on the reveal; stays light and bouncy with a small comedic pause right before the punchline. short-form video background, no lyrics, exclude: heavy distorted guitars, dark cinematic strings",
   "voice_name": "Hamid",
-  "script": "[excited] Wait, did you know Google has a secret game for The Amazing Digital Circus? Just type \"the amazing digital circus\" into Google search. A small round button shows up. [curious] Click it... and Caine and Bubble's faces fill your whole screen. [laughs] It's creepy, but also funny! Two buttons appear: \"Fun\" and \"Delete.\" Press \"Fun,\" and more faces pop up everywhere. [nervously] But press \"Delete\"... a bar says \"Purge Easter Egg.\" Then your screen goes dark for one second. [surprised] Google made this just for the finale! It is real, go try it yourself right now. Did it scare you too?"
+  "script": "[curious] Okay, here's something wild about Megumi Fushiguro from season one. [excited] His name, Megumi, is actually a GIRL'S name in Japan. [surprised] Yeah, his own father straight up named him without even checking his gender. [thoughtful] In the anime, Megumi literally says his dad named him without knowing if he was a boy or a girl. [laughs] Imagine being a tough, broody sorcerer... with a name that means 'blessing,' usually given to baby girls. [mischievously] His dad really said close enough. [excited] So next time someone says his name... [curious] would you forgive your dad for a mistake like that?"
 }
 
 def trim_video_to_end(
@@ -218,6 +226,120 @@ def evaluate_music_with_genai(music_path, script_text):
             "voice_score": 0,
             "decision": "revise"
         }
+
+def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: str) -> dict:
+    """Evaluate YouTube-sourced music: checks for lyrics, topic fit, and voice compatibility."""
+    client = _gemini_client()
+
+    uploaded_file = client.files.upload(file=music_path)
+    print(f"Uploaded YouTube music: {uploaded_file.name}")
+
+    file_info = client.files.get(name=uploaded_file.name)
+    _poll_errors = 0
+    while file_info.state != "ACTIVE":
+        print(f"Music state: {file_info.state}, waiting...")
+        time.sleep(2)
+        try:
+            file_info = client.files.get(name=uploaded_file.name)
+            _poll_errors = 0
+        except Exception as e:
+            if "500" in str(e) or "INTERNAL" in str(e):
+                _poll_errors += 1
+                if _poll_errors >= 10:
+                    raise RuntimeError("Gemini file stuck in PROCESSING") from e
+            else:
+                raise
+
+    print("YouTube music file ACTIVE ✅")
+
+    prompt = f"""
+    You are evaluating background music sourced from YouTube for a short-form vertical video.
+
+    TOPIC: "{topic}"
+
+    SCRIPT:
+    \"\"\"{script_text}\"\"\"
+
+    SCORING CRITERIA:
+
+    1. Lyrics Check (has_lyrics: true/false)
+       Does this audio contain ANY sung vocals or rapped/spoken lyrics?
+       - true  → there are clear singing or rapping vocals in the music
+       - false → purely instrumental, no vocals at all
+
+    2. Topic Relevance (topic_score: 1–10)
+       How well does this music match the video topic?
+       9–10: Recognizable OST / soundtrack directly tied to the topic
+       7–8 : Fits the mood and theme well
+       5–6 : Loosely related
+       1–4 : Wrong style or unrelated
+
+    3. Voice Compatibility (voice_score: 1–10)
+       Would this sit cleanly under narration without drowning it out?
+       9–10: Perfect background, won't compete with narrator
+       7–8 : Good, can work at low volume
+       5–6 : Somewhat busy but usable
+       1–4 : Too loud, too chaotic, or too distracting
+
+    DECISION RULES:
+    - "use"    → has_lyrics=false AND topic_score >= 7 AND voice_score >= 6
+    - "reject" → has_lyrics=true OR topic_score < 7 OR voice_score < 6
+
+    Return ONLY valid JSON, no markdown:
+    {{
+      "has_lyrics": <true|false>,
+      "topic_score": <1-10>,
+      "voice_score": <1-10>,
+      "decision": "use" | "reject",
+      "reason": "<one short sentence>"
+    }}
+    """
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[uploaded_file, prompt]
+    )
+
+    raw_text = response.text if hasattr(response, "text") else str(response)
+
+    try:
+        clean_text = raw_text.strip()
+        if not clean_text.startswith("{"):
+            clean_text = clean_text[clean_text.find("{"):]
+        if not clean_text.endswith("}"):
+            clean_text = clean_text[:clean_text.rfind("}") + 1]
+        return json.loads(clean_text)
+    except Exception as e:
+        print(f"⚠️ Failed to parse YouTube music eval JSON: {e}")
+        print("Raw:", raw_text)
+        return {"has_lyrics": True, "topic_score": 0, "voice_score": 0, "decision": "reject", "reason": "parse error"}
+
+
+def _resolve_music(music_query: str | None, music_prompt: str, topic: str, script_text: str) -> str | None:
+    """Try YouTube music first if a query is given; fall back to ElevenLabs generation."""
+    if music_query and str(music_query).strip().lower() not in ("null", "none", ""):
+        yt_path = fetch_music_from_youtube(music_query)
+        if yt_path:
+            print(f"🔍 Evaluating YouTube music with Gemini...")
+            try:
+                result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
+                decision = result.get("decision", "reject")
+                reason = result.get("reason", "")
+                if decision == "use":
+                    print(f"✅ YouTube music approved — {reason}")
+                    return yt_path
+                else:
+                    print(f"❌ YouTube music rejected ({reason}) — falling back to ElevenLabs")
+            except Exception as e:
+                print(f"⚠️ Gemini music eval error: {e} — falling back to ElevenLabs")
+
+            if os.path.exists(yt_path):
+                os.remove(yt_path)
+        else:
+            print("⚠️ YouTube music download failed — falling back to ElevenLabs")
+
+    return generate_music(music_prompt)
+
 
 def evaluate_video_with_genai(video_path, script_text):
     """Upload a video to Gemini and score it for relevance, hook potential, and technical quality."""
@@ -582,29 +704,62 @@ def find_scenes_with_gemini(video_paths, script_segments):
     )
 
     prompt = f"""
-You are a professional video editor. You have {len(video_paths)} source video(s) and a narration script split into segments.
-Your job is to build the most visually engaging edit by choosing the right clip from the right video for each segment.
+You are a professional short-form video editor cutting a TikTok / YouTube Short.
+You have {len(video_paths)} source video(s) and a narration split into timed segments.
+Your job: pick the single best (video, timestamp) for each segment so the final edit feels intentional, dynamic, and visually synced to the words.
 
-SOURCE VIDEOS (in the order they were provided above):
+SOURCE VIDEOS:
 {videos_info}
 
-NARRATION SEGMENTS:
+NARRATION SEGMENTS (index / spoken text / duration in seconds):
 {segments_json}
 
-INSTRUCTIONS:
-For each narration segment, pick the BEST matching timestamp from any of the source videos.
+════════════════════════════════════
+STEP 1 — UNDERSTAND THE SCRIPT FIRST
+════════════════════════════════════
+Before picking any timestamp, read ALL segments together.
+Identify: who or what is the main subject, what is the emotional arc, which segments are the hook, the reveal, and the payoff.
+This shapes which visual moments you assign to which segments.
 
-RULES:
-- For each segment assign a video_index (0 to {len(video_paths) - 1}) and a start time in seconds
-- The clip starting at `start` must have at least `duration` seconds of usable footage remaining in that video
-- Avoid the first 3 seconds and last 8 seconds of any video (intros/outros)
-- Prefer dynamic action shots, close-ups, and visually interesting moments
-- Vary which video you pull from across segments when possible — visual diversity keeps viewers engaged
-- If one video is clearly superior for a segment, use it — do not force variety at the cost of quality
+════════════════════════════════════
+STEP 2 — PICK TIMESTAMPS (rules below)
+════════════════════════════════════
 
-TIMESTAMP FORMAT: seconds only (e.g. 90.0, not 1:30)
+VISUAL-SCRIPT MATCHING (most important rule):
+- Each clip must visually SUPPORT what is being said in that segment.
+- Hook segment (first 1–2) → most visually striking moment you can find: intense action, expressive close-up, dynamic motion.
+- Reveal / surprise segment → a clear reaction shot, a dramatic visual, something with impact.
+- Calm / explanatory segment → a clear mid-shot or scene establishing what is being described.
+- DO NOT assign random beautiful footage that has nothing to do with the narration text.
 
-OUTPUT: Return ONLY valid JSON — no explanation, no markdown.
+SHOT VARIETY — mandatory across the full edit:
+- Never use two consecutive segments from the exact same timestamp range (clips must be at least 20 seconds apart within the same video).
+- Mix shot types across the edit: if segment N is a wide action shot, segment N+1 should be a close-up or reaction, not another wide shot.
+- If you have multiple source videos, spread usage across them — do not use the same video for 5 segments in a row unless it is the only option.
+
+HARD BANS — never pick a timestamp that shows any of:
+- Real human faces, a creator/commentator speaking to camera, or live-action footage
+- Static text screens, title cards, watermark overlays, or sponsor segments
+- Black screens, fade-ins, fade-outs, or scene transitions
+- The first 3 seconds or last 10 seconds of any video
+
+CLIP SAFETY:
+- The clip at `start` must have at least `duration` + 1 second of usable footage remaining.
+- If the best moment is too close to the end, shift `start` earlier to give breathing room.
+
+════════════════════════════════════
+STEP 3 — SELF-CHECK BEFORE OUTPUT
+════════════════════════════════════
+Before writing JSON, verify:
+☐ Every clip visually matches what its segment text is saying
+☐ No two consecutive clips are from the same timestamp range in the same video
+☐ Shot types vary across the edit
+☐ No banned content in any selected timestamp
+☐ All start times are safe (enough footage remaining)
+
+TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
+
+OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 {{
   "scenes": [
@@ -665,6 +820,7 @@ def run_manual_pipeline(data):
         SUBJECT = data['specific_subject']
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
         MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
+        MUSIC_QUERY = data.get('music_query', None)
         VOICE_NAME = data.get('voice_name', 'hamid')
         SCRIPT_TEXT = data['script']
 
@@ -724,10 +880,10 @@ def run_manual_pipeline(data):
 
         print(f"✅ {len(approved_videos)} video(s) approved for editing.")
 
-        # Kick off music generation immediately — it has no dependencies on voice/scene
-        print(f"🎵 Starting music generation in background...")
+        # Kick off music resolution immediately — it has no dependencies on voice/scene
+        print(f"🎵 Starting music in background...")
         executor = ThreadPoolExecutor(max_workers=1)
-        music_future = executor.submit(generate_music, MUSIC_PROMPT)
+        music_future = executor.submit(_resolve_music, MUSIC_QUERY, MUSIC_PROMPT, TOPIC, SCRIPT_TEXT)
 
         # Voice must come before scene finding so Whisper timestamps drive the cuts
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
