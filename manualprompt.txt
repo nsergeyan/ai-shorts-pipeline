@@ -1,9 +1,42 @@
-Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about jjk.
+═══════════════════════════════════
+SERIES: [PUT ANIME/CARTOON NAME HERE]
+═══════════════════════════════════
+Create a TikTok script (ninety to one hundred words, SIMPLE ENGLISH B1) about the SERIES The amazing digital circus.
 DO NOT EXAGGERATE FACTS!
 
+Everywhere below, [SERIES] means the name written above. Adapt all searches, queries, and examples to that series.
+
 ═══════════════════════════════════
-RANDOM CATEGORY SELECTION
+STEP ZERO — HYPE CHECK (DO THIS FIRST, BEFORE ANYTHING ELSE)
 ═══════════════════════════════════
+Before touching the random wheel, find out what is CURRENTLY hot in the [SERIES] fandom right now.
+
+Run at least THREE web searches to detect current hype, such as:
+- [SERIES] news [current month + year]
+- [SERIES] trending / reddit / twitter this week
+- [SERIES] new episode / chapter / season / movie / announcement [current year]
+
+You are looking for a recent, real event that fans are reacting to RIGHT NOW: a finale, a new episode, a trailer, a movie reveal, a season announcement, an anniversary, a viral scene, an interview, etc.
+
+DECISION:
+- IF a genuinely current/hot topic exists (something released or trending recently and fans are actively talking about it):
+  → The video MUST be anchored to that hot topic.
+  → BUT you still must find ONE specific "wait-WHAT" micro-detail INSIDE that topic — not just "the finale aired" or "season two was announced." The hype gives you the SUBJECT; the rules below still force a surprising micro-fact.
+  → Skip the random wheel. Go straight to TOPIC DISCOVERY using the hot topic as your anchor.
+
+- IF nothing is genuinely trending (no real recent event, just old news):
+  → Say "No current hype found — using random category."
+  → Proceed to RANDOM CATEGORY SELECTION below.
+
+State clearly which path you took and WHY, and cite what you found.
+
+CURRENCY RULE: Whatever topic you land on, confirm it has not been retconned, clarified, or expanded by any material released after the source you cite. Prefer the most recent canonical information.
+
+═══════════════════════════════════
+RANDOM CATEGORY SELECTION (FALLBACK ONLY)
+═══════════════════════════════════
+Use this ONLY if Step Zero found no current hype.
+
 Only choose topics that can be clearly shown through a short visual clip with obvious action or movement.
 
 Before choosing a topic, pick a random number from one to four. State the number first.
@@ -15,7 +48,7 @@ four → rare production or animation fact
 
 Follow the selected category. Focus on ONE micro-detail, not a broad concept.
 
-GOOD example: what the inside of a Titan's mouth smells like to its host
+GOOD example (calibration only): what the inside of a Titan's mouth smells like to its host
 BAD example: how Titan transformation works
 
 ═══════════════════════════════════
@@ -28,13 +61,18 @@ Obscurity is allowed and welcome — but ONLY when it raises the reaction. A rar
 The ideal fact pattern (the "soap pattern"):
 A small, concrete, almost ordinary question (a texture, smell, sound, habit, weird detail) applied to a famous or central thing — where the real, canon answer is funnier or stranger than expected.
 
-Reference example (from another series, for calibration only):
-"Sukuna's severed finger feels and smells like soap." → famous object, hidden physical detail, canon, zero lore needed, instant 'wait WHAT?'. THIS is the level and flavor to aim for.
+Reference example (from the series Jujutsu Kaisen, for calibration only — do NOT reuse unless [SERIES] is that show):
+"Sukuna's severed finger feels and smells like soap." → famous object, hidden physical detail, canon, zero lore needed, instant 'wait WHAT?'. THIS is the level and flavor to aim for, applied to [SERIES].
+
+NOTE: Even when anchored to a hot/hype topic, the fact must still follow the soap pattern — a concrete micro-detail, not a plot summary of the new episode.
 
 ═══════════════════════════════════
 TOPIC DISCOVERY PROTOCOL (MANDATORY)
 ═══════════════════════════════════
-Generate FIVE candidate ideas in the chosen category.
+Generate FIVE candidate ideas.
+- If Step Zero found hype: all five candidates must connect to that hot topic.
+- If using the fallback wheel: all five candidates must fit the chosen category.
+
 Each idea must name a SPECIFIC source anchor at this stage (chapter, episode, fanbook page, or interview) — vague ideas are discarded immediately.
 
 For each candidate assign ONE score only:
@@ -53,7 +91,8 @@ KILL TEST — automatically reject a candidate if it is:
 - obscure but DRY (stat numbers, IQ figures, voice-actor credits, staff names, release dates, episode-count records) — rare yet boring
 - requires a lore lecture before the surprise lands
 - philosophical interpretation or character summary
-- a character trait or personality quirk reworded as a surprising fact (e.g. "Gojo is actually really competitive" — this is characterization, not a fact)
+- a character trait or personality quirk reworded as a surprising fact (e.g. "this character is actually really competitive" — this is characterization, not a fact)
+- any fact whose source you could not open and read this session (memory-only citations are BANNED)
 - more than forty percent similar to anything in the USED VIDEOS LIST
 
 BANNED OVERSATURATED PATTERNS (the iceberg clichés — never pick these):
@@ -72,19 +111,32 @@ Discard a topic if it matches any USED VIDEOS LIST entry on ANY of these:
 - same "what does X feel/smell/taste/sound like" framing about the same subject
 
 Example:
-Existing: why gojo eats sweets
-Do NOT generate: why gojo loves desserts
+Existing: why this character eats sweets
+Do NOT generate: why this character loves desserts
 
 ═══════════════════════════════════
-VERIFICATION PROTOCOL (DO BEFORE WRITING)
+VERIFICATION PROTOCOL (WEB SEARCH MANDATORY — DO BEFORE WRITING)
 ═══════════════════════════════════
-STEP one: find the fact
-STEP two: locate a specific source
-STEP three: if no strong source exists → treat as Tier three theory
+You may NOT rely on memory for any factual claim. Memory is treated as Tier three (unverified) until confirmed by a live search this session.
+
+For the single chosen candidate, you MUST:
+
+STEP 1 — SEARCH: Run at least three web searches to verify the fact. Searches must target different source types:
+  • the official wiki / fandom page for the specific character or object in [SERIES]
+  • the original source (manga chapter or comic discussion, official artbook/fanbook scans/translations, or a creator interview)
+  • a cross-check search phrased to DISPROVE the fact (e.g. "is [claim] actually canon" / "[claim] misconception")
+
+STEP 2 — READ: Open and read the actual pages. Do not cite a result you only saw as a search snippet. If a wiki claim is used, follow it to ITS cited source and confirm that citation exists.
+
+STEP 3 — DATE CHECK: Note the publish/update date of each source. If newer material could have changed or contradicted the fact, search specifically for that. Prefer the most recent canonical information.
+
+STEP 4 — RECONCILE: If sources conflict, the fact is NOT Tier one. Either downgrade to a flagged theory or discard.
+
+HARD RULE: If you cannot open and confirm a real source this session, you may NOT label the fact Tier one or Tier two. State that verification failed and pick another candidate.
 
 TIER DEFINITIONS
-Tier one — CONFIRMED: episode number / manga chapter / fanbook page / creator interview
-Tier two — WIKI SOURCED: wiki article PLUS its own citation
+Tier one — CONFIRMED: episode number / chapter / fanbook page / creator interview, confirmed by an opened source this session
+Tier two — WIKI SOURCED: wiki article PLUS its own citation, both opened and confirmed this session
 Tier three — THEORY: no strong source. Script MUST say "fans believe" or "one theory suggests."
 
 RULE: Because this video must not exaggerate, prefer Tier one. Only use Tier three if the WAIT-WHAT score is five AND the script clearly flags it as a theory.
@@ -93,10 +145,16 @@ Before moving on, fill this box in full. If "Flag if theory" is YES, the script 
 
 VERIFICATION BOX
 ━━━━━━━━━━━━━━━━━━━━
+Series:
+Hype path taken (hot topic / random fallback):
 Fact:
 Wait-What Score:
 Tier:
-Source:
+Searches run (list the actual queries):
+Sources opened (full URLs):
+Direct evidence (what the source actually says):
+Most recent source date:
+Contradicting info found (YES/NO — describe):
 Why this isn't widely known:
 How user can verify:
 Flag if theory (YES / NO):
@@ -118,9 +176,9 @@ Then write a CUSTOM music_prompt for THIS script specifically. Do NOT copy a gen
 The prompt must include:
 - A specific genre + sub-genre (e.g. "dark atmospheric trap", "melodic phonk", "orchestral cinematic")
 - Tempo in BPM
-- two to three instruments or sounds that fit the script's world (e.g. "eerie koto plucks", "punchy 808 bass", "solo piano with strings")
+- two to three instruments or sounds that fit the script's world
 - The emotional arc (e.g. "builds from quiet tension to sudden reveal", "steady driving energy with a climax at thirty seconds")
-- End with: "anime short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
+- End with: "short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
 
 ═══════════════════════════════════
 SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
@@ -173,62 +231,81 @@ SCRIPT QUALITY CHECK (confirm all before output):
 ☐ includes four or more ElevenLabs v3 confirmed tags
 ☐ theory disclaimer present IF Flag if theory is YES
 If any box is unchecked → rewrite before outputting JSON.
+═══════════════════════════════════
+FOOTAGE REALITY CHECK (MANDATORY — RUN BEFORE LOCKING A TOPIC)
+═══════════════════════════════════
+A great fact with no usable footage is a dead video. Before committing to the chosen candidate, confirm footage actually EXISTS.
 
+Run one or two quick YouTube/web searches for the core visual moment of the candidate.
+
+JUDGE:
+- GREEN — plenty of clips exist (popular fight, famous scene, common moment). Proceed.
+- YELLOW — footage is thin but exists, OR the visual is screen-recordable by the editor (a website, app, UI, Easter egg, menu, game). Proceed, BUT set a flag: this video likely needs a self-made screen recording or a single rare source, not scraped clips.
+- RED — almost no footage exists and it cannot be screen-recorded (an off-screen detail, a databook-only fact, an interview-only claim with no visual). KILL the candidate and pick the next highest-scoring one.
+
+If the top candidate is RED, drop to the next surviving candidate. If all five are RED, generate five new ideas with footage availability in mind.
+
+Add to the VERIFICATION BOX:
+Footage status (GREEN / YELLOW / RED):
+Footage note (where clips exist, or "editor must screen-record"):
 ═══════════════════════════════════
 VISUAL CLIP STRATEGY (TIKTOK)
 ═══════════════════════════════════
 
 ── SCENE QUERY (for Gemini / visual search) ──────────────────
-scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the anime. It is NOT a YouTube search query.
+scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the series. It is NOT a YouTube search query.
 
 Write scene_query as a pure physical description of what the screen looks like:
 - Describe colors, clothing, hair, and objects visible on screen
 - Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising
-- No lore jargon. Translate effects into visuals (e.g. "white steam pouring off a large body", not "Titan regeneration")
+- No lore jargon. Translate effects into visuals
 - Anchor to the most visually surprising moment the script references
 - If the script references a specific scene, the scene_query must match that exact scene — do not guess or generalize
 
 ── YOUTUBE QUERIES (for sourcing raw footage) ────────────────
-Generate exactly six YouTube queries. Each query must target a DIFFERENT source type to maximize your chance of finding at least three clean, editable clips. Use the strategies below in this order:
+Generate exactly six YouTube queries. Write them the way a real fan types into the YouTube search bar — short, natural, casual. Two to six words. NOT keyword-stuffed.
 
-Query one — OFFICIAL SOURCE
-Target: MAPPA's official YouTube channel uploads, official trailers, or official clips.
-Format: jujutsu kaisen official [scene description] MAPPA
-Goal: pull footage released by the studio itself — lowest copyright friction.
+RULES FOR NATURAL QUERIES:
+- Use the words fans actually put in titles: "full fight", "scene", "moment", "edit", "vs", "best", "english dub/sub", the character's name, the move's name.
+- Drop technical jargon real uploaders never write: avoid "creditless", "isolated footage", "no commentary", "raw", "remaster", "highlight reel" — these rarely appear in actual titles and shrink your results.
+- Lead with the most recognizable name: character, attack, or the iconic moment. That is what gets typed and titled most.
+- One scene per query set: if the script is about a specific moment, every query chases THAT moment in different words.
+- Each of the six must hit a DIFFERENT pool of results, not reword the same search.
 
-Query two — CREDITLESS / ISOLATED FOOTAGE
-Target: creditless openings, creditless endings, or character highlight reels without commentary.
-Format: jujutsu kaisen [character or arc name] [NC / creditless / raw / no commentary] [action]
-Goal: clean isolated footage with no streamer face, no commentary audio, no reaction overlay.
+THE SIX ANGLES (natural phrasing):
 
-Query three — FAN COMPILATION (visuals only)
-Target: fan-made AMV or scene compilation focused on the visual moment, no full-episode rips.
-Format: jujutsu kaisen [character or power name] [visual moment] AMV / compilation
-Goal: find footage that shows the moment from multiple angles or cuts, already trimmed.
+Query one — THE DIRECT MOMENT
+What a fan types to find the exact scene.
+e.g. "[character] vs [character] full fight" / "[iconic moment] scene"
 
-Query four — SPECIFIC EPISODE / ARC CLIP
-Target: uploads focused on a specific episode number or arc name that contains the relevant scene.
-Format: jujutsu kaisen [episode number or arc name] [scene description] clip / scene
-Goal: pull from full-episode or arc-specific uploads — different pool from compilations.
+Query two — THE EMOTIONAL / VIRAL FRAMING
+How fans title the moment when it blew up.
+e.g. "[character] [moment] goes hard" / "the scene that broke the internet" / "[character] death scene"
 
-Query five — CHARACTER TRIBUTE / SHOWCASE
-Target: tribute videos or character showcase edits dedicated to this character, not a general AMV.
-Format: jujutsu kaisen [character name] tribute / best moments / character edit
-Goal: tribute edits tend to focus tightly on the character with clean cuts and no commentary.
+Query three — THE EDIT POOL
+Short fan edits, usually clean and pre-trimmed.
+e.g. "[character] edit" / "[character] [song or vibe] edit"
 
-Query six — 4K / HD REMASTER
-Target: upscaled or remastered uploads of the relevant scene or episode.
-Format: jujutsu kaisen [character or scene] 4K / HD remaster / upscale
-Goal: remastered uploads are often clean, long, and watermark-free — a different pool from standard rips.
+Query four — EPISODE / ARC POOL
+Tied to where it happened, pulls from a different upload set.
+e.g. "[series] episode [number] [moment]" / "[arc name] best scene"
+
+Query five — DUB vs SUB POOL
+Same scene, different audience, different uploads.
+e.g. "[character] [moment] english dub" / "[moment] sub"
+
+Query six — OFFICIAL / CLIP POOL
+Studio or official-channel uploads, lowest copyright friction.
+e.g. "[series] [moment] official clip" / "[series] official trailer [arc]"
 
 SCENE ACCURACY RULE: If the script references a specific moment, all six queries must chase that exact moment — not the arc, not the character in general.
 
-DO NOT generate queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool of results.
-
+OUTPUT: Replace every bracket with the real series/character/scene names before outputting. No leftover brackets.
 ═══════════════════════════════════
 JSON OUTPUT FORMAT
 ═══════════════════════════════════
 {
+  "series": "",
   "topic": "",
   "specific_subject": "",
   "youtube_queries": ["", "", "", "", "", ""],
@@ -240,10 +317,17 @@ JSON OUTPUT FORMAT
 }
 
 ═══════════════════════════════════
-USED VIDEOS LIST (DO NOT REPEAT)
+USED VIDEOS LIST (DO NOT REPEAT) — swap this per series
 ═══════════════════════════════════
-1. yuji itadori sleeping habit trivia #jjk #yuji
-2. telling your enemy exactly how your technique works is a binding vow that makes the technique stronger #jjk #gojo
-3. gojos six eyes secret #gojo
-4. why gojo satoru wears the blindfold — the six eyes overload mechanic from the jujutsu kaisen fanbook #gojo #jjk
-5. the real taste of sukuna's fingers #jjk  #sukuna
+(Paste the used-videos list for the current SERIES here. Leave empty if starting fresh.)
+1. nobara kugisaki's hair color is dyed #jjk #nobara
+2. shoko ieiri never went to medical school and cheated to get her medical license #jjk
+3. domain expansion  weakness #jjk
+4. panda's surprising physical scent in jujutsu kaisen #jjk
+5. getos difficult life #jjk
+6. toji fushiguro's lip scar origin from the official fanbook #jjk #toji
+7. yuji itadori sleeping habit trivia #jjk #yuji
+8. telling your enemy exactly how your technique works is a binding vow that makes the technique stronger #jjk #gojo
+9. gojos six eyes secret #gojo
+10. why gojo satoru wears the blindfold — the six eyes overload mechanic from the jujutsu kaisen fanbook #gojo #jjk
+11. the real taste of sukuna's fingers #jjk  #sukuna

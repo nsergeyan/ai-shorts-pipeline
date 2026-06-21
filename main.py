@@ -42,21 +42,17 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "topic": "Shoko's Fake License",
-  "specific_subject": "Shoko Ieiri never went to medical school and cheated to get her medical license",
+  "series": "The Amazing Digital Circus",
+  "topic": "Google hid a working glitch mini-game in its search results to celebrate the finale",
+  "specific_subject": "Google search easter egg featuring Caine and Bubble",
   "youtube_queries": [
-    "jujutsu kaisen official shoko ieiri healing MAPPA",
-    "jujutsu kaisen shoko reverse cursed technique raw no commentary",
-    "jujutsu kaisen shoko ieiri compilation AMV",
-    "jujutsu kaisen hidden inventory arc shoko clip",
-    "jujutsu kaisen shoko ieiri best moments character edit",
-    "jujutsu kaisen shoko healing characters HD remaster"
-  ],
-  "scene_query": "a tired woman with brown hair and dark circles under her eyes wearing a white lab coat, smoking a cigarette, anime style",
-  "music_mood": "curious",
-  "music_prompt": "lofi hip hop, eighty five BPM, smooth upright bass, chill electric piano chords, steady relaxed energy with a slightly mischievous bounce, anime short-form video background, no lyrics, exclude: aggressive drums, intense orchestral strings",
+    "https://www.youtube.com/watch?v=YDWUNyZPN5c"
+],
+"scene_query": "Close-up of Caine's red and blue ringmaster face glitching and flickering on a black computer terminal screen, his wide cartoon grin multiplying and overlapping across the frame, static lines flashing, then the screen cutting to black for a split second",
+  "music_mood": "mysterious",
+  "music_prompt": "Dark glitch-pop with a twisted music-box edge, one hundred ten BPM, built around a detuned music-box melody, digital static stutters, and a deep pulsing sub-bass. The arc opens hushed and curious, ticks tighter through the middle, then glitches hard at the 'Delete' reveal before settling into one looping teaser pulse for the hook. short-form video background, no lyrics, exclude: cheerful acoustic guitar, generic EDM drop",
   "voice_name": "Hamid",
-  "script": "[curious] Did you know that the only doctor at Jujutsu High is actually a massive fraud? [surprised] Shoko Ieiri is famous for saving our favorite characters using reverse cursed technique. [thoughtful] But if you read the official creator fanbook, there is a wild secret about her. [laughs] She never went to medical school and completely cheated on her national medical exam! Because her healing powers are so incredibly rare, the corrupt jujutsu leaders used their political money and power to forge all her qualifications so she could legally operate. [whispers] Makes you wonder, does she even know basic anatomy?"
+  "script": "[excited] Wait, did you know Google has a secret game for The Amazing Digital Circus? Just type \"the amazing digital circus\" into Google search. A small round button shows up. [curious] Click it... and Caine and Bubble's faces fill your whole screen. [laughs] It's creepy, but also funny! Two buttons appear: \"Fun\" and \"Delete.\" Press \"Fun,\" and more faces pop up everywhere. [nervously] But press \"Delete\"... a bar says \"Purge Easter Egg.\" Then your screen goes dark for one second. [surprised] Google made this just for the finale! It is real, go try it yourself right now. Did it scare you too?"
 }
 
 def trim_video_to_end(
@@ -118,10 +114,21 @@ def evaluate_music_with_genai(music_path, script_text):
 
     # Wait until ACTIVE
     file_info = client.files.get(name=uploaded_file.name)
+    _poll_errors = 0
     while file_info.state != "ACTIVE":
         print(f"Music state: {file_info.state}, waiting...")
         time.sleep(2)
-        file_info = client.files.get(name=uploaded_file.name)
+        try:
+            file_info = client.files.get(name=uploaded_file.name)
+            _poll_errors = 0
+        except Exception as e:
+            if "500" in str(e) or "INTERNAL" in str(e):
+                _poll_errors += 1
+                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
+                if _poll_errors >= 10:
+                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
+            else:
+                raise
 
     print("Music file ACTIVE ✅")
 
@@ -222,10 +229,21 @@ def evaluate_video_with_genai(video_path, script_text):
 
     # Wait until file is ACTIVE
     file_info = client.files.get(name=uploaded_file.name)
+    _poll_errors = 0
     while file_info.state != "ACTIVE":
         print(f"File state: {file_info.state}, waiting...")
         time.sleep(2)
-        file_info = client.files.get(name=uploaded_file.name)
+        try:
+            file_info = client.files.get(name=uploaded_file.name)
+            _poll_errors = 0
+        except Exception as e:
+            if "500" in str(e) or "INTERNAL" in str(e):
+                _poll_errors += 1
+                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
+                if _poll_errors >= 10:
+                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
+            else:
+                raise
     print("File is ACTIVE ✅")
 
     # Build prompt
@@ -279,7 +297,8 @@ def evaluate_video_with_genai(video_path, script_text):
       "relevance_score": <1-10>,
       "hook_score": <1-10>,
       "technical_score": <1-10>,
-      "decision": "post" | "revise" | "reject"
+      "decision": "post" | "revise" | "reject",
+      "reason": "<1-2 sentences explaining the decision — what was or wasn't present, what rule triggered>"
     }}
     """
 
@@ -337,10 +356,21 @@ def find_scene_with_gemini(video_path, query, script):
     print(f"Uploaded file: {uploaded_file.name}")
 
     file_info = client.files.get(name=uploaded_file.name)
+    _poll_errors = 0
     while file_info.state != "ACTIVE":
         print(f"File state: {file_info.state}, waiting...")
         time.sleep(2)
-        file_info = client.files.get(name=uploaded_file.name)
+        try:
+            file_info = client.files.get(name=uploaded_file.name)
+            _poll_errors = 0
+        except Exception as e:
+            if "500" in str(e) or "INTERNAL" in str(e):
+                _poll_errors += 1
+                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
+                if _poll_errors >= 10:
+                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
+            else:
+                raise
 
     print("File ACTIVE ✅")
 
@@ -516,11 +546,24 @@ def find_scenes_with_gemini(video_paths, script_segments):
         uploaded_files.append(uf)
 
     pending = list(range(len(uploaded_files)))
+    _poll_error_counts = [0] * len(uploaded_files)
     while pending:
         time.sleep(2)
         still_pending = []
         for i in pending:
-            fi = client.files.get(name=uploaded_files[i].name)
+            try:
+                fi = client.files.get(name=uploaded_files[i].name)
+                _poll_error_counts[i] = 0
+            except Exception as e:
+                if "500" in str(e) or "INTERNAL" in str(e):
+                    _poll_error_counts[i] += 1
+                    print(f"⚠️ Gemini 500 polling video {i} ({_poll_error_counts[i]}/10), retrying...")
+                    if _poll_error_counts[i] >= 10:
+                        raise RuntimeError(f"Gemini video {i} stuck in PROCESSING with repeated 500s") from e
+                    still_pending.append(i)
+                    continue
+                else:
+                    raise
             if fi.state == "ACTIVE":
                 print(f"Video {i} ACTIVE ✅")
             else:
@@ -649,16 +692,23 @@ def run_manual_pipeline(data):
 
             candidate_video = video_paths[0]
             print(f"🔍 Evaluating video...")
-            evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
+            try:
+                evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
+            except RuntimeError as e:
+                print(f"⚠️ Gemini evaluation failed for query '{query}': {e} — skipping")
+                rejected_videos.append(candidate_video)
+                continue
 
+            reason = evaluation.get("reason", "") if evaluation else ""
             if evaluation and evaluation.get("decision") == "post" and evaluation.get("subject_present", False):
-                print(f"✅ Video {i + 1} approved!")
+                print(f"✅ Video {i + 1} approved! — {reason}")
                 approved_videos.append(candidate_video)
                 if len(approved_videos) >= MAX_SOURCE_VIDEOS:
                     print(f"🎯 Reached {MAX_SOURCE_VIDEOS} approved videos — skipping remaining queries.")
                     break
             else:
-                print(f"❌ Video rejected: {evaluation.get('decision') if evaluation else 'unknown'}")
+                decision = evaluation.get("decision") if evaluation else "unknown"
+                print(f"❌ Video rejected ({decision}) — {reason}")
                 rejected_videos.append(candidate_video)
 
         for path in rejected_videos:
