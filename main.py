@@ -45,22 +45,22 @@ SLEEP_INTERVAL = 5
 
 MANUAL_DATA = {
   "series": "Jujutsu Kaisen",
-  "topic": "Megumi Fushiguro's name is actually a girl's name in Japan",
-  "specific_subject": "Megumi's first name and his father's careless naming, from Season 1 Episode 9",
+  "topic": "Kashimo's water weakness — revealed ahead of his Season 4 animated fight with Hakari",
+  "specific_subject": "Hajime Kashimo's cursed energy is completely drained by water when submerged — the God of Lightning's kryptonite is plain water, which is how Hakari wins their fight in the manga (Chapters 189–190)",
   "youtube_queries": [
-    "Megumi Fushiguro name scene",
-    "Megumi Fushiguro best moments",
-    "Megumi Fushiguro edit",
-    "jujutsu kaisen episode 9",
-    "Megumi Fushiguro english dub",
-    "jujutsu kaisen season 1 official clip"
+    "Kashimo Hakari JJK season 4 trailer",
+    "Kashimo God of Lightning fight scene JJK",
+    "Kashimo Hajime edit",
+    "JJK culling game Kashimo season 3 scene",
+    "Kashimo Hajime english dub JJK",
+    "Jujutsu Kaisen season 4 official trailer 2026 MAPPA"
   ],
-  "scene_query": "Close-up of Megumi Fushiguro, dark-haired teen sorcerer in his Tokyo Jujutsu High uniform, calm unimpressed expression talking quietly, soft indoor lighting, Yuji nearby reacting with surprise",
-  "music_mood": "curious",
+  "scene_query": "pale-haired sorcerer in white flowing robe with hair in two buns, white and gold electricity crackling violently around his whole body, leaping above dark ocean water at a night-time shipping dock during an intense fight, lightning surging from his fists",
+  "music_mood": "hype",
   "music_query": null,
-  "music_prompt": "Playful indie-pop with a touch of mystery, around ninety-two BPM, featuring plucky ukulele or marimba, a soft shuffling hi-hat, and a curious rising synth blip on the reveal; stays light and bouncy with a small comedic pause right before the punchline. short-form video background, no lyrics, exclude: heavy distorted guitars, dark cinematic strings",
+  "music_prompt": "Dark orchestral phonk, one hundred thirty BPM. Opens with a slow low string tension swell and quiet electronic pulse suggesting electricity — then at the reveal moment erupts into heavy taiko drums and distorted synth bass. Builds from eerie, controlled suspense to sudden thundering intensity that cuts off sharp. Short-form video background, no lyrics, exclude: lo-fi chill, J-pop vocals.",
   "voice_name": "Hamid",
-  "script": "[curious] Okay, here's something wild about Megumi Fushiguro from season one. [excited] His name, Megumi, is actually a GIRL'S name in Japan. [surprised] Yeah, his own father straight up named him without even checking his gender. [thoughtful] In the anime, Megumi literally says his dad named him without knowing if he was a boy or a girl. [laughs] Imagine being a tough, broody sorcerer... with a name that means 'blessing,' usually given to baby girls. [mischievously] His dad really said close enough. [excited] So next time someone says his name... [curious] would you forgive your dad for a mistake like that?"
+  "script": "[excited] The Season four trailer just dropped, and everyone is hyped about Kashimo. [curious] But here is something most people missed. This guy is called the God of Lightning. His body is ALWAYS electrified — even blocking his punch shocks you. [surprised] So what beats him? [exhales sharply] Water. That's it. Not a special technique, not a domain. Just water. [thoughtful] If Kashimo goes completely underwater, the water draws out ALL of his cursed energy until nothing is left. [laughs] The God of Lightning can't even touch water. [excited] And Hakari actually uses this in their fight. [curious] So when Season four comes out, you already know what to watch for."
 }
 
 def trim_video_to_end(
@@ -936,7 +936,8 @@ def run_manual_pipeline(data):
         if not music_path:
             print("⚠️ Music generation failed, continuing without music.")
 
-        final_filename = f"Short_{SUBJECT.replace(' ', '_')}_{random.randint(10, 99)}.mp4"
+        safe_subject = SUBJECT.replace(' ', '_')[:80]
+        final_filename = f"Short_{safe_subject}_{random.randint(10, 99)}.mp4"
         print(f"🎬 Starting video editing...")
         final_path = merge_audio_video(
             video_paths=clip_paths,
