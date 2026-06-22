@@ -13,6 +13,8 @@ from google import genai
 import ffmpeg
 from sympy.parsing.sympy_parser import null
 
+subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
+
 from config import GEMINI_API_KEYS
 
 if not GEMINI_API_KEYS:
@@ -44,23 +46,23 @@ SLEEP_INTERVAL = 5
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "series": "Jujutsu Kaisen",
-  "topic": "Kashimo's water weakness — revealed ahead of his Season 4 animated fight with Hakari",
-  "specific_subject": "Hajime Kashimo's cursed energy is completely drained by water when submerged — the God of Lightning's kryptonite is plain water, which is how Hakari wins their fight in the manga (Chapters 189–190)",
+  "series": "Chainsaw Man",
+  "topic": "The Violence Fiend's plague doctor mask is a permanent poison suppressor",
+  "specific_subject": "Galgali (Violence Fiend) — his mask constantly emits poison gas to limit his own power, ordered by his commander to never be removed, while Galgali himself is the division's gentlest and most pacifistic member",
   "youtube_queries": [
-    "Kashimo Hakari JJK season 4 trailer",
-    "Kashimo God of Lightning fight scene JJK",
-    "Kashimo Hajime edit",
-    "JJK culling game Kashimo season 3 scene",
-    "Kashimo Hajime english dub JJK",
-    "Jujutsu Kaisen season 4 official trailer 2026 MAPPA"
+    "Violence Fiend Chainsaw Man scene",
+    "Galgali Chainsaw Man mask moments",
+    "Violence Fiend Galgali edit",
+    "Chainsaw Man Katana Man arc Violence Fiend",
+    "Chainsaw Man Violence Fiend english dub",
+    "Chainsaw Man Violence Fiend official clip"
   ],
-  "scene_query": "pale-haired sorcerer in white flowing robe with hair in two buns, white and gold electricity crackling violently around his whole body, leaping above dark ocean water at a night-time shipping dock during an intense fight, lightning surging from his fists",
-  "music_mood": "hype",
+  "scene_query": "A thin hooded man wearing a grey and beige plague doctor gas mask stands calmly in a fluorescent-lit modern hallway. He bows his head slightly in an apologetic gesture toward a muscular man in a suit. The mood is quiet and institutional. The mask has a long bird-like beak and muted industrial coloring.",
+  "music_mood": "mysterious",
   "music_query": null,
-  "music_prompt": "Dark orchestral phonk, one hundred thirty BPM. Opens with a slow low string tension swell and quiet electronic pulse suggesting electricity — then at the reveal moment erupts into heavy taiko drums and distorted synth bass. Builds from eerie, controlled suspense to sudden thundering intensity that cuts off sharp. Short-form video background, no lyrics, exclude: lo-fi chill, J-pop vocals.",
+  "music_prompt": "Dark industrial ambient, 75 BPM. Sparse distorted bass pulses layered with faint metallic clanks evoking heavy mask machinery, and single falling piano notes. Arc builds from a cold quiet drone through slow tension, lands a sharp sub-bass impact at the ironic comedy beat, then recedes into a chilling atmospheric close. Short-form video background, no lyrics, exclude: upbeat EDM drops, comedic cartoon sound effects.",
   "voice_name": "Hamid",
-  "script": "[excited] The Season four trailer just dropped, and everyone is hyped about Kashimo. [curious] But here is something most people missed. This guy is called the God of Lightning. His body is ALWAYS electrified — even blocking his punch shocks you. [surprised] So what beats him? [exhales sharply] Water. That's it. Not a special technique, not a domain. Just water. [thoughtful] If Kashimo goes completely underwater, the water draws out ALL of his cursed energy until nothing is left. [laughs] The God of Lightning can't even touch water. [excited] And Hakari actually uses this in their fight. [curious] So when Season four comes out, you already know what to watch for."
+  "script": "[excited] With the Chainsaw Man Assassins Arc trailer just dropping, everyone is hyped for the Violence Fiend. [curious] But most people miss what that plague doctor mask IS. [thoughtful] It is LITERALLY poisoning him. Right now. Every single day. His power is so dangerous that his boss ordered a mask pumping poison gas into his face permanently, just to hold him back. And this is the guy who calls himself \"all about love and peace.\" [surprised] He literally apologized for accidentally hitting someone. [laughs] The VIOLENCE Fiend! And that mask never, ever comes off. [curious] So what happens when someone asks him to remove it?"
 }
 
 def trim_video_to_end(
