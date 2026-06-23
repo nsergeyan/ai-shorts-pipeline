@@ -43,26 +43,26 @@ SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
 SLEEP_INTERVAL = 5
+MIN_CLIP_DURATION = 3.0
+MIN_SEGMENT_DURATION = 7.0
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-  "series": "Chainsaw Man",
-  "topic": "The Violence Fiend's plague doctor mask is a permanent poison suppressor",
-  "specific_subject": "Galgali (Violence Fiend) — his mask constantly emits poison gas to limit his own power, ordered by his commander to never be removed, while Galgali himself is the division's gentlest and most pacifistic member",
+  "sport": "soccer",
+  "topic": "messi eighteen world cup goals — twelve came after thirty-five, more than maradona or neymar scored in their entire careers",
+  "specific_subject": "Lionel Messi / 2026 FIFA World Cup all-time scoring record",
   "youtube_queries": [
-    "Violence Fiend Chainsaw Man scene",
-    "Galgali Chainsaw Man mask moments",
-    "Violence Fiend Galgali edit",
-    "Chainsaw Man Katana Man arc Violence Fiend",
-    "Chainsaw Man Violence Fiend english dub",
-    "Chainsaw Man Violence Fiend official clip"
+    "FIFA Messi Argentina Austria 2026 World Cup official",
+    "Messi world cup goals",
+      "Messi best goals"
   ],
-  "scene_query": "A thin hooded man wearing a grey and beige plague doctor gas mask stands calmly in a fluorescent-lit modern hallway. He bows his head slightly in an apologetic gesture toward a muscular man in a suit. The mood is quiet and institutional. The mask has a long bird-like beak and muted industrial coloring.",
-  "music_mood": "mysterious",
+  "scene_query": "A player in a light-blue-and-white vertically striped Argentina jersey with the number ten on his back, arms spread wide and face turned skyward in celebration after scoring, with teammates rushing in from both sides to embrace him, inside a packed American NFL stadium at night under bright floodlights, thousands of blue-and-white scarves and flags waving in the stands behind him",
+  "footage_source": "stills_and_broll",
+  "music_mood": "dramatic",
   "music_query": null,
-  "music_prompt": "Dark industrial ambient, 75 BPM. Sparse distorted bass pulses layered with faint metallic clanks evoking heavy mask machinery, and single falling piano notes. Arc builds from a cold quiet drone through slow tension, lands a sharp sub-bass impact at the ironic comedy beat, then recedes into a chilling atmospheric close. Short-form video background, no lyrics, exclude: upbeat EDM drops, comedic cartoon sound effects.",
+  "music_prompt": "Cinematic sports documentary orchestral, eighty-eight BPM, opening with a lone sustained piano note and quiet tense strings under the hook, layering in low cello and muted French horn through the setup and payload as energy slowly builds, then erupting at the turn — around seventeen seconds — into full brass stabs, deep thunderous timpani hits, and a sweeping stadium crowd roar swell, holding triumphant soaring strings and brass through the final comment-bait question. Sports short-form video background, no lyrics, exclude: trap hi-hats, electronic synth drops.",
   "voice_name": "Hamid",
-  "script": "[excited] With the Chainsaw Man Assassins Arc trailer just dropping, everyone is hyped for the Violence Fiend. [curious] But most people miss what that plague doctor mask IS. [thoughtful] It is LITERALLY poisoning him. Right now. Every single day. His power is so dangerous that his boss ordered a mask pumping poison gas into his face permanently, just to hold him back. And this is the guy who calls himself \"all about love and peace.\" [surprised] He literally apologized for accidentally hitting someone. [laughs] The VIOLENCE Fiend! And that mask never, ever comes off. [curious] So what happens when someone asks him to remove it?"
+  "script": "[curious] Messi is the World Cup's all-time top scorer — but the number that breaks your brain isn't eighteen. [thoughtful] Yesterday in Dallas, his seventeenth and eighteenth goals against Austria broke Miroslav Klose's men's record — and Marta's women's record too. Messi is now the top scorer in ALL of World Cup history, men's and women's combined. At thirty-eight. But here is the part that DOESN'T make sense — [surprised] twelve of his eighteen goals came AFTER he turned thirty-five. That's more than Maradona or Neymar scored at the World Cup in their ENTIRE careers. [shouts] Who gets BETTER at thirty-eight? Drop a name below."
 }
 
 def trim_video_to_end(
@@ -643,6 +643,25 @@ def segment_by_sentences(words_data):
     return segments
 
 
+def merge_short_segments(segments, min_duration):
+    """Combine consecutive segments until each group is at least min_duration seconds."""
+    merged = []
+    buf = None
+    for seg in segments:
+        if buf is None:
+            buf = {"text": seg["text"], "start": seg["start"], "end": seg["end"], "duration": seg["duration"]}
+        else:
+            buf["text"] += " " + seg["text"]
+            buf["end"] = seg["end"]
+            buf["duration"] = buf["end"] - buf["start"]
+        if buf["duration"] >= min_duration:
+            merged.append(buf)
+            buf = None
+    if buf is not None:
+        merged.append(buf)
+    return merged
+
+
 def find_scenes_with_gemini(video_paths, script_segments):
     """
     Upload all approved source videos to Gemini in one call.
@@ -737,7 +756,7 @@ VISUAL-SCRIPT MATCHING (most important rule):
 SHOT VARIETY — mandatory across the full edit:
 - Never use two consecutive segments from the exact same timestamp range (clips must be at least 20 seconds apart within the same video).
 - Mix shot types across the edit: if segment N is a wide action shot, segment N+1 should be a close-up or reaction, not another wide shot.
-- If you have multiple source videos, spread usage across them — do not use the same video for 5 segments in a row unless it is the only option.
+- MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible — do not let one video dominate the edit.
 
 HARD BANS — never pick a timestamp that shows any of:
 - Real human faces, a creator/commentator speaking to camera, or live-action footage
@@ -746,7 +765,7 @@ HARD BANS — never pick a timestamp that shows any of:
 - The first 3 seconds or last 10 seconds of any video
 
 CLIP SAFETY:
-- The clip at `start` must have at least `duration` + 1 second of usable footage remaining.
+- Each clip will play for at least {MIN_CLIP_DURATION} seconds regardless of segment duration. The clip at `start` must have at least max(duration, {MIN_CLIP_DURATION}) + 1 second of usable footage remaining.
 - If the best moment is too close to the end, shift `start` earlier to give breathing room.
 
 ════════════════════════════════════
@@ -758,6 +777,8 @@ Before writing JSON, verify:
 ☐ Shot types vary across the edit
 ☐ No banned content in any selected timestamp
 ☐ All start times are safe (enough footage remaining)
+☐ Every available source video is used at least once
+☐ No single video is used more than 2 times in a row
 
 TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
 
@@ -902,7 +923,8 @@ def run_manual_pipeline(data):
         clip_paths = []
         if words_data is not None and len(words_data) > 0:
             script_segments = segment_by_sentences(words_data)
-            print(f"🎬 {len(script_segments)} sentence segments — analyzing {len(approved_videos)} video(s)...")
+            script_segments = merge_short_segments(script_segments, MIN_SEGMENT_DURATION)
+            print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
             scenes = find_scenes_with_gemini(approved_videos, script_segments)
 
             if len(scenes) < len(script_segments):
@@ -916,7 +938,7 @@ def run_manual_pipeline(data):
                     output_file=clip_path,
                     ai_start=scene["start"],
                     prepad=0.0,
-                    max_duration=segment["duration"],
+                    max_duration=max(segment["duration"], MIN_CLIP_DURATION),
                 )
                 if success is not False and os.path.exists(clip_path):
                     clip_paths.append(clip_path)
