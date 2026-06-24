@@ -7,9 +7,14 @@ import socket
 import subprocess
 import tempfile
 import threading
+import urllib.parse
 from typing import List, Optional, Union
 
 from config import DATA_DIR, CTA_PATH
+
+SFX_DIR = os.path.join(DATA_DIR, "sfx")
+_WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
+_FLASH_SFX = "21 - Camera Flash.MP3"
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FINAL_DIR = os.path.join(DATA_DIR, "final")
@@ -163,6 +168,23 @@ def _composite_cta(base_video: str, cta_path: str, cta_start: float, cta_duratio
     ], check=True, capture_output=True)
 
 
+def _build_sfx_events(clips: List[dict], base_url: str) -> List[dict]:
+    """Assign SFX to each cut point — whoosh on regular cuts, camera flash on every 3rd."""
+    events = []
+    accumulated = 0.0
+    for i, clip in enumerate(clips[:-1]):
+        accumulated += clip["duration"]
+        is_flash_cut = (i % 3 == 1)
+        sfx_file = _FLASH_SFX if is_flash_cut else random.choice(_WHOOSH_FILES)
+        volume = 0.12 if is_flash_cut else 0.28
+        abs_path = os.path.join(SFX_DIR, sfx_file)
+        if os.path.exists(abs_path):
+            rel = os.path.relpath(abs_path, PROJECT_ROOT)
+            encoded = urllib.parse.quote(rel, safe="/")
+            events.append({"time": round(accumulated, 3), "file": f"{base_url}/{encoded}", "volume": volume})
+    return events
+
+
 def merge_audio_video(
     video_paths: Union[str, List[str]],
     audio_path: str,
@@ -220,6 +242,7 @@ def merge_audio_video(
             "musicVolume": music_volume,
             "wordsData": words_dicts,
             "punchTimes": punch_times or [],
+            "sfxEvents": _build_sfx_events(clips, base_url),
             "totalDurationSec": round(total_dur, 3),
         }
 

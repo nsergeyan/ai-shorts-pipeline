@@ -23,6 +23,12 @@ export interface WordEntry {
   end: number;
 }
 
+export interface SfxEvent {
+  time: number;
+  file: string;
+  volume?: number;
+}
+
 export interface ShortVideoProps {
   clips: ClipProps[];
   audioPath: string;
@@ -30,19 +36,65 @@ export interface ShortVideoProps {
   musicVolume?: number;
   wordsData?: WordEntry[];
   punchTimes?: number[];
+  sfxEvents?: SfxEvent[];
   totalDurationSec: number;
 }
 
-// Hard cut — clip just appears. First clip fades in from black.
-const ClipRenderer: React.FC<{ clip: ClipProps; isFirst: boolean }> = ({ clip, isFirst }) => {
+const WHIP_FRAMES = 4;
+const WHIP_DISTANCE = 80;
+const WHIP_BLUR = 8;
+
+const ClipRenderer: React.FC<{
+  clip: ClipProps;
+  isFirst: boolean;
+  isLast: boolean;
+  clipFrames: number;
+  clipIndex: number;
+}> = ({ clip, isFirst, isLast, clipFrames, clipIndex }) => {
   const frame = useCurrentFrame();
 
   const opacity = isFirst
     ? interpolate(frame, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
     : 1;
 
+  // Even clips exit left, odd clips exit right — alternating whip direction
+  const enterStartX = !isFirst ? ((clipIndex - 1) % 2 === 0 ? WHIP_DISTANCE : -WHIP_DISTANCE) : 0;
+  const exitEndX = !isLast ? (clipIndex % 2 === 0 ? -WHIP_DISTANCE : WHIP_DISTANCE) : 0;
+
+  let translateX = 0;
+  let motionBlur = 0;
+
+  if (!isFirst && frame <= WHIP_FRAMES) {
+    translateX = interpolate(frame, [0, WHIP_FRAMES], [enterStartX, 0], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+    motionBlur = interpolate(frame, [0, WHIP_FRAMES], [WHIP_BLUR, 0], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+  }
+
+  if (!isLast && frame >= clipFrames - WHIP_FRAMES) {
+    const elapsed = frame - (clipFrames - WHIP_FRAMES);
+    translateX = interpolate(elapsed, [0, WHIP_FRAMES], [0, exitEndX], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+    motionBlur = interpolate(elapsed, [0, WHIP_FRAMES], [0, WHIP_BLUR], {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    });
+  }
+
   return (
-    <AbsoluteFill style={{ opacity }}>
+    <AbsoluteFill
+      style={{
+        opacity,
+        transform: `translateX(${translateX}px)`,
+        filter: motionBlur > 0.1 ? `blur(${motionBlur}px)` : undefined,
+      }}
+    >
       <AbsoluteFill style={{ overflow: "hidden" }}>
         <OffthreadVideo
           src={clip.path}
@@ -63,6 +115,49 @@ const ClipRenderer: React.FC<{ clip: ClipProps; isFirst: boolean }> = ({ clip, i
           muted
         />
       </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+const ChromaticGlitch: React.FC<{ glitchFrames: number[] }> = ({ glitchFrames }) => {
+  const frame = useCurrentFrame();
+
+  let intensity = 0;
+  for (const gf of glitchFrames) {
+    const dist = Math.abs(frame - gf);
+    if (dist <= 3) {
+      intensity = Math.max(
+        intensity,
+        interpolate(dist, [0, 3], [1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+      );
+    }
+  }
+
+  if (intensity < 0.01) return null;
+
+  const offset = intensity * 18;
+
+  return (
+    <AbsoluteFill style={{ pointerEvents: "none", overflow: "hidden" }}>
+      <div style={{
+        position: "absolute", inset: 0,
+        background: `rgba(255, 30, 30, ${intensity * 0.18})`,
+        transform: `translateX(-${offset}px)`,
+        mixBlendMode: "screen",
+      }} />
+      <div style={{
+        position: "absolute", inset: 0,
+        background: `rgba(30, 30, 255, ${intensity * 0.18})`,
+        transform: `translateX(${offset}px)`,
+        mixBlendMode: "screen",
+      }} />
+      <div style={{
+        position: "absolute",
+        left: 0, right: 0,
+        top: `${25 + (frame % 9) * 6}%`,
+        height: 2,
+        background: `rgba(255, 255, 255, ${intensity * 0.5})`,
+      }} />
     </AbsoluteFill>
   );
 };
@@ -108,6 +203,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   musicVolume = 0.07,
   wordsData = [],
   punchTimes = [],
+  sfxEvents = [],
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -124,7 +220,13 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
 
     return (
       <Sequence key={i} from={from} durationInFrames={clipFrames}>
-        <ClipRenderer clip={clip} isFirst={i === 0} />
+        <ClipRenderer
+          clip={clip}
+          isFirst={i === 0}
+          isLast={i === clips.length - 1}
+          clipFrames={clipFrames}
+          clipIndex={i}
+        />
       </Sequence>
     );
   });
@@ -170,10 +272,16 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
         <Vignette />
       </div>
 
+      <ChromaticGlitch glitchFrames={flashFrames} />
       <FlashCut flashFrames={flashFrames} />
 
       {audioPath && <Audio src={audioPath} />}
       {musicPath && <Audio src={musicPath} volume={musicVolume} />}
+      {sfxEvents.map((event, i) => (
+        <Sequence key={`sfx-${i}`} from={Math.round(event.time * fps)} durationInFrames={fps * 5}>
+          <Audio src={event.file} volume={event.volume ?? 0.35} />
+        </Sequence>
+      ))}
       {wordsData.length > 0 && <WordHighlight wordsData={wordsData} />}
       <ProgressBar />
     </AbsoluteFill>
