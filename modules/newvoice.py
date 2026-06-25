@@ -62,10 +62,10 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        # Speed up 1.1x via FFmpeg atempo
+        # Speed up 1.2x via FFmpeg atempo
         sped_path = output_path + ".fast.mp3"
         subprocess.run(
-            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.1", sped_path],
+            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.2", sped_path],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
         )
         os.replace(sped_path, output_path)

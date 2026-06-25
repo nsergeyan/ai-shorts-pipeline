@@ -415,6 +415,9 @@ def fetch_gameplay_by_search(
 
             filepath = _trim_video_after_download(filepath, max_duration=300)
             paths.append(filepath)
+            title_file = os.path.splitext(filepath)[0] + ".title.txt"
+            with open(title_file, "w") as tf:
+                tf.write(title)
         else:
             print(f"   ❌ All methods failed for: {vid_id}")
 

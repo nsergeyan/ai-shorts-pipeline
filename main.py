@@ -47,23 +47,33 @@ MIN_CLIP_DURATION = 3.0
 MIN_SEGMENT_DURATION = 7.0
 # ---------------------------------------- #
 
-MANUAL_DATA = {
-  "sport": "soccer",
-  "topic": "messi eighteen world cup goals — twelve came after thirty-five, more than maradona or neymar scored in their entire careers",
-  "specific_subject": "Lionel Messi / 2026 FIFA World Cup all-time scoring record",
+MANUAL_DATA ={
+  "series": "The Amazing Digital Circus",
+  "topic": "Pomni's name has meant 'Remember' in Russian since the 2023 pilot — the exact title of the series finale",
+  "specific_subject": "Pomni's Russian name meaning hidden in plain sight across the entire run of the show",
   "youtube_queries": [
-    "FIFA Messi Argentina Austria 2026 World Cup official",
-    "Messi world cup goals",
-      "Messi best goals"
+    "Pomni can't remember her name digital circus",
+    "Pomni freakout breakdown amazing digital circus",
+    "Pomni jester edit amazing digital circus 2026",
+    "Amazing Digital Circus pilot full episode",
+    "Amazing Digital Circus episode 9 Remember finale",
+    "Glitch Productions Amazing Digital Circus official Pomni clip"
   ],
-  "scene_query": "A player in a light-blue-and-white vertically striped Argentina jersey with the number ten on his back, arms spread wide and face turned skyward in celebration after scoring, with teammates rushing in from both sides to embrace him, inside a packed American NFL stadium at night under bright floodlights, thousands of blue-and-white scarves and flags waving in the stands behind him",
-  "footage_source": "stills_and_broll",
-  "music_mood": "dramatic",
+  "scene_query": "A pale white cartoon girl in a mismatched red and blue jester outfit with a two-armed jester hat and asymmetrical eyelashes, her large pinwheel eyes rapidly shifting into chaotic black scribbles as her mouth falls open and she clutches her own head in panic, standing inside a brightly colored digital circus tent with swirling geometric patterns in the background",
+  "music_mood": "curious",
   "music_query": null,
-  "music_prompt": "Cinematic sports documentary orchestral, eighty-eight BPM, opening with a lone sustained piano note and quiet tense strings under the hook, layering in low cello and muted French horn through the setup and payload as energy slowly builds, then erupting at the turn — around seventeen seconds — into full brass stabs, deep thunderous timpani hits, and a sweeping stadium crowd roar swell, holding triumphant soaring strings and brass through the final comment-bait question. Sports short-form video background, no lyrics, exclude: trap hi-hats, electronic synth drops.",
+  "music_prompt": "Dark atmospheric circus trap, 94 BPM, featuring a ghostly reversed music-box melody, a low vinyl crackle undertone, and a slow sub-bass heartbeat pulse, begins in near-silence and builds steadily to a sharp syncopated drop at the fifteen-second reveal, then settles into a pulsing eerie groove through the end, short-form video background, no lyrics, exclude: upbeat carnival brass, cheerful major-key whistling",
   "voice_name": "Hamid",
-  "script": "[curious] Messi is the World Cup's all-time top scorer — but the number that breaks your brain isn't eighteen. [thoughtful] Yesterday in Dallas, his seventeenth and eighteenth goals against Austria broke Miroslav Klose's men's record — and Marta's women's record too. Messi is now the top scorer in ALL of World Cup history, men's and women's combined. At thirty-eight. But here is the part that DOESN'T make sense — [surprised] twelve of his eighteen goals came AFTER he turned thirty-five. That's more than Maradona or Neymar scored at the World Cup in their ENTIRE careers. [shouts] Who gets BETTER at thirty-eight? Drop a name below."
+  "script": "[curious] Okay, the entire finale of The Amazing Digital Circus was hidden inside the main character's name — and nobody noticed. [exhales] Pomni is trapped in a circus and can't even remember her real name. But here's the thing — \"Pomni\" is literally the Russian word for \"remember.\" [surprised] Like a COMMAND. Remember! The creators named her this in twenty twenty three, then titled the whole finale \"Remember\" three years later. [laughs] She's called \"Remember\" but can't remember ANYTHING. [thoughtful] So when Caine gave her that name in episode one — was that always a warning? [exhales sharply] And that's not even the strangest secret in this show."
 }
+
+def _ffprobe_fails(path):
+    try:
+        ffmpeg.probe(path)
+        return False
+    except Exception:
+        return True
+
 
 def trim_video_to_end(
     input_file,
@@ -385,27 +395,37 @@ def evaluate_video_with_genai(video_path, script_text):
     State it internally as REQUIRED_SUBJECT before scoring.
     Example: if the script is about Hange Zoë's hygiene, REQUIRED_SUBJECT = "Hange Zoë" (the footage must actually show Hange, not just the show in general).
     
-    The footage must contain ONLY real source moments — no "subscribe" cards, no promos, no reaction-cam overlays. Raw clips only.
-    
+    The footage must be raw source material — broadcast footage, official highlights, or documentary footage. It must NOT be someone else's YouTube video where they react to, comment on, or narrate over the clips.
+
+    STEP 0.5 — CONTENT TYPE CHECK (do this before scoring):
+    Determine if this is:
+    A) Raw/official footage — broadcast clips, official highlights, documentary, raw gameplay footage. ALLOWED.
+    B) Reaction/commentary video — a YouTuber or creator watches clips and reacts, talks to camera, or narrates with their own voice over the footage. REJECT IMMEDIATELY.
+    C) Fan compilation with heavy custom editing, custom music, or a creator's voiceover throughout. REJECT IMMEDIATELY.
+    D) Podcast/interview clip where someone is talking about the subject but not showing real action. REJECT IMMEDIATELY.
+
+    If type B, C, or D → set decision = "reject", technical_score = 1, and stop evaluating.
+
     EVALUATION (1-10):
-    
+
     1. Visual-Script Alignment (relevance_score)
        - The footage MUST visibly contain REQUIRED_SUBJECT to score above 4.
        - Correct show but WRONG/MISSING character or subject → relevance_score 1-3, regardless of how cool it looks. (A clip of a different character does NOT count, even from the same series.)
        - REQUIRED_SUBJECT clearly on screen → 8-10. Briefly/partially present → 5-7.
        - Be forgiving on edit quality, NOT on whether the right subject is present.
-    
+
     2. Usable Action / Hook Potential (hook_score)
        - 8-10: dynamic action, strong close-ups, intense moments featuring the subject.
        - 5-7: standard scenes, panning shots, average animation.
        - 1-4: black screens, text overlays, heavy-watermark fan-edits, static menus.
-    
+
     3. Raw Technical Quality (technical_score)
-       - 8-10: clean, minimal watermarks, clear enough to crop for phone.
+       - 8-10: clean broadcast/official footage, minimal watermarks, clear enough to crop for phone.
        - 5-7: slightly blurry or minor subtitles/watermarks, still usable.
-       - 1-4: heavily pixelated, ruined by editing/watermarks, unwatchable.
-    
+       - 1-4: heavily pixelated, ruined by editing/watermarks, has a creator's face or persistent voiceover, unwatchable.
+
     DECISION RULES (apply in order):
+    - "reject": content type is B, C, or D (reaction/commentary/podcast → automatic reject)
     - "reject": subject_present = false (subject not visible → automatic reject, no exceptions)
     - "reject": relevance_score <= 6  (subject barely visible, wrong character, or wrong show → reject)
     - "reject": technical_score <= 4
@@ -719,8 +739,17 @@ def find_scenes_with_gemini(video_paths, script_segments):
          for i, s in enumerate(script_segments)],
         indent=2
     )
+    video_titles = []
+    for vp in video_paths:
+        title_file = os.path.splitext(vp)[0] + ".title.txt"
+        if os.path.exists(title_file):
+            with open(title_file) as tf:
+                video_titles.append(tf.read().strip())
+        else:
+            video_titles.append(os.path.basename(vp))
+
     videos_info = "\n".join(
-        f"  Video {i} (duration: {dur:.1f}s)"
+        f"  Video {i} — \"{video_titles[i]}\" (duration: {dur:.1f}s)"
         for i, dur in enumerate(video_durations)
     )
 
@@ -736,14 +765,21 @@ NARRATION SEGMENTS (index / spoken text / duration in seconds):
 {segments_json}
 
 ════════════════════════════════════
-STEP 1 — UNDERSTAND THE SCRIPT FIRST
+STEP 1 — UNDERSTAND THE SCRIPT
 ════════════════════════════════════
-Before picking any timestamp, read ALL segments together.
+Read ALL segments together before doing anything else.
 Identify: who or what is the main subject, what is the emotional arc, which segments are the hook, the reveal, and the payoff.
-This shapes which visual moments you assign to which segments.
 
 ════════════════════════════════════
-STEP 2 — PICK TIMESTAMPS (rules below)
+STEP 2 — SCAN EACH VIDEO FOR KEY MOMENTS
+════════════════════════════════════
+Watch each video and mentally catalogue the best visual moments and their timestamps.
+Look for: decisive action shots, close-up reactions, crowd eruptions, athlete expressions, dramatic slow-motion moments, and any footage that directly matches the script topic.
+Note what each video is best suited for (e.g. "Video 0 has the actual goals", "Video 1 has emotional reactions").
+This internal scan is what you draw from in Step 3 — do not skip it.
+
+════════════════════════════════════
+STEP 3 — PICK TIMESTAMPS (rules below)
 ════════════════════════════════════
 
 VISUAL-SCRIPT MATCHING (most important rule):
@@ -759,7 +795,7 @@ SHOT VARIETY — mandatory across the full edit:
 - MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible — do not let one video dominate the edit.
 
 HARD BANS — never pick a timestamp that shows any of:
-- Real human faces, a creator/commentator speaking to camera, or live-action footage
+- A creator, commentator, or presenter speaking directly to camera (talking-head style)
 - Static text screens, title cards, watermark overlays, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
 - The first 3 seconds or last 10 seconds of any video
@@ -769,7 +805,7 @@ CLIP SAFETY:
 - If the best moment is too close to the end, shift `start` earlier to give breathing room.
 
 ════════════════════════════════════
-STEP 3 — SELF-CHECK BEFORE OUTPUT
+STEP 4 — SELF-CHECK BEFORE OUTPUT
 ════════════════════════════════════
 Before writing JSON, verify:
 ☐ Every clip visually matches what its segment text is saying
@@ -800,7 +836,8 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=contents
+                contents=contents,
+                config={"thinking_config": {"thinking_budget": 8000}},
             )
             break
         except Exception as e:
@@ -830,10 +867,10 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             scene["start"] = round(min(max(scene.get("start", 0.0), 0.0), max_start), 2)
             validated.append(scene)
         print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s)")
-        return validated
+        return validated, video_paths
     except Exception as e:
         print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
-        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)]
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)], video_paths
 
 
 def run_manual_pipeline(data):
@@ -870,6 +907,12 @@ def run_manual_pipeline(data):
                 continue
 
             candidate_video = video_paths[0]
+            try:
+                ffmpeg.probe(candidate_video)
+            except Exception:
+                print(f"⚠️ Downloaded file is corrupt (ffprobe failed) — skipping")
+                rejected_videos.append(candidate_video)
+                continue
             print(f"🔍 Evaluating video...")
             try:
                 evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
@@ -925,13 +968,13 @@ def run_manual_pipeline(data):
             script_segments = segment_by_sentences(words_data)
             script_segments = merge_short_segments(script_segments, MIN_SEGMENT_DURATION)
             print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
-            scenes = find_scenes_with_gemini(approved_videos, script_segments)
+            scenes, valid_videos = find_scenes_with_gemini(approved_videos, script_segments)
 
             if len(scenes) < len(script_segments):
                 print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
             for scene, segment in zip(scenes, script_segments):
                 vi = scene.get("video_index", 0)
-                source_video = approved_videos[vi]
+                source_video = valid_videos[vi]
                 clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
                 success = trim_video_to_end(
                     input_file=source_video,
@@ -946,13 +989,18 @@ def run_manual_pipeline(data):
         if not clip_paths:
             # Fallback for Spanish or failed transcription
             print("🤖 Falling back to single-scene Gemini search...")
-            scene = find_scene_with_gemini(approved_videos[0], data.get("scene_query"), SCRIPT_TEXT)
+            fallback_video = next(
+                (v for v in approved_videos if not _ffprobe_fails(v)), None
+            )
+            if not fallback_video:
+                raise RuntimeError("No usable approved videos — all failed ffprobe.")
+            scene = find_scene_with_gemini(fallback_video, data.get("scene_query"), SCRIPT_TEXT)
             if scene and not (scene["start"] == 0 and scene["end"] == 0):
                 clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-                trim_video_to_end(approved_videos[0], clip_path, scene["start"], prepad=0.02, max_duration=61.0)
+                trim_video_to_end(fallback_video, clip_path, scene["start"], prepad=0.02, max_duration=61.0)
                 clip_paths = [clip_path]
             else:
-                clip_paths = [approved_videos[0]]
+                clip_paths = [fallback_video]
 
         print(f"🎵 Waiting for music generation...")
         music_path = music_future.result()
