@@ -44,27 +44,28 @@ CLEANUP_FILES = True
 CLIP_DURATION = 60.0
 SLEEP_INTERVAL = 5
 MIN_CLIP_DURATION = 3.0
-MIN_SEGMENT_DURATION = 7.0
+MIN_SEGMENT_DURATION = 10.0
+MAX_CLIPS = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "The Amazing Digital Circus",
-  "topic": "Pomni's name has meant 'Remember' in Russian since the 2023 pilot — the exact title of the series finale",
-  "specific_subject": "Pomni's Russian name meaning hidden in plain sight across the entire run of the show",
+  "series": "Jujutsu Kaisen",
+  "topic": "The Culling Game's failed comedian secretly has JJK's most broken power — and the anime says it can oppose Gojo",
+  "specific_subject": "Fumihiko Takaba's cursed technique 'Comedian' (Season 3, Takaba vs Hazenoki)",
   "youtube_queries": [
-    "Pomni can't remember her name digital circus",
-    "Pomni freakout breakdown amazing digital circus",
-    "Pomni jester edit amazing digital circus 2026",
-    "Amazing Digital Circus pilot full episode",
-    "Amazing Digital Circus episode 9 Remember finale",
-    "Glitch Productions Amazing Digital Circus official Pomni clip"
+    "takaba vs hazenoki full fight",
+    "takaba comedian scene jjk",
+    "takaba edit jjk",
+    "jujutsu kaisen season 3 takaba episode",
+    "takaba scene english dub",
+    "jujutsu kaisen culling game official trailer"
   ],
-  "scene_query": "A pale white cartoon girl in a mismatched red and blue jester outfit with a two-armed jester hat and asymmetrical eyelashes, her large pinwheel eyes rapidly shifting into chaotic black scribbles as her mouth falls open and she clutches her own head in panic, standing inside a brightly colored digital circus tent with swirling geometric patterns in the background",
+  "scene_query": "A lanky man with messy dark hair in a rumpled jacket stands grinning, completely unharmed, inside a cloud of smoke and explosion debris on a ruined city street at night, casually holding a paper fan, while a scarred enemy with short hair screams in frustration and throws a small round object that detonates harmlessly",
   "music_mood": "curious",
   "music_query": null,
-  "music_prompt": "Dark atmospheric circus trap, 94 BPM, featuring a ghostly reversed music-box melody, a low vinyl crackle undertone, and a slow sub-bass heartbeat pulse, begins in near-silence and builds steadily to a sharp syncopated drop at the fifteen-second reveal, then settles into a pulsing eerie groove through the end, short-form video background, no lyrics, exclude: upbeat carnival brass, cheerful major-key whistling",
+  "music_prompt": "Quirky suspense hip-hop with a lo-fi jazz undertone, ninety BPM, plucked upright bass, playful muted trumpet stabs, and a soft ticking percussion loop; starts sly and curious under the hook, adds bouncing energy through the reveal, drops to near silence right before the Gojo line, then swells into a cheeky triumphant groove for the final tease; short-form video background, no lyrics, exclude: heavy aggressive metal, sad emotional piano",
   "voice_name": "Hamid",
-  "script": "[curious] Okay, the entire finale of The Amazing Digital Circus was hidden inside the main character's name — and nobody noticed. [exhales] Pomni is trapped in a circus and can't even remember her real name. But here's the thing — \"Pomni\" is literally the Russian word for \"remember.\" [surprised] Like a COMMAND. Remember! The creators named her this in twenty twenty three, then titled the whole finale \"Remember\" three years later. [laughs] She's called \"Remember\" but can't remember ANYTHING. [thoughtful] So when Caine gave her that name in episode one — was that always a warning? [exhales sharply] And that's not even the strangest secret in this show."
+  "script": "[mischievously] Jujutsu Kaisen quietly confirmed someone stronger than Gojo... and he's a failed comedian. With season three hitting Netflix this month, meet Takaba, the joke of the Culling Game. [curious] His technique is literally called Comedian. Anything he truly finds funny... becomes REAL. [laughs] One enemy blew him up again and again, screaming that he already killed him... but Takaba kept laughing, so the damage didn't count. [surprised] The show's narrator says this power is strong enough to oppose Gojo himself. Takaba doesn't understand his own power. If he stops believing he's funny... it switches off. [whispers] And the manga takes this even further..."
 }
 
 def _ffprobe_fails(path):
@@ -678,7 +679,12 @@ def merge_short_segments(segments, min_duration):
             merged.append(buf)
             buf = None
     if buf is not None:
-        merged.append(buf)
+        if merged and buf["duration"] < min_duration:
+            merged[-1]["text"] += " " + buf["text"]
+            merged[-1]["end"] = buf["end"]
+            merged[-1]["duration"] = merged[-1]["end"] - merged[-1]["start"]
+        else:
+            merged.append(buf)
     return merged
 
 
@@ -701,6 +707,10 @@ def find_scenes_with_gemini(video_paths, script_segments):
         except Exception as e:
             print(f"⚠️ Skipping bad video {vp}: {e}")
     video_paths = valid_video_paths
+
+    if not video_paths:
+        print("⚠️ All source videos failed ffprobe — using fallback scene plan.")
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], []
 
     uploaded_files = []
     for i, vp in enumerate(video_paths):
@@ -934,6 +944,8 @@ def run_manual_pipeline(data):
                 rejected_videos.append(candidate_video)
 
         for path in rejected_videos:
+            if path in approved_videos:
+                continue
             if os.path.exists(path):
                 try:
                     os.remove(path)
@@ -967,13 +979,19 @@ def run_manual_pipeline(data):
         if words_data is not None and len(words_data) > 0:
             script_segments = segment_by_sentences(words_data)
             script_segments = merge_short_segments(script_segments, MIN_SEGMENT_DURATION)
+            while len(script_segments) > MAX_CLIPS:
+                shortest = min(range(len(script_segments)), key=lambda i: script_segments[i]["duration"])
+                m = shortest - 1 if shortest > 0 else 0
+                a, b = script_segments[m], script_segments[m + 1]
+                script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
+                script_segments.pop(m + 1)
             print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
             scenes, valid_videos = find_scenes_with_gemini(approved_videos, script_segments)
 
             if len(scenes) < len(script_segments):
                 print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
             for scene, segment in zip(scenes, script_segments):
-                vi = scene.get("video_index", 0)
+                vi = min(scene.get("video_index", 0), len(valid_videos) - 1)
                 source_video = valid_videos[vi]
                 clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
                 success = trim_video_to_end(

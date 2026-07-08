@@ -4,8 +4,9 @@ DO NOT EXAGGERATE FACTS!
 ═══════════════════════════════════
 TARGET SPORT SELECTION
 ═══════════════════════════════════
+You have to pick target sport, which is right now hyping.
 Set TARGET SPORT to one of: soccer / boxing / ufc / formula one.
-If it is left blank, pick a random number from one to four and STATE it first:
+If all of them are very hyped, then pick random number:
 one → soccer (association football)
 two → boxing
 three → ufc / mma
@@ -321,18 +322,22 @@ SCRIPT QUALITY CHECK (confirm all before output):
 If any box is unchecked → rewrite before outputting JSON.
 
 ═══════════════════════════════════
-VISUAL CLIP STRATEGY (SPORTS — COPYRIGHT-AWARE)
+VISUAL CLIP STRATEGY (SPORTS — COPYRIGHT-SAFE QUERIES)
 ═══════════════════════════════════
 
 ⚠️ COPYRIGHT REALITY (READ FIRST):
-Sports rights-holders are far more aggressive than anime studios. UEFA, the Premier League, the UFC, and Formula One (FOM / Liberty Media) issue takedowns and Content ID claims even on short, transformative edits — full match / round / fight / race action is the single most-struck content online.
-Source priority, safest first:
-1) Official org/club/promotion uploads and press materials (what THEY chose to publish).
-2) Non-match footage: press conferences, weigh-ins, open workouts, walkouts, interviews, trophy lifts, training-ground / "mic'd up" clips, players' own social posts.
-3) Still images + motion (Ken Burns) — for the riskiest leagues, photos avoid video Content ID entirely.
-4) Licensed stock or Creative-Commons b-roll (stadium exteriors, generic crowd, gloves/ball close-ups) for safe filler.
-Rules: keep any borrowed action clip very short; NEVER post a full goal/round/fight; always layer voiceover + on-screen text + edits (transformation); expect claims and don't build a channel on one risky clip. This is not legal advice.
+Sports rights-holders (FIFA, UEFA, Premier League, UFC, FOM) run
+aggressive Content ID systems. Any broadcast match/fight/race action
+will get your video blocked or struck — even 2-second clips, even
+sourced from someone else's edit. The goal footage does NOT exist in
+a safe pool. Build the video WITHOUT it.
 
+WHAT ACTUALLY WORKS (safe pools, priority order):
+1) Fan-made edits — no broadcast feed, just creative cuts over music
+2) "No copyright" and "free to use" uploads on YouTube
+3) Press conferences, interviews, walkouts, trophy lifts
+4) Still photos with Ken Burns zoom motion (zero Content ID risk)
+5) Generic sport b-roll (stadiums, balls, gloves, crowds) — royalty-free
 ── SCENE QUERY (for Gemini / visual search) ──────────────────
 scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment. It is NOT a YouTube search query.
 
@@ -406,8 +411,11 @@ JSON OUTPUT FORMAT
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
-1. charles oliveira fighting blind #ufc #oliveira
-2. toni kroos' ten-year boot obsession #football #tonikross #kross #sport
-3. red and yellow cards history in footbal #football #sports
-4. gary lineker's perfect disciplinary record #football #sports
-5. the fastest penalty in formula one history #formula1 #f1
+1. rico verhoeven vs usyk — the one boxing fight detail and the one-second stoppage #box #boxing🥊 #usyk
+2. charles oliveira fighting blind #ufc #oliveira
+3. toni kroos' ten-year boot obsession #football #tonikross #kross #sport
+4. red and yellow cards history in footbal #football #sports
+5. gary lineker's perfect disciplinary record #football #sports
+6. the fastest penalty in formula one history #formula1 #f1
+7.Messi world cup record goals.
+
