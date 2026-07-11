@@ -49,24 +49,51 @@ MAX_CLIPS = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "Jujutsu Kaisen",
-  "topic": "The Culling Game's failed comedian secretly has JJK's most broken power — and the anime says it can oppose Gojo",
-  "specific_subject": "Fumihiko Takaba's cursed technique 'Comedian' (Season 3, Takaba vs Hazenoki)",
+  "series": "tadc",
+  "topic": "Where Jax actually ended up — the finale gave the abstracted monsters an aquarium, and Jax got his lost friends back",
+  "specific_subject": "The Aquarium and abstracted Jax's fate in Episode 9 'Remember'",
   "youtube_queries": [
-    "takaba vs hazenoki full fight",
-    "takaba comedian scene jjk",
-    "takaba edit jjk",
-    "jujutsu kaisen season 3 takaba episode",
-    "takaba scene english dub",
-    "jujutsu kaisen culling game official trailer"
+    "tadc finale jax aquarium scene",
+    "jax abstraction saddest moment digital circus",
+    "abstracted jax edit",
+    "digital circus episode 9 ending scene",
+    "tadc remember ending english dub",
+    "the amazing digital circus remember official"
   ],
-  "scene_query": "A lanky man with messy dark hair in a rumpled jacket stands grinning, completely unharmed, inside a cloud of smoke and explosion debris on a ruined city street at night, casually holding a paper fan, while a scarred enemy with short hair screams in frustration and throws a small round object that detonates harmlessly",
-  "music_mood": "curious",
-  "music_query": null,
-  "music_prompt": "Quirky suspense hip-hop with a lo-fi jazz undertone, ninety BPM, plucked upright bass, playful muted trumpet stabs, and a soft ticking percussion loop; starts sly and curious under the hook, adds bouncing energy through the reveal, drops to near silence right before the Gojo line, then swells into a cheeky triumphant groove for the final tease; short-form video background, no lyrics, exclude: heavy aggressive metal, sad emotional piano",
+  "scene_query": "A dark glowing aquarium wall inside a colorful circus tent, huge smooth black creatures covered in tiny multicolored glowing eyes swimming slowly like squids behind the glass, while a small jester girl in a red and blue hat and a chess piece character watch them quietly from the floor",
+  "music_mood": "emotional",
+  "music_query": "digital days amazing digital circus instrumental",
+  "music_prompt": "Soft emotional lo-fi orchestral, seventy BPM, gentle music box notes over warm ambient synth pads and a slow muffled underwater heartbeat pulse; begins quiet and heavy under the hook, swells gently at the reveal, then blooms into a bittersweet warm chord as the friends reunite, fading out unresolved on the final question; short-form video background, no lyrics, exclude: aggressive trap drums, cheerful circus brass",
   "voice_name": "Hamid",
-  "script": "[mischievously] Jujutsu Kaisen quietly confirmed someone stronger than Gojo... and he's a failed comedian. With season three hitting Netflix this month, meet Takaba, the joke of the Culling Game. [curious] His technique is literally called Comedian. Anything he truly finds funny... becomes REAL. [laughs] One enemy blew him up again and again, screaming that he already killed him... but Takaba kept laughing, so the damage didn't count. [surprised] The show's narrator says this power is strong enough to oppose Gojo himself. Takaba doesn't understand his own power. If he stops believing he's funny... it switches off. [whispers] And the manga takes this even further..."
+  "script": "[sad] Everyone cried about Jax in the Digital Circus finale... but almost nobody talks about where he ended up. When someone abstracts, they turn into a monster... *FOREVER!* There is no cure. [gulps] So what did the circus do with Jax? [surprised] *LISTEN!* They built him an aquarium. He now swims around like a giant squid, calm and quiet in the dark. [chuckles] And before the tank was ready? Kinger kept him in a pillow fort. [sorrowful] But here's the part that hurts. Inside that water, Jax is finally back with Ribbit and Kaufmo. The two friends he lost. So... sad ending, or his happiest one?"
 }
+
+def _strip_punch_markers(script: str):
+    """Strip *word* markers from script. Returns (clean_script, [word, ...]).
+    The word content (e.g. BUT!) stays in the script for TTS emphasis; only * is removed."""
+    import re
+    punch_words = []
+    def _replace(m):
+        word = m.group(1)
+        punch_words.append(word.strip("!?.,;:").lower())
+        return word
+    clean_script = re.sub(r'\*([^*]+)\*', _replace, script)
+    return clean_script, punch_words
+
+
+def _match_punch_times(punch_words: list, words_data: list) -> list:
+    """Match punch words to Whisper timestamps in script order."""
+    times = []
+    remaining = list(punch_words)
+    for word, start, _end in words_data:
+        if not remaining:
+            break
+        clean = word.strip(".,!?\"'—…").lower()
+        if clean == remaining[0]:
+            times.append(round(start, 3))
+            remaining.pop(0)
+    return times
+
 
 def _ffprobe_fails(path):
     try:
@@ -268,6 +295,7 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
     prompt = f"""
     You are evaluating background music sourced from YouTube for a short-form vertical video.
 
+
     TOPIC: "{topic}"
 
     SCRIPT:
@@ -308,10 +336,26 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
     }}
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[uploaded_file, prompt]
-    )
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[uploaded_file, prompt]
+            )
+            break
+        except Exception as e:
+            if "503" in str(e):
+                print(f"⚠️ Gemini 503 on music eval, retrying in 20s... ({attempt}/{max_attempts})")
+                time.sleep(20)
+            elif "429" in str(e):
+                print(f"⚠️ Gemini 429 on music eval, rotating key... ({attempt}/{max_attempts})")
+                client = _gemini_client()
+                time.sleep(5)
+            else:
+                raise
+        if attempt == max_attempts:
+            raise RuntimeError("Gemini music eval failed after max retries.")
 
     raw_text = response.text if hasattr(response, "text") else str(response)
 
@@ -345,7 +389,6 @@ def _resolve_music(music_query: str | None, music_prompt: str, topic: str, scrip
                     print(f"❌ YouTube music rejected ({reason}) — falling back to ElevenLabs")
             except Exception as e:
                 print(f"⚠️ Gemini music eval error: {e} — falling back to ElevenLabs")
-
             if os.path.exists(yt_path):
                 os.remove(yt_path)
         else:
@@ -392,9 +435,9 @@ def evaluate_video_with_genai(video_path, script_text):
     \"\"\"{script_text}\"\"\"
     
     STEP 0 — REQUIRED SUBJECT (do this first):
-    From the script, identify the ESSENTIAL subject the footage must show. This is usually a specific named character, and may also include a specific object, location, or action central to the script.
+    From the script, identify the CHARACTER or SHOW the footage must contain — not a specific state, form, or moment.
     State it internally as REQUIRED_SUBJECT before scoring.
-    Example: if the script is about Hange Zoë's hygiene, REQUIRED_SUBJECT = "Hange Zoë" (the footage must actually show Hange, not just the show in general).
+    Example: if the script is about Jax's abstraction, REQUIRED_SUBJECT = "Jax" — normal Jax, abstracted Jax, and scenes leading up to the abstraction ALL count. If the script is about Hange Zoë's hygiene, REQUIRED_SUBJECT = "Hange Zoë" — any footage showing Hange counts, regardless of the scene.
     
     The footage must be raw source material — broadcast footage, official highlights, or documentary footage. It must NOT be someone else's YouTube video where they react to, comment on, or narrate over the clips.
 
@@ -452,7 +495,8 @@ def evaluate_video_with_genai(video_path, script_text):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=[uploaded_file, prompt]
+                contents=[uploaded_file, prompt],
+                config={"thinking_config": {"thinking_budget": 8000}},
             )
             break
         except Exception as e:
@@ -781,34 +825,60 @@ Read ALL segments together before doing anything else.
 Identify: who or what is the main subject, what is the emotional arc, which segments are the hook, the reveal, and the payoff.
 
 ════════════════════════════════════
+STEP 1.5 — TAG EACH SEGMENT WITH AN ENERGY TIER
+════════════════════════════════════
+For each segment assign one tier:
+- HIGH → intense action, dramatic reveal, emotional peak, shocking fact (e.g. segment contains "ate", "destroyed", "explodes", exclamation marks, or the script's biggest moment)
+- MID  → subject actively moving, reacting, or engaged in a scene (normal pacing)
+- LOW  → calm explanation, context-setting, wide establishing shot moment
+
+Use the segment text to drive this — you will use these tiers in Step 3 to vary pacing.
+The first segment is ALWAYS treated as HIGH regardless of tier.
+
+════════════════════════════════════
 STEP 2 — SCAN EACH VIDEO FOR KEY MOMENTS
 ════════════════════════════════════
 Watch each video and mentally catalogue the best visual moments and their timestamps.
-Look for: decisive action shots, close-up reactions, crowd eruptions, athlete expressions, dramatic slow-motion moments, and any footage that directly matches the script topic.
-Note what each video is best suited for (e.g. "Video 0 has the actual goals", "Video 1 has emotional reactions").
+For each moment you note, also tag it HIGH / MID / LOW so you can match tiers in Step 3.
+Look for: decisive action shots, close-up reactions, dramatic slow-motion moments, and any footage that directly matches the script topic.
+Note what each video is best suited for (e.g. "Video 0 has the actual fight", "Video 1 has emotional reactions").
 This internal scan is what you draw from in Step 3 — do not skip it.
 
 ════════════════════════════════════
 STEP 3 — PICK TIMESTAMPS (rules below)
 ════════════════════════════════════
 
-VISUAL-SCRIPT MATCHING (most important rule):
+HOOK MANDATE — segment 0 only:
+The very first clip MUST be the single most visually striking shot across ALL your videos combined — the one shot that would stop someone mid-scroll. If you have multiple HIGH candidates, pick the one with the most intense visible action, expression, or motion. Do not settle for "pretty but calm."
+
+ACTION PREFERENCE — all clips:
+Always prefer shots where the subject is actively doing something (fighting, moving, reacting expressively, an event unfolding) over shots where the subject is standing still, posing, or walking slowly. A frame with visible motion always beats a static frame.
+
+VISUAL-SCRIPT MATCHING (core rule):
 - Each clip must visually SUPPORT what is being said in that segment.
-- Hook segment (first 1–2) → most visually striking moment you can find: intense action, expressive close-up, dynamic motion.
-- Reveal / surprise segment → a clear reaction shot, a dramatic visual, something with impact.
-- Calm / explanatory segment → a clear mid-shot or scene establishing what is being described.
-- DO NOT assign random beautiful footage that has nothing to do with the narration text.
+- Reveal / surprise segment → a reaction shot, an impact visual, something with weight.
+- Calm / explanatory segment → a clear mid-shot establishing what is being described.
+- DO NOT assign generic-looking footage that has nothing to do with the narration text.
+
+PACING RULE — energy alternation:
+Use your tier tags to vary the edit rhythm. After a HIGH clip, prefer a MID or LOW clip next (not another HIGH). After two non-HIGH clips, return to HIGH. This prevents the edit from feeling like a wall of highlights with no breathing room.
+Exception: the first two segments may both be HIGH if the script opens with a strong double-punch.
 
 SHOT VARIETY — mandatory across the full edit:
 - Never use two consecutive segments from the exact same timestamp range (clips must be at least 20 seconds apart within the same video).
-- Mix shot types across the edit: if segment N is a wide action shot, segment N+1 should be a close-up or reaction, not another wide shot.
-- MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible — do not let one video dominate the edit.
+- Mix shot distances: if segment N is a wide shot, segment N+1 should be a close-up or reaction — not another wide shot.
+- MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible.
 
 HARD BANS — never pick a timestamp that shows any of:
 - A creator, commentator, or presenter speaking directly to camera (talking-head style)
-- Static text screens, title cards, watermark overlays, or sponsor segments
+- Static text screens, title cards, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
-- The first 3 seconds or last 10 seconds of any video
+- The first 10 seconds of any video (channel intros, animated logos, title cards)
+- The last 30 seconds of any video (outros, end screens, subscribe buttons, "thanks for watching" text)
+- Score overlays, countdown timers, or match clocks visible in frame
+- Replay indicators ("REPLAY" / "INSTANT REPLAY" text on screen)
+- Fan-art or AMV frames with heavy lens flares, desaturated overlays, or color-burn effects that obscure the subject
+- Any frame where a large watermark, channel logo, or platform bug dominates the center of the image
 
 CLIP SAFETY:
 - Each clip will play for at least {MIN_CLIP_DURATION} seconds regardless of segment duration. The clip at `start` must have at least max(duration, {MIN_CLIP_DURATION}) + 1 second of usable footage remaining.
@@ -818,9 +888,12 @@ CLIP SAFETY:
 STEP 4 — SELF-CHECK BEFORE OUTPUT
 ════════════════════════════════════
 Before writing JSON, verify:
+☐ Segment 0 is the single most visually striking shot available across all videos
 ☐ Every clip visually matches what its segment text is saying
+☐ Energy tiers alternate — no two consecutive HIGH clips after the opening pair
+☐ All selected shots show the subject actively doing something (not just standing/posing)
 ☐ No two consecutive clips are from the same timestamp range in the same video
-☐ Shot types vary across the edit
+☐ Shot distances vary across the edit (wide → close-up → mid, etc.)
 ☐ No banned content in any selected timestamp
 ☐ All start times are safe (enough footage remaining)
 ☐ Every available source video is used at least once
@@ -847,7 +920,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=contents,
-                config={"thinking_config": {"thinking_budget": 8000}},
+                config={"thinking_config": {"thinking_budget": 24576}},
             )
             break
         except Exception as e:
@@ -892,7 +965,7 @@ def run_manual_pipeline(data):
         MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
         MUSIC_QUERY = data.get('music_query', None)
         VOICE_NAME = data.get('voice_name', 'hamid')
-        SCRIPT_TEXT = data['script']
+        SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
 
         print(f"📋 PROCESSING MANUAL ORDER: {SUBJECT}")
         print(f"topic: {TOPIC}")
@@ -932,7 +1005,7 @@ def run_manual_pipeline(data):
                 continue
 
             reason = evaluation.get("reason", "") if evaluation else ""
-            if evaluation and evaluation.get("decision") == "post" and evaluation.get("subject_present", False):
+            if evaluation and evaluation.get("decision") == "post":
                 print(f"✅ Video {i + 1} approved! — {reason}")
                 approved_videos.append(candidate_video)
                 if len(approved_videos) >= MAX_SOURCE_VIDEOS:
@@ -1028,6 +1101,10 @@ def run_manual_pipeline(data):
 
         safe_subject = SUBJECT.replace(' ', '_')[:80]
         final_filename = f"Short_{safe_subject}_{random.randint(10, 99)}.mp4"
+        punch_times = _match_punch_times(_punch_words, words_data) if (words_data and _punch_words) else []
+        if punch_times:
+            print(f"👊 Punch SFX at: {punch_times}")
+
         print(f"🎬 Starting video editing...")
         final_path = merge_audio_video(
             video_paths=clip_paths,
@@ -1038,7 +1115,8 @@ def run_manual_pipeline(data):
             music_path=music_path,
             music_volume=MUSIC_VOLUME,
             words_data=words_data,
-            subtitles_position=SUBTITLES_POSITION
+            subtitles_position=SUBTITLES_POSITION,
+            punch_times=punch_times,
         )
 
         print(f"\n✅ DONE! Saved to: {final_path}")

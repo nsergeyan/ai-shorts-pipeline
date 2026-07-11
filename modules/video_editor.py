@@ -15,6 +15,7 @@ from config import DATA_DIR, CTA_PATH
 SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
 _FLASH_SFX = "21 - Camera Flash.MP3"
+_PUNCH_SFX_FILES = ["awkward_moment.mp3", "radio_peep.mp3"]
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FINAL_DIR = os.path.join(DATA_DIR, "final")
@@ -168,8 +169,8 @@ def _composite_cta(base_video: str, cta_path: str, cta_start: float, cta_duratio
     ], check=True, capture_output=True)
 
 
-def _build_sfx_events(clips: List[dict], base_url: str) -> List[dict]:
-    """Assign SFX to each cut point — whoosh on regular cuts, camera flash on every 3rd."""
+def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float] = None) -> List[dict]:
+    """Assign SFX to each cut point and punch word timestamps."""
     events = []
     accumulated = 0.0
     for i, clip in enumerate(clips[:-1]):
@@ -182,6 +183,15 @@ def _build_sfx_events(clips: List[dict], base_url: str) -> List[dict]:
             rel = os.path.relpath(abs_path, PROJECT_ROOT)
             encoded = urllib.parse.quote(rel, safe="/")
             events.append({"time": round(accumulated, 3), "file": f"{base_url}/{encoded}", "volume": volume})
+
+    for pt in (punch_times or []):
+        sfx_file = random.choice(_PUNCH_SFX_FILES)
+        abs_path = os.path.join(SFX_DIR, sfx_file)
+        if os.path.exists(abs_path):
+            rel = os.path.relpath(abs_path, PROJECT_ROOT)
+            encoded = urllib.parse.quote(rel, safe="/")
+            events.append({"time": round(pt, 3), "file": f"{base_url}/{encoded}", "volume": 0.4})
+
     return events
 
 
@@ -242,7 +252,7 @@ def merge_audio_video(
             "musicVolume": music_volume,
             "wordsData": words_dicts,
             "punchTimes": punch_times or [],
-            "sfxEvents": _build_sfx_events(clips, base_url),
+            "sfxEvents": _build_sfx_events(clips, base_url, punch_times),
             "totalDurationSec": round(total_dur, 3),
         }
 

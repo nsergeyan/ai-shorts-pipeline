@@ -5,7 +5,6 @@ import {
   OffthreadVideo,
   Sequence,
   interpolate,
-  spring,
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
@@ -35,7 +34,6 @@ export interface ShortVideoProps {
   musicPath?: string;
   musicVolume?: number;
   wordsData?: WordEntry[];
-  punchTimes?: number[];
   sfxEvents?: SfxEvent[];
   totalDurationSec: number;
 }
@@ -202,7 +200,6 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   musicPath,
   musicVolume = 0.07,
   wordsData = [],
-  punchTimes = [],
   sfxEvents = [],
 }) => {
   const frame = useCurrentFrame();
@@ -234,40 +231,9 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   // Every 3rd cut (starting at index 1) gets a flash — evenly spread, ~1 in 3
   const flashFrames = cutFrames.filter((_, i) => i % 3 === 1);
 
-  // Zoom punch: quick scale in, spring back — applied to video content only
-  let zoomScale = 1;
-  for (const pt of punchTimes) {
-    const punchFrame = Math.round(pt * fps);
-    const elapsed = frame - punchFrame;
-    if (elapsed < 0 || elapsed > 90) continue;
-
-    let extra = 0;
-    if (elapsed < 6) {
-      extra = interpolate(elapsed, [0, 6], [0, 0.06], {
-        extrapolateLeft: "clamp",
-        extrapolateRight: "clamp",
-      });
-    } else {
-      const springBack = spring({
-        fps,
-        frame: elapsed - 6,
-        config: { damping: 14, stiffness: 80, mass: 1 },
-      });
-      extra = interpolate(springBack, [0, 1], [0.06, 0]);
-    }
-    zoomScale = Math.max(zoomScale, 1 + extra);
-  }
-
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          transform: `scale(${zoomScale})`,
-          transformOrigin: "center center",
-        }}
-      >
+      <div style={{ width: "100%", height: "100%" }}>
         {clipSequences}
         <Vignette />
       </div>
