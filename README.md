@@ -18,7 +18,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 
 ## Features
 
-- **Structured prompt system** — Two prompt templates (`manualprompt.txt` for anime/cartoon, `sportsPrompt` for sports). Both enforce a hype-check step (searches for current trending events before picking a topic), mandatory live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, fact-checking tiers, and duplicate avoidance
+- **Structured prompt system** — Three prompt templates: `manualprompt.txt` (auto-picks a trending anime/cartoon), `specifixprompt` (targets a specific pre-chosen series), and `sportsPrompt` (sports). All enforce a hype-check step, mandatory live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, fact-checking tiers, duplicate avoidance, and the punch marker rule
 - **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
 - **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
@@ -30,7 +30,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **Chromatic glitch** — On every 3rd cut a red/blue RGB split overlay with a horizontal tear line fires alongside the flash, adding visual impact without being distracting
 - **Flash cut transitions** — Hard cuts between all clips; every 3rd cut fires a 2-frame white flash overlay for extra punctuation
 - **SFX audio** — Whoosh sounds play on every regular cut; a camera-flash SFX plays on every 3rd cut. Events are computed from clip timestamps and passed to Remotion as `sfxEvents`, rendered as `<Sequence><Audio>` components
-- **Zoom punch** — Optional scale burst at key narration moments (fact reveal, twist) triggered by passing timestamps
+- **Audio-driven punch SFX** — Script authors mark 1–3 high-impact pivot words with `*WORD!*` markers (e.g. `*BUT!*`, `*WAIT!*`). Markers are stripped before TTS so ElevenLabs receives clean text; after Whisper transcription the marked words are matched to their timestamps. At render time a random impact SFX fires at each matched moment via Remotion `<Sequence><Audio>`
 - **Controlled pacing** — Narration sentences are merged into groups of at least 7 seconds before scene detection, keeping transitions to ~3–4 per 30-second video. Individual clips have a 3-second floor so no clip is shorter than a single cut
 - **FFmpeg chroma key CTA** — Green screen call-to-action video is keyed out via FFmpeg `chromakey` filter and composited over the final 8 seconds of the video
 - **Multi-method YouTube download** — Three fallback download strategies (Android client, no-cookies, CLI) to handle YouTube's bot detection
@@ -62,7 +62,7 @@ The prompt template enforces a multi-step structure: category selection, ranked 
 ### 2. Video Sourcing & Evaluation
 `fetch_gameplay_by_search` queries YouTube with up to six queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
 
-Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. Only a `post` decision with confirmed subject presence passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
+Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. The evaluator checks for the character or show by name regardless of their specific state (e.g. normal form, abstracted form, different costume all count). Only a `post` decision passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
 
 ### 3. Voice & Transcription
 ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endpoint (ElevenLabs v3) which natively processes bracketed performance tags for natural delivery. Russian and Spanish use `eleven_multilingual_v2`. The narration is transcribed by Whisper with `word_timestamps=True` immediately after, producing per-word `(word, start, end)` tuples used for both subtitle rendering and scene segmentation.
@@ -86,8 +86,7 @@ The Remotion composition (`remotion/src/compositions/ShortVideo.tsx`) handles:
 - **Whip pan** — every clip slides in/out with translateX + motion blur over 4 frames, alternating direction per clip
 - **Flash cuts** — every 3rd cut fires a 2-frame white flash overlay
 - **Chromatic glitch** — red/blue RGB split + horizontal tear line fires on the same cuts as the flash
-- **SFX** — whoosh `<Audio>` on every cut, camera-flash SFX on every 3rd cut via `sfxEvents` prop
-- **Zoom punch** — optional scale burst at caller-specified timestamps
+- **SFX** — whoosh `<Audio>` on every cut, camera-flash SFX on every 3rd cut via `sfxEvents` prop; impact SFX at punch-word timestamps
 - **Progress bar** — thin yellow bar along the bottom edge of the video panel
 - **Audio mix** — narration + background music + SFX via Remotion `<Audio>` components
 
@@ -108,7 +107,8 @@ The CTA overlaps the last 8 seconds of the narration (not appended after).
 YOutuber/
 ├── main.py                    # Main pipeline entrypoint
 ├── config.py                  # Directory and API configuration
-├── manualprompt.txt           # Structured script prompt template (anime/cartoon)
+├── manualprompt.txt           # Structured script prompt template (auto anime/cartoon)
+├── specifixprompt             # Structured script prompt template (specific series)
 ├── sportsPrompt               # Structured script prompt template (sports)
 ├── modules/
 │   ├── video_editor.py        # Remotion render orchestration + FFmpeg CTA composite
@@ -140,6 +140,7 @@ YOutuber/
 - **Blurred letterbox over cropped 9:16** — Cropping landscape footage to fill 9:16 often cuts off characters or key visuals. The blurred letterbox approach displays the full video at its native aspect ratio while using the empty bars for subtitles and CTA, so nothing important is cropped.
 - **FFmpeg chromakey for CTA over Remotion transparency** — Remotion's `OffthreadVideo` does not reliably support alpha channel from VP9 WebM in Chrome Headless Shell. FFmpeg's native `chromakey` filter produces cleaner keying and compositing as a post-process step.
 - **Whip pan + flash + glitch stack** — Hard cuts alone feel flat at short durations. Whip pan adds kinetic energy without covering the actual content (4-frame translateX + blur, not a wipe). The chromatic glitch and white flash fire only on every 3rd cut so the effect stays punctuation, not wallpaper. SFX (whoosh/camera-flash) reinforce each cut at the audio layer, making transitions feel intentional even on small screens with no headphones context.
+- **Audio punch SFX over video zoom** — A scale-burst zoom on punch words draws attention to the video layer, not the narration. An audio hit at the exact spoken word is more precise and feels more natural — the viewer hears the impact at the moment the word lands, without the video layout shifting or distracting from the subject on screen.
 - **Gemini 2.5 Flash over local models** — Ollama (Gemma 27B) was tested for script generation but response quality and speed weren't consistent enough for production. Gemini 2.5 Flash with Google Search grounding produces more accurate, fact-checked scripts.
 - **ElevenLabs v3 `text_to_dialogue` for English** — The standard TTS endpoint ignores bracketed emotion tags. `text_to_dialogue` was purpose-built for performance-directed narration and produces noticeably more natural delivery for Shorts content.
 - **Whisper before scene detection** — Voice is generated and transcribed first so that Gemini receives sentence-level timing data when choosing scenes. This lets multi-scene clips align with the actual narration rhythm rather than being arbitrarily split.
@@ -178,11 +179,13 @@ python main.py
 
 The pipeline runs fully automatically and saves the final `.mp4` to `data/final/`.
 
-To trigger a zoom punch at specific moments, pass timestamps to `merge_audio_video`:
+To trigger impact SFX at key moments, add `*WORD!*` markers in the script:
 
-```python
-merge_audio_video(..., punch_times=[12.5, 28.0])
 ```
+"He scored 60 goals for Norway. *BUT!* he was born in England."
+```
+
+Markers are stripped before voice generation; after Whisper transcription the words are matched to timestamps and a random SFX fires at each moment during the Remotion render.
 
 ---
 
