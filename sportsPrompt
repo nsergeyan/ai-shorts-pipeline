@@ -299,6 +299,16 @@ Comma → short pause. Period → full stop. Question mark → questioning tone.
 Exclamation → emphasis. Ellipsis (...) → suspense pause.
 CAPITALIZATION → adds spoken emphasis on a word (e.g. "in the FINAL minute"). Save the strongest CAPS for the TURN.
 
+PUNCH MARKER RULE:
+Mark exactly one to three high-impact pivot words with *asterisks*. These trigger a sound effect at that exact moment in the video.
+Write them in CAPS with an exclamation mark inside the asterisks: *BUT!* *WAIT!* *WRONG!* *NEVER!* *actually!*
+Rules:
+- Exactly one to three markers per script — not every transition word
+- Only mark genuine pivot or surprise moments (the reveal beat, the twist, the "wait WHAT")
+- Single words only: *BUT!* not *but here's the thing*
+- The asterisks are stripped before voice generation; the CAPS and ! stay so the voice naturally hits harder
+Example: "He scored sixty-two goals for Norway. *BUT!* he was born in England."
+
 NUMBER RULE: Never use digit characters anywhere in the script. Write all numbers as words (one, not 1; nineteen ninety-nine, not 1999). This applies to every number including years, scores, counts, and percentages.
 
 WORD COUNT RULE:
@@ -318,6 +328,7 @@ SCRIPT QUALITY CHECK (confirm all before output):
 ☐ no fabricated stats, dates, or quotes, and no inflated wording (Prime Directive respected)
 ☐ every factual claim traces to a source opened this session (no memory-only facts)
 ☐ includes four or more ElevenLabs v3 confirmed tags, with one on the hook and one on the turn
+☐ one to three *PUNCH!* markers on genuine pivot words (not filler)
 ☐ claim/news disclaimer present IF Flag if claim/news is YES
 If any box is unchecked → rewrite before outputting JSON.
 

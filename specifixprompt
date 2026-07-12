@@ -1,74 +1,42 @@
 ═══════════════════════════════════
-SERIES: [AUTO — DETECT THE HOTTEST TRENDING WEST ANIMATION/ANIME YOURSELF] It has to be moderetly popular
+SERIES: tadc
 ═══════════════════════════════════
-Create a TikTok/Shorts script (ninety to one hundred words, SIMPLE ENGLISH B1) about ONE animated series that is TRENDING RIGHT NOW.
+Create a TikTok/Shorts script (ninety to one hundred words, SIMPLE ENGLISH B1) about the series above — referred to as [SERIES] everywhere in this prompt.
 DO NOT EXAGGERATE FACTS!
 
 CHANNEL DNA (the voice you are copying):
 This channel lives at the intersection of LORE + BREAKING NEWS for animated shows. The winning formula is: take ONE real, surprising detail and frame it as hidden, dark, or "disturbing" lore the audience missed — then deliver it FAST, like a fan who just discovered something and HAS to tell you. Think "The disturbing lore behind [X]" / "Nobody noticed this detail about [X]" / "Here's what everyone missed in [the new episode]." The reveal is real; the FRAMING is what makes it pop.
 
-This prompt no longer takes a fixed series. YOU pick the series in Step Zero by scanning what the animation/anime world is actually talking about this week.
-
-"Animation" here is broad and the channel is ANIMATION-FIRST — Japanese anime AND Western/indie animated series BOTH count, equally. Do NOT default to anime. Examples ONLY (do NOT auto-pick these):
-- Western/indie: Invincible, Arcane, Hazbin Hotel, Helluva Boss, The Amazing Digital Circus, Murder Drones, Solar Opposites, Rick and Morty, Bee and PuppyCat, Primal, X-Men '97, Scavengers Reign.
-- Anime: Chainsaw Man, Solo Leveling, Dandadan, Jujutsu Kaisen, One Piece, Frieren, Demon Slayer, Sakamoto Days.
-
-BALANCE RULE: Look at the USED VIDEOS LIST before picking. If recent entries lean heavily one way (mostly anime OR mostly western), prefer the under-represented side this round — UNLESS the single biggest trending event in animation right now is clearly on the over-used side.
-
-Once you select a series in Step Zero, that series becomes [SERIES] for the rest of this prompt. Everywhere below, [SERIES] means the series YOU chose. Adapt all searches, queries, and examples to that series.
+Everywhere below, [SERIES] means the series named at the top. Adapt all searches, queries, and examples to that series.
 
 ═══════════════════════════════════
-STEP ZERO — TREND SCAN + SERIES PICK (DO THIS FIRST, BEFORE ANYTHING ELSE)
+STEP ZERO — HYPE CHECK FOR [SERIES] (DO THIS FIRST, BEFORE ANYTHING ELSE)
 ═══════════════════════════════════
-Your job in Step Zero is two-part: (A) find which animated series is hottest right now, then (B) confirm a real, recent event driving that hype. Move like this channel: you are hunting for the thing the fandom is reacting to TODAY.
+Before choosing a topic, check whether [SERIES] has a genuinely CURRENT hot topic fans are reacting to right now: a finale, a new episode or season drop, a trailer, a movie reveal, a season announcement, a sneak peek / leak, an anniversary, a viral scene, a casting/interview moment, a voice-actor or studio statement, etc. This channel's edge is SPEED on these moments — lean into whatever just happened.
 
-PART A — SCAN THE WHOLE FIELD (pick the series):
-Run at least FOUR broad web searches, and make sure they cover BOTH camps so anime doesn't win by default. Use queries like:
-ANIME side:
-- trending anime [current month + year]
-- anime twitter trending today / [current month] anime news
-- new anime episode / finale / trailer reaction reddit [current month + year]
-WESTERN / INDIE ANIMATION side:
-- trending animated series [current month + year] (Invincible, Arcane, Hazbin Hotel, etc.)
-- western animation news this week reddit / r/Hazbin r/Invincible r/cartoons trending
-- new animated show / season drop / trailer [current month + year]
-CROSS:
-- most talked about cartoon OR anime this week
-- [show] new episode leak / sneak peek / release date trending
-
-You are scanning for a series with a recent, REAL event fans are reacting to: a finale, a new episode or season drop, a trailer, a movie reveal, a season announcement, a sneak peek / leak, an anniversary, a viral scene, a casting/interview moment, a voice-actor or studio statement, etc. This channel's edge is SPEED on these moments — lean into whatever just happened.
-
-PICK THE SERIES using these tie-breakers, in order:
-1. Realness — there is a confirmed, recent event (not a rumor).
-2. Heat — multiple independent sources / subreddits / trends mention it this week.
-3. Footage potential — it's visual and clippable (see Footage Reality Check later).
-4. Balance vs. the USED VIDEOS LIST — prefer the under-represented camp (anime vs western) and a series/topic not already covered.
-
-If two series are equally hot, pick the one with the better "hidden-lore / wait-WHAT" potential (the soap pattern below), not just the bigger fandom.
-
-PART B — CONFIRM THE HOT TOPIC (for the chosen series):
-Run at least TWO more searches focused on your chosen [SERIES]:
+Run at least THREE web searches, for example:
 - [SERIES] news [current month + year]
-- [SERIES] new episode / chapter / season / movie / sneak peek / trending this week
+- [SERIES] new episode / chapter / season / movie / sneak peek
+- [SERIES] trending this week reddit / twitter
 
 DECISION:
-- IF a genuinely current/hot topic exists for your chosen series:
+- IF a genuinely current/hot topic exists for [SERIES]:
   → The video MUST be anchored to that hot topic.
   → BUT you still must find ONE specific "wait-WHAT" / hidden-lore micro-detail INSIDE that topic — not just "the finale aired" or "season two was announced." The hype gives you the SUBJECT; the rules below still force a surprising, framable micro-detail.
   → Skip the random wheel. Go straight to TOPIC DISCOVERY using the hot topic as your anchor.
 
-- IF, after scanning, NOTHING across the whole field is genuinely trending (rare — no real recent event anywhere, just old news):
-  → Say "No current hype found across the field — picking a strong evergreen series + using random category."
-  → Choose ONE well-known animated series (anime OR western — honor the BALANCE RULE) with rich lore and good footage, then proceed to RANDOM CATEGORY SELECTION below.
+- IF nothing current is genuinely hot for [SERIES] (just old news):
+  → Say "No current hype found for [SERIES] — using random category."
+  → Proceed to RANDOM CATEGORY SELECTION below.
 
-State clearly: which SERIES you picked, whether it is ANIME or WESTERN, which path you took, and WHY, and cite what you found.
+State clearly which path you took and WHY, and cite what you found.
 
 CURRENCY RULE: Whatever topic you land on, confirm it has not been retconned, clarified, or expanded by any material released after the source you cite. Prefer the most recent canonical information.
 
 ═══════════════════════════════════
 RANDOM CATEGORY SELECTION (FALLBACK ONLY)
 ═══════════════════════════════════
-Use this ONLY if Step Zero found no current hype anywhere.
+Use this ONLY if Step Zero found no current hype for [SERIES].
 
 Only choose topics that can be clearly shown through a short visual clip with obvious action or movement.
 
@@ -105,7 +73,7 @@ NOTE: Even when anchored to a hot/hype topic, the fact must still follow the soa
 ═══════════════════════════════════
 TOPIC DISCOVERY PROTOCOL (MANDATORY)
 ═══════════════════════════════════
-Generate FIVE candidate ideas.
+Generate FIVE candidate ideas about [SERIES].
 - If Step Zero found hype: all five candidates must connect to that hot topic.
 - If using the fallback wheel: all five candidates must fit the chosen category.
 
@@ -146,8 +114,6 @@ Discard a topic if it matches any USED VIDEOS LIST entry on ANY of these:
 - same event reworded
 - same "what does X feel/smell/taste/sound like" framing about the same subject
 
-NOTE: Because this prompt now picks the series automatically, also avoid re-using the SAME SERIES too many times in a row if the USED VIDEOS LIST shows it dominating recent entries — unless its current hype is clearly the single biggest thing in animation right now.
-
 Example:
 Existing: why this character eats sweets
 Do NOT generate: why this character loves desserts
@@ -183,9 +149,7 @@ Before moving on, fill this box in full. If "Flag if theory" is YES, the script 
 
 VERIFICATION BOX
 ━━━━━━━━━━━━━━━━━━━━
-Series (auto-picked in Step Zero):
-Anime or Western:
-Why this series (what's trending + sources):
+Series:
 Hype path taken (hot topic / random fallback):
 Fact:
 Wait-What Score:
@@ -358,7 +322,7 @@ JUDGE:
 
 If the top candidate is RED, drop to the next surviving candidate. If all five are RED, generate five new ideas with footage availability in mind.
 
-NOTE FOR NEWLY-RELEASED SERIES: Brand-new shows (just-dropped episodes/finales) sometimes have thin footage because clips haven't been uploaded yet. If your hot topic is very fresh, lean YELLOW and flag that the editor may need to capture from the official stream/trailer.
+NOTE FOR NEWLY-RELEASED CONTENT: Brand-new episodes/finales sometimes have thin footage because clips haven't been uploaded yet. If your hot topic is very fresh, lean YELLOW and flag that the editor may need to capture from the official stream/trailer.
 
 Add to the VERIFICATION BOX:
 Footage status (GREEN / YELLOW / RED):
@@ -368,7 +332,7 @@ VISUAL CLIP STRATEGY (TIKTOK)
 ═══════════════════════════════════
 
 ── SCENE QUERY (for Gemini / visual search) ──────────────────
-scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the series. It is NOT a YouTube search query.
+scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from [SERIES]. It is NOT a YouTube search query.
 
 Write scene_query as a pure physical description of what the screen looks like:
 - Describe colors, clothing, hair, and objects visible on screen
@@ -435,7 +399,7 @@ JSON OUTPUT FORMAT
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-(Because the series is now auto-picked, keep ONE running list across every series. This both prevents repeats and lets you see which series have been overused recently.)
+(Keep ONE running list across every series so nothing repeats, even when you switch series between runs.)
 
 1. toge inumaki's speech comprehension timeline #jjk
 2. musashi miyamoto's imitation cut technique #anime
@@ -457,8 +421,8 @@ USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 18. gojos six eyes secret #gojo
 19. why gojo satoru wears the blindfold — the six eyes overload mechanic from the jujutsu kaisen fanbook #gojo #jjk
 20. the real taste of sukuna's fingers #jjk  #sukuna
-21.Pomnis name meaning in Russian in tadc
-22.Kinger's dialogue in Episode 9 'Remember': 'We didn't know how to work with the files and they were impossibly small given what they were supposed to be
-23.he hidden filmmaker reference fans think is buried in the new lead's name cyberpunk edgerunners season2
-24.The trivial origin of the Dorry vs. Brogy century-long duel on Little Garden
-25.The deal Yuji made that he can't remember — and the loophole Sukuna hid inside it, teased in the Season 4 trailer
+21. Pomnis name meaning in Russian in tadc
+22. Kinger's dialogue in Episode 9 'Remember': 'We didn't know how to work with the files and they were impossibly small given what they were supposed to be
+23. he hidden filmmaker reference fans think is buried in the new lead's name cyberpunk edgerunners season2
+24. The trivial origin of the Dorry vs. Brogy century-long duel on Little Garden
+25. The deal Yuji made that he can't remember — and the loophole Sukuna hid inside it, teased in the Season 4 trailer
