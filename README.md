@@ -25,13 +25,13 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **Smart music sourcing** — The prompt system generates both a `music_query` (YouTube search for an official OST/instrumental) and a `music_prompt` (ElevenLabs generation spec). The pipeline tries YouTube first; if Gemini approves the track (no lyrics, topic-relevant, voice-compatible) it uses it for free. If the track is rejected or no query is provided, ElevenLabs composes a custom 90-second instrumental instead
 - **Remotion rendering** — Video is composed and rendered in React/TypeScript via Remotion (Chrome Headless Shell). Each frame is pixel-accurate, fully programmable, and GPU-accelerated
 - **Blurred letterbox layout** — Landscape source footage is displayed at its native aspect ratio (nothing cropped) with a blurred, darkened copy filling the top and bottom bars. Subtitles sit in the top bar, CTA in the bottom bar
-- **Word-level subtitles** — Whisper `large-v3` transcribes narration at the word level; each spoken word highlights in yellow with a spring-animated pop, 3 words per line, inside a semi-transparent pill
+- **Word-level subtitles** — Whisper `large-v3` transcribes narration at the word level; each spoken word highlights in yellow with a spring-animated pop, 3 words per line, with a bold black-stroke text shadow
 - **Whip pan transitions** — Every cut slides clips in/out with a directional translateX + motion blur over 4 frames, alternating left/right direction per clip for a dynamic feel
 - **Chromatic glitch** — On every 3rd cut a red/blue RGB split overlay with a horizontal tear line fires alongside the flash, adding visual impact without being distracting
 - **Flash cut transitions** — Hard cuts between all clips; every 3rd cut fires a 2-frame white flash overlay for extra punctuation
 - **SFX audio** — Whoosh sounds play on every regular cut; a camera-flash SFX plays on every 3rd cut. Events are computed from clip timestamps and passed to Remotion as `sfxEvents`, rendered as `<Sequence><Audio>` components
 - **Audio-driven punch SFX** — Script authors mark 1–3 high-impact pivot words with `*WORD!*` markers (e.g. `*BUT!*`, `*WAIT!*`). Markers are stripped before TTS so ElevenLabs receives clean text; after Whisper transcription the marked words are matched to their timestamps. At render time a random impact SFX fires at each matched moment via Remotion `<Sequence><Audio>`
-- **Controlled pacing** — Narration sentences are merged into groups of at least 7 seconds before scene detection, keeping transitions to ~3–4 per 30-second video. Individual clips have a 3-second floor so no clip is shorter than a single cut
+- **Controlled pacing** — Narration sentences are merged into groups of at least 10 seconds before scene detection, keeping transitions to ~3–4 per 30-second video. Individual clips have a 3-second floor so no clip is shorter than a single cut
 - **FFmpeg chroma key CTA** — Green screen call-to-action video is keyed out via FFmpeg `chromakey` filter and composited over the final 8 seconds of the video
 - **Multi-method YouTube download** — Three fallback download strategies (Android client, no-cookies, CLI) to handle YouTube's bot detection
 - **Multi-language support** — English, Russian, and Spanish voice generation with language-specific ElevenLabs model settings
@@ -68,7 +68,7 @@ Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `h
 ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endpoint (ElevenLabs v3) which natively processes bracketed performance tags for natural delivery. Russian and Spanish use `eleven_multilingual_v2`. The narration is transcribed by Whisper with `word_timestamps=True` immediately after, producing per-word `(word, start, end)` tuples used for both subtitle rendering and scene segmentation.
 
 ### 4. Multi-Source Scene Detection
-Whisper sentence segments are first merged into groups of at least 7 seconds (`MIN_SEGMENT_DURATION`) so a 30-second video produces ~4 clips instead of 8 — keeping transitions to a watchable pace. All approved videos and the merged segments are sent to Gemini in a single call. Gemini watches every video and returns an edit plan: for each segment it picks the best `(video_index, start)` pair. Gemini is required to use every available source video at least once and never use the same video more than 2 segments in a row. Each clip is trimmed to at least `MIN_CLIP_DURATION` (3 seconds) so very short final sentences don't produce sub-second clips.
+Whisper sentence segments are first merged into groups of at least 10 seconds (`MIN_SEGMENT_DURATION`) so a 30-second video produces ~3 clips instead of 8 — keeping transitions to a watchable pace. All approved videos and the merged segments are sent to Gemini in a single call. Gemini watches every video and returns an edit plan: for each segment it picks the best `(video_index, start)` pair. Gemini is required to use every available source video at least once and never use the same video more than 2 segments in a row. Each clip is trimmed to at least `MIN_CLIP_DURATION` (3 seconds) so very short final sentences don't produce sub-second clips.
 
 ### 5. Music
 The pipeline resolves music in two stages. First it checks for a `music_query` field in the script JSON. If present, yt-dlp searches YouTube and downloads the first result as audio-only MP3. That track is uploaded to Gemini, which scores it on three criteria: no vocals/lyrics, topic relevance (≥7/10), and voice compatibility (≥6/10). If all three pass, the track is used as-is — free. If the track is rejected, the download fails, or no query was provided, ElevenLabs Generative Music composes a custom 90-second instrumental from the `music_prompt` field, which is written per script by the prompt system specifying genre, tempo, instruments, and emotional arc.
@@ -82,7 +82,7 @@ The pipeline resolves music in two stages. First it checks for a `music_query` f
 
 The Remotion composition (`remotion/src/compositions/ShortVideo.tsx`) handles:
 - **Blurred background layer** — each clip renders twice: once at `objectFit: cover` + heavy blur for the bars, once at `objectFit: contain` for the full visible video
-- **Word-highlight subtitles** — positioned in the top blur bar, spring-animated per word with yellow highlight and pill background
+- **Word-highlight subtitles** — positioned in the top blur bar, spring-animated per word with yellow highlight and bold black-stroke shadow
 - **Whip pan** — every clip slides in/out with translateX + motion blur over 4 frames, alternating direction per clip
 - **Flash cuts** — every 3rd cut fires a 2-frame white flash overlay
 - **Chromatic glitch** — red/blue RGB split + horizontal tear line fires on the same cuts as the flash
@@ -116,7 +116,6 @@ YOutuber/
 │   ├── newvoice.py            # ElevenLabs TTS (v3 dialogue + multilingual)
 │   ├── music_generator.py     # YouTube audio fetch + ElevenLabs generative music fallback
 │   ├── transcriber.py         # Whisper word-level transcription
-│   ├── youtube_uploader.py    # YouTube Data API v3 upload
 │   └── tiktok_checker.py      # TikTok duplicate detection
 └── remotion/
     ├── package.json           # Remotion + React dependencies
@@ -129,6 +128,7 @@ YOutuber/
         └── components/
             ├── WordHighlight.tsx  # Word-level subtitle with spring animation
             ├── ProgressBar.tsx    # Playback progress bar
+            ├── CTAOverlay.tsx     # Remotion CTA component (unused — CTA composited via FFmpeg instead)
             └── HookCard.tsx       # Optional hook text overlay (unused by default)
 ```
 
