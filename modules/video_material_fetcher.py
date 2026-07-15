@@ -6,7 +6,7 @@ import subprocess
 from typing import Optional
 
 import yt_dlp
-from config import GAMEPLAY_DIR
+from config import VIDEO_MATERIAL_DIR
 
 BROWSER = "chrome"  # Try: "chrome", "firefox", "safari", "edge"
 PROFILE = "Default"
@@ -28,7 +28,7 @@ def _get_yt_dlp_version():
 def _make_opts(skip_download: bool, use_range: bool = False):
     """Create yt-dlp options that avoid 403 errors"""
     opts = {
-        "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
+        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
         "skip_download": skip_download,
         "playlistend": 1,
@@ -66,7 +66,7 @@ def _make_opts(skip_download: bool, use_range: bool = False):
 def _make_opts_android(skip_download: bool):
     """yt-dlp options using the Android client — often bypasses YouTube restrictions."""
     opts = {
-        "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
+        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
         "skip_download": skip_download,
         "playlistend": 1,
@@ -98,7 +98,7 @@ def _make_opts_android(skip_download: bool):
 def _make_opts_no_cookies(skip_download: bool):
     """yt-dlp options without browser cookies — used as a fallback when cookie-based download fails."""
     return {
-        "outtmpl": os.path.join(GAMEPLAY_DIR, "%(id)s.%(ext)s"),
+        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
         "skip_download": skip_download,
         "playlistend": 1,
@@ -186,18 +186,18 @@ def _final_filepath(ydl: yt_dlp.YoutubeDL, info: dict) -> str:
         pass
 
     for ext in ['.mp4', '.webm', '.mkv', '.m4a']:
-        candidate = os.path.join(GAMEPLAY_DIR, f"{vid_id}{ext}")
+        candidate = os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}{ext}")
         if os.path.exists(candidate):
             return candidate
 
     try:
-        for f in os.listdir(GAMEPLAY_DIR):
+        for f in os.listdir(VIDEO_MATERIAL_DIR):
             if vid_id in f and f.endswith(('.mp4', '.webm', '.mkv')):
-                return os.path.join(GAMEPLAY_DIR, f)
+                return os.path.join(VIDEO_MATERIAL_DIR, f)
     except Exception:
         pass
 
-    return os.path.join(GAMEPLAY_DIR, f"{vid_id}.mp4")
+    return os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}.mp4")
 
 
 def _safe_title(t: str) -> str:
@@ -207,14 +207,14 @@ def _safe_title(t: str) -> str:
     return t[:200]
 
 
-def _pick_existing_gameplay() -> Optional[str]:
-    """Return the largest video file already in GAMEPLAY_DIR, or None if empty."""
-    os.makedirs(GAMEPLAY_DIR, exist_ok=True)
-    candidates = [f for f in os.listdir(GAMEPLAY_DIR) if f.lower().endswith((".mp4", ".webm", ".mkv"))]
+def _pick_existing_video_material() -> Optional[str]:
+    """Return the largest video file already in VIDEO_MATERIAL_DIR, or None if empty."""
+    os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
+    candidates = [f for f in os.listdir(VIDEO_MATERIAL_DIR) if f.lower().endswith((".mp4", ".webm", ".mkv"))]
     if candidates:
         # Return the largest file (most likely complete)
-        candidates.sort(key=lambda f: os.path.getsize(os.path.join(GAMEPLAY_DIR, f)), reverse=True)
-        return os.path.join(GAMEPLAY_DIR, candidates[0])
+        candidates.sort(key=lambda f: os.path.getsize(os.path.join(VIDEO_MATERIAL_DIR, f)), reverse=True)
+        return os.path.join(VIDEO_MATERIAL_DIR, candidates[0])
     return None
 
 
@@ -222,9 +222,9 @@ def _find_latest_video() -> Optional[str]:
     """Find the most recently created video file"""
     try:
         video_files = []
-        for f in os.listdir(GAMEPLAY_DIR):
+        for f in os.listdir(VIDEO_MATERIAL_DIR):
             if f.endswith(('.mp4', '.webm', '.mkv')):
-                full_path = os.path.join(GAMEPLAY_DIR, f)
+                full_path = os.path.join(VIDEO_MATERIAL_DIR, f)
                 if os.path.getsize(full_path) > 10000:  # At least 10KB
                     video_files.append((full_path, os.path.getctime(full_path)))
 
@@ -236,7 +236,7 @@ def _find_latest_video() -> Optional[str]:
     return None
 
 
-def fetch_gameplay_by_search(
+def fetch_video_material_by_search(
         search_queries,
         max_videos: int = 1,
         retry_searches: int = 20,
@@ -248,7 +248,7 @@ def fetch_gameplay_by_search(
     if isinstance(search_queries, str):
         search_queries = [search_queries]
 
-    os.makedirs(GAMEPLAY_DIR, exist_ok=True)
+    os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
 
     print(f"📌 yt-dlp version: {_get_yt_dlp_version()}")
 
@@ -327,7 +327,7 @@ def fetch_gameplay_by_search(
 
     if not filtered_entries:
         print("❌ No suitable videos found after all retries.")
-        existing = _pick_existing_gameplay()
+        existing = _pick_existing_video_material()
         if existing:
             print(f"📁 Using existing video: {existing}")
             return [existing]
@@ -384,7 +384,7 @@ def fetch_gameplay_by_search(
             try:
                 print("   🖥️ Method 3: CLI fallback...")
                 time.sleep(3)
-                output_path = os.path.join(GAMEPLAY_DIR, f"{vid_id}.mp4")
+                output_path = os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}.mp4")
 
                 result = subprocess.run([
                     "yt-dlp",
@@ -439,7 +439,7 @@ if __name__ == "__main__":
     print("=" * 60)
 
     print(f"\n📌 yt-dlp version: {_get_yt_dlp_version()}")
-    print(f"📂 GAMEPLAY_DIR: {GAMEPLAY_DIR}")
+    print(f"📂 VIDEO_MATERIAL_DIR: {VIDEO_MATERIAL_DIR}")
 
     # Check if yt-dlp needs updating
     print("\n💡 TIP: If downloads fail, update yt-dlp:")
@@ -455,7 +455,7 @@ if __name__ == "__main__":
     print(f"\n🧪 Testing download with queries: {test_queries[0][:40]}...")
 
     try:
-        results = fetch_gameplay_by_search(
+        results = fetch_video_material_by_search(
             search_queries=test_queries,
             max_videos=1,
             retry_searches=5,
@@ -470,7 +470,7 @@ if __name__ == "__main__":
                     print(f"   {i}. {os.path.basename(path)} ({size_mb:.2f} MB)")
         else:
             print("\n❌ No videos downloaded.")
-            existing = _pick_existing_gameplay()
+            existing = _pick_existing_video_material()
             if existing:
                 print(f"📁 But found existing: {existing}")
 

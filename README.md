@@ -60,7 +60,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit exactly 90–100 words. The output is a JSON object consumed directly by the pipeline.
 
 ### 2. Video Sourcing & Evaluation
-`fetch_gameplay_by_search` queries YouTube with up to six queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
+`fetch_video_material_by_search` queries YouTube with up to six queries, filters out livestreams, Shorts, and videos outside the 1–120 minute window, then downloads using three fallback methods in order. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
 
 Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. The evaluator checks for the character or show by name regardless of their specific state (e.g. normal form, abstracted form, different costume all count). Only a `post` decision passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
 
@@ -111,12 +111,12 @@ YOutuber/
 ├── specifixprompt             # Structured script prompt template (specific series)
 ├── sportsPrompt               # Structured script prompt template (sports)
 ├── modules/
-│   ├── video_editor.py        # Remotion render orchestration + FFmpeg CTA composite
-│   ├── gameplay_fetcher.py    # YouTube search and download
-│   ├── newvoice.py            # ElevenLabs TTS (v3 dialogue + multilingual)
-│   ├── music_generator.py     # YouTube audio fetch + ElevenLabs generative music fallback
-│   ├── transcriber.py         # Whisper word-level transcription
-│   └── tiktok_checker.py      # TikTok duplicate detection
+│   ├── video_editor.py            # Remotion render orchestration + FFmpeg CTA composite
+│   ├── video_material_fetcher.py  # YouTube search and download
+│   ├── newvoice.py                # ElevenLabs TTS (v3 dialogue + multilingual)
+│   ├── music_generator.py         # YouTube audio fetch + ElevenLabs generative music fallback
+│   ├── transcriber.py             # Whisper word-level transcription
+│   └── tiktok_checker.py          # TikTok duplicate detection
 └── remotion/
     ├── package.json           # Remotion + React dependencies
     ├── remotion.config.ts     # Codec and quality settings

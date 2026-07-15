@@ -28,7 +28,7 @@ def _gemini_client():
     print(f"🔑 Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
 try:
-    from modules.gameplay_fetcher import fetch_gameplay_by_search
+    from modules.video_material_fetcher import fetch_video_material_by_search
     from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
     from modules.video_editor import merge_audio_video
@@ -49,23 +49,23 @@ MAX_CLIPS = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "tadc",
-  "topic": "Where Jax actually ended up — the finale gave the abstracted monsters an aquarium, and Jax got his lost friends back",
-  "specific_subject": "The Aquarium and abstracted Jax's fate in Episode 9 'Remember'",
+  "series": "Invincible",
+  "topic": "Viltrumites never shave — the hidden Toolock-Pull technique and the dark meaning of the mustache",
+  "specific_subject": "Thaedus ripping off his beard in one motion to reveal he is a Viltrumite, and the mustache custom honoring Emperor Argall",
   "youtube_queries": [
-    "tadc finale jax aquarium scene",
-    "jax abstraction saddest moment digital circus",
-    "abstracted jax edit",
-    "digital circus episode 9 ending scene",
-    "tadc remember ending english dub",
-    "the amazing digital circus remember official"
+    "thaedus rips his beard off invincible",
+    "thaedus reveals he is a viltrumite",
+    "thaedus edit invincible",
+    "invincible thaedus allen scene",
+    "thaedus beard scene reaction",
+    "invincible official clip thaedus"
   ],
-  "scene_query": "A dark glowing aquarium wall inside a colorful circus tent, huge smooth black creatures covered in tiny multicolored glowing eyes swimming slowly like squids behind the glass, while a small jester girl in a red and blue hat and a chess piece character watch them quietly from the floor",
-  "music_mood": "emotional",
-  "music_query": "digital days amazing digital circus instrumental",
-  "music_prompt": "Soft emotional lo-fi orchestral, seventy BPM, gentle music box notes over warm ambient synth pads and a slow muffled underwater heartbeat pulse; begins quiet and heavy under the hook, swells gently at the reveal, then blooms into a bittersweet warm chord as the friends reunite, fading out unresolved on the final question; short-form video background, no lyrics, exclude: aggressive trap drums, cheerful circus brass",
+  "scene_query": "Elderly alien man with long white beard and dark ceremonial robes grips his own beard with one hand and tears the entire beard off in a single swift motion, revealing a clean white mustache underneath, while a shocked pink one-eyed muscular alien stares at him inside a futuristic room with glowing panels",
+  "music_mood": "curious",
+  "music_query": null,
+  "music_prompt": "Dark atmospheric trap with a sci-fi ambient sub-genre, ninety BPM, built on deep sub bass, airy synth pads, and a soft ticking hi-hat like a secret being counted down; starts quiet and curious, tightens with rising tension, then hits a sudden low drop at the reveal around the midpoint before settling into an unresolved, eerie outro; short-form video background, no lyrics, exclude: upbeat pop melodies, heavy distorted guitars",
   "voice_name": "Hamid",
-  "script": "[sad] Everyone cried about Jax in the Digital Circus finale... but almost nobody talks about where he ended up. When someone abstracts, they turn into a monster... *FOREVER!* There is no cure. [gulps] So what did the circus do with Jax? [surprised] *LISTEN!* They built him an aquarium. He now swims around like a giant squid, calm and quiet in the dark. [chuckles] And before the tank was ready? Kinger kept him in a pillow fort. [sorrowful] But here's the part that hurts. Inside that water, Jax is finally back with Ribbit and Kaufmo. The two friends he lost. So... sad ending, or his happiest one?"
+  "script": "Viltrumites can survive a planet exploding. [curious] So how do they shave? Razors do nothing to their skin. Here's the thing... they don't shave. *EVER!* They use a move called the Toolock Pull. [whispers] They grab the whole beard and rip it off in one motion. And it doesn't even hurt. [laughs] Masters can tear the beard away and leave the mustache perfect. That's how Thaedus proved he was a Viltrumite. He hid behind that beard for a thousand years. [surprised] And the mustache he kept? It honors their first emperor... the same emperor Thaedus secretly killed. So what else is that mustache hiding?"
 }
 
 def _strip_punch_markers(script: str):
@@ -129,6 +129,12 @@ def trim_video_to_end(
     # compute safe start
     clip_start = max(float(ai_start) - prepad, 0.0)
     clip_start = min(clip_start, video_duration - 0.001)
+
+    # If not enough footage remains after ai_start, back up the start
+    # so we still get the full requested duration (avoids tiny tail clips
+    # that force video_editor to loop-repeat one clip at the end).
+    if video_duration >= max_duration and clip_start + max_duration > video_duration:
+        clip_start = video_duration - max_duration
 
     # compute clip end safely
     clip_end = min(clip_start + max_duration, video_duration)
@@ -869,8 +875,11 @@ SHOT VARIETY — mandatory across the full edit:
 - Mix shot distances: if segment N is a wide shot, segment N+1 should be a close-up or reaction — not another wide shot.
 - MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible.
 
+WHY THESE BANS EXIST:
+Every clip you pick plays silently under OUR OWN narration — the viewer never hears the source video's original audio. So the footage must read as genuine, raw material of the subject itself, not as "someone else's video." Anything that reveals a third party's presence — their commentary, their branding, their editing choices, their outro — breaks that illusion and makes the Short look like a screen-recording of someone else's content. Keep that goal in mind rather than pattern-matching the list below literally: the test is always "does this frame show the real subject, cleanly, with no trace of a third party's video wrapped around it?"
+
 HARD BANS — never pick a timestamp that shows any of:
-- A creator, commentator, or presenter speaking directly to camera (talking-head style)
+- A creator, commentator, YouTuber, or reactor speaking directly to camera ABOUT the subject (talking-head style) — this means someone OTHER than the subject reacting to or narrating over footage. It does NOT mean the subject themselves. If the person on screen IS the subject of this video (e.g. the athlete, character, or public figure the script is actually about) shown in real, authentic footage — an interview, press conference, broadcast moment — that is ALLOWED and can be used normally, since it's genuine footage of the subject, not third-party commentary.
 - Static text screens, title cards, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
 - The first 10 seconds of any video (channel intros, animated logos, title cards)
@@ -901,12 +910,15 @@ Before writing JSON, verify:
 
 TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
 
+VISUAL CHECK — required per scene:
+For each scene, look at the exact frame at `start` and write a short `visual_check` string confirming what is actually visible there. It must explicitly rule out every HARD BAN: no watermark/logo dominating the frame, no text/title card, no third-party commentator/reactor talking about the subject, no replay indicator, no black screen or transition, not in the banned intro/outro window. Remember: the subject themselves appearing in real footage (interview, press conference, broadcast moment) is fine — only flag a "talking head" if it's someone OTHER than the subject. If you notice a genuine banned element while writing this, pick a different timestamp before outputting — do not describe a violation and keep the timestamp.
+
 OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 {{
   "scenes": [
-    {{"index": 0, "video_index": 0, "start": 12.5}},
-    {{"index": 1, "video_index": 1, "start": 8.0}},
+    {{"index": 0, "video_index": 0, "start": 12.5, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator"}},
+    {{"index": 1, "video_index": 1, "start": 8.0, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator"}},
     ...
   ]
 }}
@@ -958,6 +970,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 def run_manual_pipeline(data):
     """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
+    approved_videos, clip_paths, audio_path, music_path = [], [], None, None
     try:
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']
@@ -973,17 +986,17 @@ def run_manual_pipeline(data):
 
         print(f"🎮 Fetching visuals...")
 
-        approved_videos = []
         rejected_videos = []
+        used_video_ids = set()
         MAX_SOURCE_VIDEOS = 3
 
         for i, query in enumerate(YOUTUBE_QUERIES):
             print(f"📌 Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
-            video_paths = fetch_gameplay_by_search(
+            video_paths = fetch_video_material_by_search(
                 search_queries=[query],
                 max_videos=1,
                 retry_searches=5,
-                used_video_ids=set()
+                used_video_ids=used_video_ids
             )
             if not video_paths:
                 print(f"❌ No results for query '{query}', skipping...")
@@ -1022,6 +1035,12 @@ def run_manual_pipeline(data):
             if os.path.exists(path):
                 try:
                     os.remove(path)
+                except Exception:
+                    pass
+            title_file = os.path.splitext(path)[0] + ".title.txt"
+            if os.path.exists(title_file):
+                try:
+                    os.remove(title_file)
                 except Exception:
                     pass
 
@@ -1099,7 +1118,7 @@ def run_manual_pipeline(data):
         if not music_path:
             print("⚠️ Music generation failed, continuing without music.")
 
-        safe_subject = SUBJECT.replace(' ', '_')[:80]
+        safe_subject = re.sub(r'[^A-Za-z0-9_-]+', '_', SUBJECT)[:80]
         final_filename = f"Short_{safe_subject}_{random.randint(10, 99)}.mp4"
         punch_times = _match_punch_times(_punch_words, words_data) if (words_data and _punch_words) else []
         if punch_times:
@@ -1121,15 +1140,6 @@ def run_manual_pipeline(data):
 
         print(f"\n✅ DONE! Saved to: {final_path}")
 
-        if CLEANUP_FILES:
-            to_delete = {audio_path, music_path} | set(approved_videos) | set(clip_paths)
-            for path in to_delete:
-                if path and os.path.exists(path):
-                    try:
-                        os.remove(path)
-                    except Exception:
-                        pass
-
         return True
 
     except KeyError as e:
@@ -1137,6 +1147,18 @@ def run_manual_pipeline(data):
     except Exception as e:
         print(f"❌ Pipeline Error: {e}")
         traceback.print_exc()
+    finally:
+        if CLEANUP_FILES:
+            to_delete = {audio_path, music_path} | set(approved_videos) | set(clip_paths)
+            for path in approved_videos:
+                if path:
+                    to_delete.add(os.path.splitext(path)[0] + ".title.txt")
+            for path in to_delete:
+                if path and os.path.exists(path):
+                    try:
+                        os.remove(path)
+                    except Exception:
+                        pass
 
 if __name__ == "__main__":
     if MANUAL_DATA:
