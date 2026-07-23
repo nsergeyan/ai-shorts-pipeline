@@ -44,29 +44,32 @@ CLEANUP_FILES = True
 CLIP_DURATION = 60.0
 SLEEP_INTERVAL = 5
 MIN_CLIP_DURATION = 3.0
-MIN_SEGMENT_DURATION = 10.0
+MIN_SEGMENT_DURATION = 6.0
 MAX_CLIPS = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "Invincible",
-  "topic": "Viltrumites never shave — the hidden Toolock-Pull technique and the dark meaning of the mustache",
-  "specific_subject": "Thaedus ripping off his beard in one motion to reveal he is a Viltrumite, and the mustache custom honoring Emperor Argall",
+  "series": "murder drones",
+  "title": "The official Murder Drones comic rewrote the pilot's bunker scene so J spares Uzi because she probably tastes terrible",
+  "topic": "The just-concluded comic adaptation quietly changed the pilot's most famous scene — and gave J the pettiest reason to spare Uzi",
+  "pillar": "A",
+  "specific_subject": "Issue one's altered bunker scene where J sees Uzi alive and walks away, versus the pilot where N hides her",
   "youtube_queries": [
-    "thaedus rips his beard off invincible",
-    "thaedus reveals he is a viltrumite",
-    "thaedus edit invincible",
-    "invincible thaedus allen scene",
-    "thaedus beard scene reaction",
-    "invincible official clip thaedus"
+    "murder drones pilot bunker scene",
+    "murder drones J best moments",
+    "murder drones J edit",
+    "murder drones episode 1 uzi n",
+    "murder drones comic reaction",
+    "murder drones official pilot"
   ],
-  "scene_query": "Elderly alien man with long white beard and dark ceremonial robes grips his own beard with one hand and tears the entire beard off in a single swift motion, revealing a clean white mustache underneath, while a shocked pink one-eyed muscular alien stares at him inside a futuristic room with glowing panels",
-  "music_mood": "curious",
+  "scene_query": "A dark industrial bunker interior where a small purple-haired robot girl lies injured on the floor while a stern robot woman in a black and gold corporate uniform with glowing yellow eyes looks down at her dismissively and turns away, next to a comic book panel screenshot of the same scene",
   "music_query": null,
-  "music_prompt": "Dark atmospheric trap with a sci-fi ambient sub-genre, ninety BPM, built on deep sub bass, airy synth pads, and a soft ticking hi-hat like a secret being counted down; starts quiet and curious, tightens with rising tension, then hits a sudden low drop at the reveal around the midpoint before settling into an unresolved, eerie outro; short-form video background, no lyrics, exclude: upbeat pop melodies, heavy distorted guitars",
+  "music_prompt": "Sly mysterious electro-swing-tinged synth piece, one hundred BPM, built on a creeping bass pulse, muted glitchy percussion, and a faint music-box melody for eerie contrast; opens quiet and conspiratorial under the hook, tenses through the scene comparison, drops a cheeky stab on the tastes-terrible reveal around second twenty, then rides a smug groove to the final question; short-form video background, no lyrics, exclude: epic orchestral drums, happy ukulele",
   "voice_name": "Hamid",
-  "script": "Viltrumites can survive a planet exploding. [curious] So how do they shave? Razors do nothing to their skin. Here's the thing... they don't shave. *EVER!* They use a move called the Toolock Pull. [whispers] They grab the whole beard and rip it off in one motion. And it doesn't even hurt. [laughs] Masters can tear the beard away and leave the mustache perfect. That's how Thaedus proved he was a Viltrumite. He hid behind that beard for a thousand years. [surprised] And the mustache he kept? It honors their first emperor... the same emperor Thaedus secretly killed. So what else is that mustache hiding?"
+  "script": "The official Murder Drones comic rewrote the pilot's most famous scene, and J's reason is an insult. [curious] So here's the thing. The comic adaptation just finished this month with issue six. But back in issue one, the bunker scene plays out differently. In the show, N hides injured Uzi so J never sees her. In the comic, J sees her lying right there... alive. *BUT!* she just walks away. [mischievously] Her reason? Uzi probably TASTES terrible. [chuckles] The deadliest drone on Copper Nine, beaten by picky eating. [surprised] Fans call it out of character — it's right there on the page. Which version wins?"
 }
+
+
 
 def _strip_punch_markers(script: str):
     """Strip *word* markers from script. Returns (clean_script, [word, ...]).
@@ -865,6 +868,8 @@ VISUAL-SCRIPT MATCHING (core rule):
 - Reveal / surprise segment → a reaction shot, an impact visual, something with weight.
 - Calm / explanatory segment → a clear mid-shot establishing what is being described.
 - DO NOT assign generic-looking footage that has nothing to do with the narration text.
+- NAMED OBJECT RULE: if the segment names a specific object, prop, weapon, or item (e.g. "the guitar", "his sword", "the case"), the frame at `start` MUST show that object visibly on screen — the subject merely being present is NOT enough. Scan specifically for the moment that object is in frame, even if it means a less "epic" shot. Only fall back to a generic shot of the subject if that object never appears anywhere in the footage.
+- Before picking a timestamp, name the specific word or phrase in that segment's text the shot must visually support. If you cannot point to one, the segment is too vague to justify a specific action shot — fall back to a clear, on-topic shot of the subject rather than an unrelated "cool" moment. You will restate this connection in `relevance_note` below, so do not pick a timestamp you can't justify this way.
 
 PACING RULE — energy alternation:
 Use your tier tags to vary the edit rhythm. After a HIGH clip, prefer a MID or LOW clip next (not another HIGH). After two non-HIGH clips, return to HIGH. This prevents the edit from feeling like a wall of highlights with no breathing room.
@@ -898,7 +903,7 @@ STEP 4 — SELF-CHECK BEFORE OUTPUT
 ════════════════════════════════════
 Before writing JSON, verify:
 ☐ Segment 0 is the single most visually striking shot available across all videos
-☐ Every clip visually matches what its segment text is saying
+☐ Every clip visually matches what its segment text is saying — you can name the exact word/phrase each shot supports
 ☐ Energy tiers alternate — no two consecutive HIGH clips after the opening pair
 ☐ All selected shots show the subject actively doing something (not just standing/posing)
 ☐ No two consecutive clips are from the same timestamp range in the same video
@@ -913,12 +918,15 @@ TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
 VISUAL CHECK — required per scene:
 For each scene, look at the exact frame at `start` and write a short `visual_check` string confirming what is actually visible there. It must explicitly rule out every HARD BAN: no watermark/logo dominating the frame, no text/title card, no third-party commentator/reactor talking about the subject, no replay indicator, no black screen or transition, not in the banned intro/outro window. Remember: the subject themselves appearing in real footage (interview, press conference, broadcast moment) is fine — only flag a "talking head" if it's someone OTHER than the subject. If you notice a genuine banned element while writing this, pick a different timestamp before outputting — do not describe a violation and keep the timestamp.
 
+RELEVANCE NOTE — required per scene:
+Also write a short `relevance_note` string: name the exact word or phrase from that segment's text, and one sentence on how the frame at `start` visually supports it. If you cannot honestly connect the frame to specific words in the segment, that is a signal to pick a different timestamp before outputting — do not write a vague or generic relevance_note and keep the timestamp.
+
 OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 {{
   "scenes": [
-    {{"index": 0, "video_index": 0, "start": 12.5, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator"}},
-    {{"index": 1, "video_index": 1, "start": 8.0, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator"}},
+    {{"index": 0, "video_index": 0, "start": 12.5, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'pulls out a sharp V-shaped guitar' — frame shows him mid-draw pulling the guitar from its case"}},
+    {{"index": 1, "video_index": 1, "start": 8.0, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'strict old man who hates anything modern' — frame shows him in a stern, traditional pose"}},
     ...
   ]
 }}
@@ -954,12 +962,22 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     try:
         result = json.loads(text)
         scenes = sorted(result.get("scenes", []), key=lambda x: x["index"])
+        INTRO_BAN_SEC = 10.0   # matches "first 10 seconds" ban in the prompt
+        OUTRO_BAN_SEC = 30.0   # matches "last 30 seconds" ban in the prompt
+
         validated = []
         for scene in scenes:
             vi = min(max(scene.get("video_index", 0), 0), len(video_paths) - 1)
             scene["video_index"] = vi
-            max_start = max(video_durations[vi] - 2.0, 0.0)
-            scene["start"] = round(min(max(scene.get("start", 0.0), 0.0), max_start), 2)
+            dur = video_durations[vi]
+
+            lo = INTRO_BAN_SEC
+            hi = dur - OUTRO_BAN_SEC - 2.0
+            if hi < lo:
+                # Video too short to honor both bans — fall back to the old, looser bound.
+                lo, hi = 0.0, max(dur - 2.0, 0.0)
+
+            scene["start"] = round(min(max(scene.get("start", 0.0), lo), hi), 2)
             validated.append(scene)
         print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s)")
         return validated, video_paths

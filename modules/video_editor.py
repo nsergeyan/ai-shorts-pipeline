@@ -16,6 +16,24 @@ SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
 _FLASH_SFX = "21 - Camera Flash.MP3"
 _PUNCH_SFX_FILES = ["awkward_moment.mp3", "radio_peep.mp3"]
+_PUNCH_SFX_STATE_FILE = os.path.join(DATA_DIR, "_punch_sfx_state.json")
+
+
+def _next_punch_sfx() -> str:
+    """Alternate strictly between punch SFX files across runs (persisted to disk)."""
+    last_index = -1
+    try:
+        with open(_PUNCH_SFX_STATE_FILE) as f:
+            last_index = json.load(f).get("last_index", -1)
+    except Exception:
+        pass
+    next_index = (last_index + 1) % len(_PUNCH_SFX_FILES)
+    try:
+        with open(_PUNCH_SFX_STATE_FILE, "w") as f:
+            json.dump({"last_index": next_index}, f)
+    except Exception:
+        pass
+    return _PUNCH_SFX_FILES[next_index]
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FINAL_DIR = os.path.join(DATA_DIR, "final")
@@ -185,7 +203,7 @@ def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float]
             events.append({"time": round(accumulated, 3), "file": f"{base_url}/{encoded}", "volume": volume})
 
     for pt in (punch_times or []):
-        sfx_file = random.choice(_PUNCH_SFX_FILES)
+        sfx_file = _next_punch_sfx()
         abs_path = os.path.join(SFX_DIR, sfx_file)
         if os.path.exists(abs_path):
             rel = os.path.relpath(abs_path, PROJECT_ROOT)

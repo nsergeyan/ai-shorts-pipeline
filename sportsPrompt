@@ -5,12 +5,11 @@ DO NOT EXAGGERATE FACTS!
 TARGET SPORT SELECTION
 ═══════════════════════════════════
 You have to pick target sport, which is right now hyping.
-Set TARGET SPORT to one of: soccer / boxing / ufc / formula one.
+Set TARGET SPORT to one of: soccer / boxing  / formula one.
 If all of them are very hyped, then pick random number:
-one → soccer (association football)
+one → soccer (football)
 two → boxing
-three → ufc / mma
-four → formula one (F1)
+tree → formula one (F1)
 
 All rules below apply to the chosen sport. Use that sport's correct names, competitions, and sources.
 
@@ -145,7 +144,7 @@ You may NOT rely on memory for any factual claim. Memory is treated as Tier thre
 For the single chosen candidate, you MUST:
 
 STEP 1 — SEARCH: Run at least three web searches to verify the fact, targeting different source types:
-  • the official record/stat body (FIFA / UEFA / league site, UFC Stats / BoxRec / Transfermarkt / Formula1.com / FIA, Guinness World Records, official club/org announcement)
+  • the official record/stat body (FIFA / UEFA  / BoxRec / Transfermarkt / Formula1.com / FIA, Guinness World Records, official club/org announcement)
   • a reputable outlet reporting it (BBC Sport, ESPN, The Athletic, Reuters, AP, Sky Sports, Autosport, Motorsport.com, The Race)
   • a cross-check search phrased to DISPROVE it (e.g. "is [claim] actually true" / "[claim] myth" / "[record] still standing [current year]")
 
@@ -160,7 +159,7 @@ HARD RULE: If you cannot open and confirm a real source this session, you may NO
 ANTI-FABRICATION RULE (hard stop): never write a number, date, or scoreline you have not confirmed in an opened source this session. If you are guessing to fill the box — STOP, drop to Tier three (and flag it) or discard.
 
 TIER DEFINITIONS (sports)
-Tier one — CONFIRMED: official record/stat body or primary source, opened and confirmed this session — FIFA / UEFA / league site, UFC Stats / ESPN, BoxRec, Transfermarkt, Formula1.com / FIA, Guinness World Records, official announcement, or documented interview/press conference.
+Tier one — CONFIRMED: official record/stat body or primary source, opened and confirmed this session — FIFA / UEFA / ESPN, BoxRec, Transfermarkt, Formula1.com / FIA, Guinness World Records, official announcement, or documented interview/press conference.
 Tier two — SOURCED: a reputable outlet OR a wiki article WITH its own citation, both opened and confirmed this session.
 Tier three — CLAIM / STORY: anecdotal, disputed, or "the story goes". Script MUST say "the story goes", "reportedly", or "many believe".
 
@@ -220,7 +219,7 @@ Top short-form sports creators build every video on the same five beats. Map you
 BEAT one — HOOK (first spoken sentence, roughly the first two seconds):
 - This is the whole game. The platforms read a drop-off in the first three seconds as a negative signal and throttle reach.
 - Name the famous subject AND open a loop in the same breath. Tease the surprise; do NOT fully reveal it yet.
-- BANNED openers: "Did you know", "Here's a fact", "In football/boxing/the UFC…", "Let me tell you about". Start mid-impact.
+- BANNED openers: "Here's a fact", "In football/boxing/, "Let me tell you about". Start mid-impact.
 - Good hook shape: "[Famous athlete/fight] has a detail nobody talks about…" / "There's something nobody noticed about [famous moment]…"
 
 BEAT two — SETUP (one sentence, max two):
@@ -402,6 +401,11 @@ DO NOT generate queries that are slight rephrasings of the same idea. Each must 
 
 OUTPUT: Replace every bracket with real athlete/event/moment names before outputting. No leftover brackets.
 
+
+
+EXAMPLE OF A GOOD VIDEO SCRIPT:
+  "script": "[curious] Lamine Yamal just got the strangest birthday gift in World Cup history. This week he turned nineteen, one day before Spain's semifinal against France. [chuckles] At his press conference he joked he wanted only one gift... a win, and a trip to New York for the final. The next day, Spain won two nil. *BUT!* here's the crazy part. Yamal was born on July thirteenth. The very FIRST World Cup match ever? Also July thirteenth... nineteen thirty. [surprised] He shares his birthday with the World Cup itself. And that day's first goal came in minute NINETEEN. His new age. [mischievously] Coincidence... or destiny?"
+
 ═══════════════════════════════════
 JSON OUTPUT FORMAT
 ═══════════════════════════════════
@@ -422,11 +426,71 @@ JSON OUTPUT FORMAT
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
-1. rico verhoeven vs usyk — the one boxing fight detail and the one-second stoppage #box #boxing🥊 #usyk
-2. charles oliveira fighting blind #ufc #oliveira
-3. toni kroos' ten-year boot obsession #football #tonikross #kross #sport
-4. red and yellow cards history in footbal #football #sports
-5. gary lineker's perfect disciplinary record #football #sports
-6. the fastest penalty in formula one history #formula1 #f1
-7.Messi world cup record goals.
+Spain's goalkeeper just did something never seen in World Cup history   #football #worldcup
+858 views
 
+Lamine Yamal shares his exact birthday with the World Cup itself  #football
+9.3K views
+
+Spain's two-year unbeaten streak  #football #worldcup
+1.1K views
+
+McGregor's knee has now failed him twice against the same opponent, thirteen years apart #ufc
+9 views
+
+Haaland was born in England and today he's trying to knock England out of the World Cup  #football
+1.3K views
+
+Haaland's secret teenage rap song just hit number one during the World Cup  #football #halland
+1.3K views
+
+Gilberto Mora — Mexico, 17 years old, youngest player at the 2026 World Cup #wordlcup #football
+21K views
+
+the hidden detail behind UFC 329 #conormcgregor
+1.2K views
+
+Brazil have never beaten Norway — and Norway just knocked them out of the 2026 World Cup #football
+1.3K views
+
+The new World Cup rule that sends you off for covering your mouth  #football #worldcup
+2.7K views
+
+Conor McGregor's takedown count vs Max Holloway (2013) compared to the rest of his UFC career  #ufc
+872 views
+
+Paraguay's World Cup upset of Germany — the pass-count gap behind it #football
+1.1K views
+
+Vozinha the hero the man  #football
+1.2K views
+
+kimi Antonellis record, and big chanse of winning!! #f1 #formula1
+1.4K views
+
+Cristiano Ronaldos new record at FIFA World Cups #football #ronaldo
+1.2K views
+
+Lionel Messi's first-ever World Cup hat trick  #football #messi
+1.3K views
+
+Kimi Antonelli passed his road driving test six weeks before his F1 debut #formula1 #f1 #sports
+1.3K views
+
+messi eighteen world cup goals RECORD! #worldcup #football #messi
+1.3K views
+
+Rico Verhoeven vs Usyk detail #boxing #ricoverhoeven #usyk
+1K views
+
+Charles Oliveira Fighting Blind #ufc
+2K views
+
+Toni Kroos' ten-year boot obsession #tonikroos #sports #football #realmadrid
+5.1K views
+
+Gary Lineker's perfect disciplinary record #sports #football
+3.8K views
+
+The fastest penalty in Formula One history. #f1 #formula1
+2.6K views
