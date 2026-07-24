@@ -2,11 +2,16 @@ import os
 import re
 import subprocess
 from elevenlabs.client import ElevenLabs
-from elevenlabs.types import DialogueInput
+from elevenlabs.types import DialogueInput, ModelSettingsResponseModel
 from config import DATA_DIR, ELEVENLABS_API_KEY
 
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
+
+# The US regional endpoint serves the good eleven_v3 render. The global default
+# (api.elevenlabs.io) returns a flat/robotic voice for this account, matching the
+# website only when we hit this host. Confirmed by capturing the web app's request.
+ELEVENLABS_BASE_URL = "https://api.us.elevenlabs.io"
 
 ELEVENLABS_API_KEYS = [ELEVENLABS_API_KEY] if ELEVENLABS_API_KEY else []
 
@@ -35,7 +40,7 @@ def _try_generate_with_key(
         lang: str
 ) -> bool:
     """Attempt to generate TTS audio with a single ElevenLabs API key. Returns True on success."""
-    client = ElevenLabs(api_key=api_key)
+    client = ElevenLabs(api_key=api_key, base_url=ELEVENLABS_BASE_URL)
     print(f"🔑 Using key: {api_key[:6]}... for Language: {lang.upper()}")
 
     tmp_path = output_path + ".partial"
@@ -53,6 +58,8 @@ def _try_generate_with_key(
         else:
             audio_stream = client.text_to_dialogue.convert(
                 inputs=[DialogueInput(text=cleaned_text, voice_id=voice_id)],
+                model_id="eleven_v3",
+                settings=ModelSettingsResponseModel(stability=0.5),
                 output_format="mp3_44100_192",
             )
 
