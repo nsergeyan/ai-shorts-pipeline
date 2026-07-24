@@ -10,7 +10,7 @@ import threading
 import urllib.parse
 from typing import List, Optional, Union
 
-from config import DATA_DIR, CTA_PATH
+from config import DATA_DIR, CTA_PATH, THUMBNAIL_DIR
 
 SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
@@ -316,4 +316,41 @@ def merge_audio_video(
             os.rename(remotion_out, out_path)
 
     print(f"✅  Saved: {out_path}")
+    return out_path
+
+
+def render_thumbnail(frame_path: str, hook_lines: List[dict], output_name: str) -> str:
+    """Render a static thumbnail: a real footage frame (CSS-enhanced) + brand-styled,
+    multi-color hook text (e.g. [{"text": "PRIME", "color": "#FFE000"}, ...]).
+    No generative AI involved — deterministic and free."""
+    out_path = os.path.join(THUMBNAIL_DIR, output_name)
+
+    httpd, port = _start_asset_server(PROJECT_ROOT)
+    base_url = f"http://127.0.0.1:{port}"
+
+    try:
+        props = {
+            "framePath": _asset_url(frame_path, base_url),
+            "hookLines": hook_lines,
+        }
+        props_path = os.path.join(REMOTION_DIR, "thumbnail_props.json")
+        with open(props_path, "w") as f:
+            json.dump(props, f, indent=2)
+
+        subprocess.run(
+            [
+                "npx", "remotion", "still",
+                "Thumbnail",
+                "--props", props_path,
+                "--output", out_path,
+                "--width", "1080",
+                "--height", "1920",
+            ],
+            check=True,
+            cwd=REMOTION_DIR,
+        )
+    finally:
+        httpd.shutdown()
+
+    print(f"🖼️  Thumbnail saved: {out_path}")
     return out_path

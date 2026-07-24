@@ -37,6 +37,7 @@ manualprompt.txt
 remotion/node_modules/
 remotion/.cache/
 remotion/props.json
+remotion/thumbnail_props.json
 
 
 skills-lock.json

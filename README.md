@@ -10,6 +10,7 @@ An automated end-to-end pipeline that produces YouTube Shorts and TikTok videos 
 Prompt → Script → YouTube Search → AI Video Evaluation → Voice (ElevenLabs v3)
        → Transcription (Whisper) → Multi-Scene Detection (Gemini)
        → Music (ElevenLabs) → Remotion Render + FFmpeg CTA → Final Short (.mp4)
+                                          ↘ Thumbnail Pick (Gemini) → Thumbnail (.png)
 ```
 
 Each stage passes structured data to the next. If the AI rejects a video (bad quality, wrong scene), the pipeline retries automatically with the next YouTube query.
@@ -34,6 +35,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **Controlled pacing** — Narration sentences are merged into groups of at least 10 seconds before scene detection, keeping transitions to ~3–4 per 30-second video. Individual clips have a 3-second floor so no clip is shorter than a single cut
 - **FFmpeg chroma key CTA** — Green screen call-to-action video is keyed out via FFmpeg `chromakey` filter and composited over the final 8 seconds of the video
 - **Multi-method YouTube download** — Three fallback download strategies (Android client, no-cookies, CLI) to handle YouTube's bot detection
+- **Automatic thumbnail generation** — Alongside the video, the pipeline produces a matching 1080×1920 thumbnail image. Gemini reuses the footage it already uploaded for scene detection to pick the single most scroll-stopping frame (with crop-safety and intro/outro/watermark bans), then writes a short comic-style hook split into 1–3 lines, each colored white, yellow, or red for emphasis. FFmpeg extracts the chosen frame and Remotion renders the final PNG with a bold display font. This is a deterministic composite (real frame + styled text), not a generative image model — so it costs nothing extra and never hallucinates the subject. Output lands in `data/thumbnails/`, named to match the final video
 - **Multi-language support** — English, Russian, and Spanish voice generation with language-specific ElevenLabs model settings
 
 ---
@@ -99,6 +101,9 @@ ffmpeg -i base.mp4 -i CTA.mp4 \
 ```
 The CTA overlaps the last 8 seconds of the narration (not appended after).
 
+### 8. Thumbnail Generation
+After the video is saved, the pipeline builds a matching thumbnail image. `find_thumbnail_with_gemini` reuses the same footage files already uploaded to Gemini during scene detection (no extra upload cost) and asks for one JSON object: the single best `(video_index, start)` frame and a `hook_lines` array of 1–3 short colored lines. The prompt enforces crop-safety (the frame is cropped to 9:16, so the subject must be centered and large) and bans watermarks, baked-in text, reactors, and intro/outro frames. FFmpeg extracts that exact frame as a JPG, then `render_thumbnail` in `modules/video_editor.py` renders it through the Remotion `Thumbnail` composition (`npx remotion still`) — the real frame as a background with the styled hook text on top — and writes a `1080×1920` PNG to `data/thumbnails/`. It is a deterministic image composite, not a generative image model, so it is free and always shows the actual footage.
+
 ---
 
 ## Project Structure
@@ -124,7 +129,8 @@ YOutuber/
         ├── index.ts           # Entry point (registerRoot)
         ├── Root.tsx           # Composition registration + calculateMetadata
         ├── compositions/
-        │   └── ShortVideo.tsx # Main composition (clips, audio, subtitles, transitions)
+        │   ├── ShortVideo.tsx # Main composition (clips, audio, subtitles, transitions)
+        │   └── Thumbnail.tsx  # Static thumbnail still (footage frame + colored hook text)
         └── components/
             ├── WordHighlight.tsx  # Word-level subtitle with spring animation
             ├── ProgressBar.tsx    # Playback progress bar

@@ -2,6 +2,7 @@ import React from "react";
 import { Composition } from "remotion";
 import { ShortVideo, ShortVideoProps } from "./compositions/ShortVideo";
 import { SubtitlePreview } from "./compositions/SubtitlePreview";
+import { Thumbnail, ThumbnailProps } from "./compositions/Thumbnail";
 
 const DEFAULT_FPS = 30;
 
@@ -39,6 +40,16 @@ export const RemotionRoot: React.FC = () => {
       fps={DEFAULT_FPS}
       width={1080}
       height={1920}
+    />
+    <Composition
+      id="Thumbnail"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      component={Thumbnail as any}
+      durationInFrames={1}
+      fps={DEFAULT_FPS}
+      width={1080}
+      height={1920}
+      defaultProps={{ framePath: "", hookLines: [] } as ThumbnailProps}
     />
     </>
   );

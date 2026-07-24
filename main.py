@@ -15,7 +15,7 @@ from sympy.parsing.sympy_parser import null
 
 subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
 
-from config import GEMINI_API_KEYS
+from config import GEMINI_API_KEYS, DATA_DIR
 
 if not GEMINI_API_KEYS:
     raise RuntimeError("GEMINI_API_KEYS is not set. Add it to your .env file.")
@@ -27,11 +27,35 @@ def _gemini_client():
     key = next(_key_pool)
     print(f"🔑 Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
+
+def _upload_and_wait(client, path, label=None):
+    """Upload a file to Gemini and block until ACTIVE, retrying transient 500s.
+
+    Files are scoped to the API key/project that uploaded them, so any file
+    handle must be re-created after rotating to a different key.
+    """
+    uf = client.files.upload(file=path)
+    print(f"📤 Uploaded {label or os.path.basename(path)}: {uf.name}")
+    file_info = client.files.get(name=uf.name)
+    poll_errors = 0
+    while file_info.state != "ACTIVE":
+        time.sleep(2)
+        try:
+            file_info = client.files.get(name=uf.name)
+            poll_errors = 0
+        except Exception as e:
+            if "500" in str(e) or "INTERNAL" in str(e):
+                poll_errors += 1
+                if poll_errors >= 10:
+                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s") from e
+            else:
+                raise
+    return uf
 try:
     from modules.video_material_fetcher import fetch_video_material_by_search
     from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
-    from modules.video_editor import merge_audio_video
+    from modules.video_editor import merge_audio_video, render_thumbnail
     from modules.transcriber import transcribe_audio_to_words
 except ImportError as e:
     print(f"Error importing modules: {e}")
@@ -49,24 +73,21 @@ MAX_CLIPS = 5
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "murder drones",
-  "title": "The official Murder Drones comic rewrote the pilot's bunker scene so J spares Uzi because she probably tastes terrible",
-  "topic": "The just-concluded comic adaptation quietly changed the pilot's most famous scene — and gave J the pettiest reason to spare Uzi",
+  "series": "The Amazing Digital Circus",
+  "title": "The finale's fake human social media accounts are real and you can visit them in The Amazing Digital Circus",
+  "topic": "Glitch secretly created the real-world social media accounts of the humans shown in episode nine before the finale released",
   "pillar": "A",
-  "specific_subject": "Issue one's altered bunker scene where J sees Uzi alive and walks away, versus the pilot where N hides her",
+  "specific_subject": "Episode 9 'Remember' — Caine's slideshow of the original humans, and the real @AbbyAdventures57 / @moezoe26 accounts",
   "youtube_queries": [
-    "murder drones pilot bunker scene",
-    "murder drones J best moments",
-    "murder drones J edit",
-    "murder drones episode 1 uzi n",
-    "murder drones comic reaction",
-    "murder drones official pilot"
+    "TADC // Episode 9 Real Names Revealed",
+    "tadc finale ending emotional",
+    "the amazing digital circus the last act official trailer"
   ],
-  "scene_query": "A dark industrial bunker interior where a small purple-haired robot girl lies injured on the floor while a stern robot woman in a black and gold corporate uniform with glowing yellow eyes looks down at her dismissively and turns away, next to a comic book panel screenshot of the same scene",
-  "music_query": null,
-  "music_prompt": "Sly mysterious electro-swing-tinged synth piece, one hundred BPM, built on a creeping bass pulse, muted glitchy percussion, and a faint music-box melody for eerie contrast; opens quiet and conspiratorial under the hook, tenses through the scene comparison, drops a cheeky stab on the tastes-terrible reveal around second twenty, then rides a smug groove to the final question; short-form video background, no lyrics, exclude: epic orchestral drums, happy ukulele",
+  "scene_query": "A colorful digital circus tent stage where a floating ringmaster with a golden jaw head projects a bright slideshow of photos showing ordinary real-life people, while cartoon characters including a small jester girl with red and blue eyes watch; also a screenshot of a real YouTube channel page for an urban exploration vlogger named AbbyAdventures57",
+  "music_query": "tadc your new home instrumental",
+  "music_prompt": "soft mysterious lo-fi circus waltz, gentle music-box and celesta over warm sub bass and light vinyl crackle, eighty five BPM, quiet wonder building into a bittersweet emotional swell at the reveal around second twenty, short-form video background, no lyrics, exclude: aggressive drums, comedic honking brass",
   "voice_name": "Hamid",
-  "script": "The official Murder Drones comic rewrote the pilot's most famous scene, and J's reason is an insult. [curious] So here's the thing. The comic adaptation just finished this month with issue six. But back in issue one, the bunker scene plays out differently. In the show, N hides injured Uzi so J never sees her. In the comic, J sees her lying right there... alive. *BUT!* she just walks away. [mischievously] Her reason? Uzi probably TASTES terrible. [chuckles] The deadliest drone on Copper Nine, beaten by picky eating. [surprised] Fans call it out of character — it's right there on the page. Which version wins?"
+  "script": "[curious] The humans from the Digital Circus finale have real social media accounts, and you can visit them right now. In episode nine, Caine shows everyone what their original humans are doing today. [surprised] Fans typed the usernames from those screens into YouTube... and they actually *EXIST!* Abigail's urban exploring channel is real. Gangle's human has a Twitter with exactly one tweet. [chuckles] Very Gangle. [whispers] Glitch quietly built these accounts before the episode even dropped. And the number fifty seven hides in almost every profile, and nobody fully knows why. [mischievously] So... did you go looking yet, or am I first?"
 }
 
 
@@ -360,6 +381,7 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
             elif "429" in str(e):
                 print(f"⚠️ Gemini 429 on music eval, rotating key... ({attempt}/{max_attempts})")
                 client = _gemini_client()
+                uploaded_file = _upload_and_wait(client, music_path, label="YouTube music")
                 time.sleep(5)
             else:
                 raise
@@ -515,6 +537,7 @@ def evaluate_video_with_genai(video_path, script_text):
             elif "429" in str(e):
                 print(f"⚠️ Gemini 429 quota hit, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
+                uploaded_file = _upload_and_wait(client, video_path)
                 time.sleep(5)
             else:
                 raise
@@ -763,7 +786,7 @@ def find_scenes_with_gemini(video_paths, script_segments):
 
     if not video_paths:
         print("⚠️ All source videos failed ffprobe — using fallback scene plan.")
-        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], []
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], [], [], client
 
     uploaded_files = []
     for i, vp in enumerate(video_paths):
@@ -950,6 +973,11 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             elif "429" in str(e):
                 print(f"⚠️ Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
+                uploaded_files = [
+                    _upload_and_wait(client, vp, label=f"Video {i}")
+                    for i, vp in enumerate(video_paths)
+                ]
+                contents = uploaded_files + [prompt]
                 time.sleep(5)
             else:
                 raise
@@ -980,15 +1008,136 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             scene["start"] = round(min(max(scene.get("start", 0.0), lo), hi), 2)
             validated.append(scene)
         print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s)")
-        return validated, video_paths
+        return validated, video_paths, uploaded_files, client
     except Exception as e:
         print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
-        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)], video_paths
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)], video_paths, uploaded_files, client
+
+
+def find_thumbnail_with_gemini(client, uploaded_files, video_paths, topic, subject):
+    """
+    Reuses the already-uploaded (ACTIVE) video files from find_scenes_with_gemini to pick
+    the single best thumbnail frame across all footage, plus a short punchy hook broken
+    into 1-3 colored lines (comic-thumbnail style, e.g. "PRIME" yellow / "SUKUNA" red).
+    Returns {"video_index", "start", "hook_lines": [{"text", "color"}, ...]} or None.
+    """
+    if not uploaded_files or not video_paths:
+        return None
+
+    video_durations = []
+    for vp in video_paths:
+        try:
+            info = ffmpeg.probe(vp)
+            vs = next(s for s in info["streams"] if s["codec_type"] == "video")
+            video_durations.append(float(vs["duration"]))
+        except Exception:
+            video_durations.append(0.0)
+
+    prompt = f"""
+You are picking the single YouTube Shorts / TikTok THUMBNAIL frame for this video — the static
+image someone sees before they tap play. This is a separate job from editing the video itself.
+
+TOPIC: {topic}
+SUBJECT: {subject}
+
+Across all the source videos provided, find the ONE frame that would make someone stop
+scrolling and tap: the most visually striking, dramatic, or emotionally loaded moment —
+a clear expression, a dramatic pose, a strong silhouette. It does not need to match any
+specific script segment, it just needs to be the single best-looking, clearest frame of
+the main subject(s) available anywhere in the footage.
+
+CROP SAFETY (important): this frame will be cropped from its original widescreen shape into
+a tall 9:16 vertical thumbnail, centered horizontally, biased slightly toward the top. That
+means the left and right edges of the frame get cut off, and a wide/far shot will lose most
+of its width. Pick a frame where the main subject is horizontally centered (or close to it)
+and large enough in frame that a centered vertical crop still keeps them fully visible and
+not awkwardly sliced at the shoulders/arms. Avoid frames where the subject is off to one side,
+very small/distant, or where two subjects are spread far apart horizontally.
+
+HARD BANS — never pick a frame with:
+- A watermark, channel logo, or platform bug dominating the frame
+- Any text, title card, or caption baked into the footage
+- A third-party commentator/reactor talking about the subject (someone other than the subject)
+- Black screen, fade transition, or replay indicator
+- The first 10 seconds or last 30 seconds of any video (intros/outros)
+
+Also write a short HOOK, split into 1-3 short lines, comic-thumbnail style, 3 to 6 words
+total, curiosity-driven (like "BIGGEST MISCONCEPTION ABOUT / HIS TECHNIQUE" or
+"GOAT / OR OVERRATED" or "THE ONLY / HOPE"). Base it on the topic/subject above, not on the
+frame alone. Give EACH line its own color from this palette only: "#FFFFFF" (white),
+"#FFE000" (yellow), "#FF3B30" (red). Use color to emphasize the most dramatic word/line,
+the way real viral reaction thumbnails do, don't make every line the same color.
+
+OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
+{{"video_index": 0, "start": 12.5, "hook_lines": [{{"text": "PRIME", "color": "#FFE000"}}, {{"text": "SUKUNA", "color": "#FF3B30"}}]}}
+"""
+
+    contents = uploaded_files + [prompt]
+
+    max_attempts = 5
+    response = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=contents,
+            )
+            break
+        except Exception as e:
+            if "503" in str(e):
+                print(f"⚠️ Gemini 503 (thumbnail), retrying in 20s... (attempt {attempt}/{max_attempts})")
+                time.sleep(20)
+            elif "429" in str(e):
+                print(f"⚠️ Gemini 429 (thumbnail), rotating key... (attempt {attempt}/{max_attempts})")
+                client = _gemini_client()
+                uploaded_files = [
+                    _upload_and_wait(client, vp, label=f"Video {i}")
+                    for i, vp in enumerate(video_paths)
+                ]
+                contents = uploaded_files + [prompt]
+                time.sleep(5)
+            else:
+                print(f"⚠️ Thumbnail selection failed: {e}")
+                return None
+
+    if response is None:
+        print("⚠️ Thumbnail selection failed after max retries.")
+        return None
+
+    text = re.sub(r"```json|```", "", response.text).strip()
+    try:
+        result = json.loads(text)
+        vi = min(max(result.get("video_index", 0), 0), len(video_paths) - 1)
+        dur = video_durations[vi]
+        lo, hi = 10.0, max(dur - 30.0 - 2.0, 0.0)
+        if hi < lo:
+            lo, hi = 0.0, max(dur - 2.0, 0.0)
+        start = round(min(max(result.get("start", 0.0), lo), hi), 2)
+
+        ALLOWED_COLORS = {"#FFFFFF", "#FFE000", "#FF3B30"}
+        hook_lines = []
+        for line in result.get("hook_lines", [])[:3]:
+            line_text = str(line.get("text", "")).strip().upper()
+            if not line_text:
+                continue
+            color = str(line.get("color", "#FFFFFF")).strip().upper()
+            if color not in ALLOWED_COLORS:
+                color = "#FFFFFF"
+            hook_lines.append({"text": line_text, "color": color})
+        if not hook_lines:
+            return None
+
+        print(f"🖼️ Thumbnail pick: video {vi} @ {start}s — {hook_lines}")
+        return {"video_index": vi, "start": start, "hook_lines": hook_lines}
+    except Exception as e:
+        print(f"⚠️ Failed to parse thumbnail JSON: {e}\nRaw: {text}")
+        return None
 
 
 def run_manual_pipeline(data):
     """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
     approved_videos, clip_paths, audio_path, music_path = [], [], None, None
+    thumb_frame_path = None
     try:
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']
@@ -1086,6 +1235,7 @@ def run_manual_pipeline(data):
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
         clip_paths = []
+        thumb_hook_lines = None
         if words_data is not None and len(words_data) > 0:
             script_segments = segment_by_sentences(words_data)
             script_segments = merge_short_segments(script_segments, MIN_SEGMENT_DURATION)
@@ -1096,7 +1246,7 @@ def run_manual_pipeline(data):
                 script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
                 script_segments.pop(m + 1)
             print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
-            scenes, valid_videos = find_scenes_with_gemini(approved_videos, script_segments)
+            scenes, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments)
 
             if len(scenes) < len(script_segments):
                 print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
@@ -1113,6 +1263,21 @@ def run_manual_pipeline(data):
                 )
                 if success is not False and os.path.exists(clip_path):
                     clip_paths.append(clip_path)
+
+            print(f"🖼️ Picking thumbnail frame...")
+            thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT)
+            if thumb:
+                frame_path = os.path.join(DATA_DIR, f"thumb_frame_{uuid.uuid4().hex[:6]}.jpg")
+                try:
+                    subprocess.run(
+                        ["ffmpeg", "-y", "-ss", str(thumb["start"]),
+                         "-i", valid_videos[thumb["video_index"]],
+                         "-frames:v", "1", "-update", "1", "-q:v", "2", frame_path],
+                        check=True, capture_output=True,
+                    )
+                    thumb_frame_path, thumb_hook_lines = frame_path, thumb["hook_lines"]
+                except subprocess.CalledProcessError as e:
+                    print(f"⚠️ Thumbnail frame extraction failed: {e.stderr.decode()[-300:]}")
 
         if not clip_paths:
             # Fallback for Spanish or failed transcription
@@ -1158,6 +1323,15 @@ def run_manual_pipeline(data):
 
         print(f"\n✅ DONE! Saved to: {final_path}")
 
+        if thumb_frame_path and os.path.exists(thumb_frame_path):
+            try:
+                thumb_filename = os.path.splitext(final_filename)[0] + ".png"
+                render_thumbnail(thumb_frame_path, thumb_hook_lines, thumb_filename)
+            except Exception as e:
+                print(f"⚠️ Thumbnail render failed: {e}")
+            finally:
+                os.remove(thumb_frame_path)
+
         return True
 
     except KeyError as e:
@@ -1167,7 +1341,7 @@ def run_manual_pipeline(data):
         traceback.print_exc()
     finally:
         if CLEANUP_FILES:
-            to_delete = {audio_path, music_path} | set(approved_videos) | set(clip_paths)
+            to_delete = {audio_path, music_path, thumb_frame_path} | set(approved_videos) | set(clip_paths)
             for path in approved_videos:
                 if path:
                     to_delete.add(os.path.splitext(path)[0] + ".title.txt")
