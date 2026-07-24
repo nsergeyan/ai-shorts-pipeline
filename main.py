@@ -55,7 +55,7 @@ try:
     from modules.video_material_fetcher import fetch_video_material_by_search
     from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
-    from modules.video_editor import merge_audio_video, render_thumbnail
+    from modules.video_editor import merge_audio_video, render_thumbnail, append_thumbnail_frame
     from modules.transcriber import transcribe_audio_to_words
 except ImportError as e:
     print(f"Error importing modules: {e}")
@@ -70,24 +70,27 @@ SLEEP_INTERVAL = 5
 MIN_CLIP_DURATION = 3.0
 MIN_SEGMENT_DURATION = 6.0
 MAX_CLIPS = 5
+EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
+THUMBNAIL_FRAME_POSITION = "start" # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
+THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "The Amazing Digital Circus",
-  "title": "The finale's fake human social media accounts are real and you can visit them in The Amazing Digital Circus",
-  "topic": "Glitch secretly created the real-world social media accounts of the humans shown in episode nine before the finale released",
+  "series": "Jujutsu Kaisen",
+  "title": "The Jujutsu Kaisen director fans thought got fired for season four actually got promoted",
+  "topic": "MAPPA's 15th anniversary reveal showed Takeru Sato taking over as JJK Season 4 director, while Shota Goshozono — who fans feared had been ousted — was actually moved up to chief director",
   "pillar": "A",
-  "specific_subject": "Episode 9 'Remember' — Caine's slideshow of the original humans, and the real @AbbyAdventures57 / @moezoe26 accounts",
+  "specific_subject": "Shota Goshozono and Takeru Sato director change, Jujutsu Kaisen Season 4",
   "youtube_queries": [
-    "TADC // Episode 9 Real Names Revealed",
-    "tadc finale ending emotional",
-    "the amazing digital circus the last act official trailer"
+    "jujutsu kaisen season 3 scenes",
+      "jjk season 3 moments",
+      "jjk season 3 part 2 trailer"
   ],
-  "scene_query": "A colorful digital circus tent stage where a floating ringmaster with a golden jaw head projects a bright slideshow of photos showing ordinary real-life people, while cartoon characters including a small jester girl with red and blue eyes watch; also a screenshot of a real YouTube channel page for an urban exploration vlogger named AbbyAdventures57",
-  "music_query": "tadc your new home instrumental",
-  "music_prompt": "soft mysterious lo-fi circus waltz, gentle music-box and celesta over warm sub bass and light vinyl crackle, eighty five BPM, quiet wonder building into a bittersweet emotional swell at the reveal around second twenty, short-form video background, no lyrics, exclude: aggressive drums, comedic honking brass",
+  "scene_query": "MAPPA anniversary livestream broadcast, Jujutsu Kaisen season four teaser trailer with Yuji Itadori, Megumi Fushiguro, Hakari and Kashimo in dynamic fight poses, cutting to an announcement graphic screen with director credit text showing Takeru Sato's name and Shota Goshozono's new chief director title",
+  "music_query": "jjk ost no soundrack",
+  "music_prompt": "Melodic phonk with subtle orchestral strings, ninety-five BPM, pulsing synth bass, distorted vocal chops, soft string swell. Emotional arc: mysterious low tension through the setup, a quick punchy rise at the WRONG reveal, settling into a curious steady pulse for the closing question. Short-form video background, no lyrics, exclude: happy pop synths, chiptune sounds.",
   "voice_name": "Hamid",
-  "script": "[curious] The humans from the Digital Circus finale have real social media accounts, and you can visit them right now. In episode nine, Caine shows everyone what their original humans are doing today. [surprised] Fans typed the usernames from those screens into YouTube... and they actually *EXIST!* Abigail's urban exploring channel is real. Gangle's human has a Twitter with exactly one tweet. [chuckles] Very Gangle. [whispers] Glitch quietly built these accounts before the episode even dropped. And the number fifty seven hides in almost every profile, and nobody fully knows why. [mischievously] So... did you go looking yet, or am I first?"
+  "script": "[curious] Fans thought MAPPA fired the Jujutsu Kaisen director. *WRONG!* He got promoted. Here's the thing. Shota Goshozono directed seasons two and three. Then season four's teaser dropped at MAPPA's anniversary show, and Goshozono's name barely showed up. [nervously] People panicked online, thinking he quit. [surprised] But the official announcement confirms he's still there, just higher up now, as chief director overseeing everything. [mischievously] The new guy, Takeru Sato, was actually his own assistant on season three. So it's not a replacement, *IT'S* a promotion chain. [curiously] Did you catch that detail in the reveal?"
 }
 
 
@@ -1062,14 +1065,16 @@ HARD BANS — never pick a frame with:
 - The first 10 seconds or last 30 seconds of any video (intros/outros)
 
 Also write a short HOOK, split into 1-3 short lines, comic-thumbnail style, 3 to 6 words
-total, curiosity-driven (like "BIGGEST MISCONCEPTION ABOUT / HIS TECHNIQUE" or
-"GOAT / OR OVERRATED" or "THE ONLY / HOPE"). Base it on the topic/subject above, not on the
-frame alone. Give EACH line its own color from this palette only: "#FFFFFF" (white),
+total, curiosity-driven. The hook MUST be about the TOPIC and SUBJECT above — name or clearly
+reference the actual subject of THIS video. Do NOT reuse the wording from the format example
+below; that is only a shape to copy, not content. Structure examples (do not copy the words):
+"BIGGEST MISCONCEPTION / ABOUT [SUBJECT]", "[SUBJECT]: GOAT / OR OVERRATED", "THE ONLY / HOPE".
+Give EACH line its own color from this palette only: "#FFFFFF" (white),
 "#FFE000" (yellow), "#FF3B30" (red). Use color to emphasize the most dramatic word/line,
 the way real viral reaction thumbnails do, don't make every line the same color.
 
 OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
-{{"video_index": 0, "start": 12.5, "hook_lines": [{{"text": "PRIME", "color": "#FFE000"}}, {{"text": "SUKUNA", "color": "#FF3B30"}}]}}
+{{"video_index": 0, "start": 12.5, "hook_lines": [{{"text": "LINE ONE", "color": "#FFE000"}}, {{"text": "LINE TWO", "color": "#FF3B30"}}]}}
 """
 
     contents = uploaded_files + [prompt]
@@ -1126,6 +1131,19 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             hook_lines.append({"text": line_text, "color": color})
         if not hook_lines:
             return None
+
+        # Subject guard: warn loudly if the hook references none of the subject/topic words.
+        # Catches the "PRIME SUKUNA on a MAPPA-director video" class of silent mismatch.
+        STOPWORDS = {"the", "and", "for", "with", "his", "her", "why", "how", "who",
+                     "was", "are", "about", "this", "that", "from", "into"}
+        subject_words = {
+            w for w in re.findall(r"[a-z0-9]+", f"{subject} {topic}".lower())
+            if len(w) >= 3 and w not in STOPWORDS
+        }
+        hook_text = " ".join(l["text"] for l in hook_lines).lower()
+        if subject_words and not any(w in hook_text for w in subject_words):
+            print(f"⚠️ Thumbnail hook may not match subject '{subject}': {hook_text!r} "
+                  f"(no overlap with {sorted(subject_words)})")
 
         print(f"🖼️ Thumbnail pick: video {vi} @ {start}s — {hook_lines}")
         return {"video_index": vi, "start": start, "hook_lines": hook_lines}
@@ -1326,7 +1344,9 @@ def run_manual_pipeline(data):
         if thumb_frame_path and os.path.exists(thumb_frame_path):
             try:
                 thumb_filename = os.path.splitext(final_filename)[0] + ".png"
-                render_thumbnail(thumb_frame_path, thumb_hook_lines, thumb_filename)
+                thumb_png = render_thumbnail(thumb_frame_path, thumb_hook_lines, thumb_filename)
+                if EMBED_THUMBNAIL_FRAME:
+                    append_thumbnail_frame(final_path, thumb_png, THUMBNAIL_FRAME_DURATION, THUMBNAIL_FRAME_POSITION)
             except Exception as e:
                 print(f"⚠️ Thumbnail render failed: {e}")
             finally:

@@ -354,3 +354,34 @@ def render_thumbnail(frame_path: str, hook_lines: List[dict], output_name: str) 
 
     print(f"🖼️  Thumbnail saved: {out_path}")
     return out_path
+
+
+def append_thumbnail_frame(video_path: str, thumbnail_path: str, duration: float = 0.25,
+                           position: str = "start") -> str:
+    """Burn a still thumbnail frame into the video so YouTube Shorts can use it as the
+    cover. position="start" -> becomes the automatic feed cover; "end" -> pick via
+    Edit > Cover slider. Re-encodes to a temp file then replaces the original. Params
+    match the main render: 1080x1920, 30fps, yuv420p, AAC 48k stereo, so the concat
+    is seamless."""
+    tmp_out = video_path + "_thumbed.mp4"
+    order = "[tv][a2][v0][a0]" if position == "start" else "[v0][a0][tv][a2]"
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-i", video_path,
+        "-loop", "1", "-t", f"{duration}", "-i", thumbnail_path,
+        "-f", "lavfi", "-t", f"{duration}", "-i",
+        "anullsrc=channel_layout=stereo:sample_rate=48000",
+        "-filter_complex",
+        "[0:v]setsar=1,fps=30,format=yuv420p[v0];"
+        "[0:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a0];"
+        "[1:v]scale=1080:1920,setsar=1,fps=30,format=yuv420p[tv];"
+        "[2:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a2];"
+        f"{order}concat=n=2:v=1:a=1[v][a]",
+        "-map", "[v]", "-map", "[a]",
+        "-c:v", "libx264", "-crf", "18", "-preset", "fast", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k",
+        tmp_out,
+    ], check=True, capture_output=True)
+    os.replace(tmp_out, video_path)
+    print(f"🖼️  Thumbnail frame added ({duration}s, {position}) to video")
+    return video_path
