@@ -62,7 +62,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.1
+MUSIC_VOLUME = 0.09
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -76,23 +76,23 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "sport": "soccer",
-  "topic": "The fee Germany paid for Jürgen Klopp wasn't money",
-  "specific_subject": "The DFB released Klopp from Red Bull with a one million euro charity donation to Wings for Life plus three Germany home internationals in Leipzig, instead of a compensation fee",
+  "series": "Jujutsu Kaisen",
+  "specific_subject": "",
+  "title": "Gojo custom-ordered Yuji's hooded uniform, and Jujutsu High actually takes uniform requests in Jujutsu Kaisenwhy",
+  "topic": "Jujutsu High school uniforms are customizable by request, made by a jujutsu-world tailor from cursed-energy-resistant material, and Yuji's hood was ordered by Gojo",
   "youtube_queries": [
-    "DFB Klopp Bundestrainer Vorstellung",
-    "Klopp Germany press conference full",
-    "Klopp Red Bull head of global soccer",
-    "Jurgen Klopp Germany unveiling photos",
-    "Klopp Dortmund documentary",
-    "empty football stadium b roll"
+    "yuji new uniform scene",
+    "jujutsu kaisen first years goes hard",
+    "jujutsu kaisen first years edit",
+    "jujutsu kaisen episode three nobara introduction",
+    "nobara introduction english dub",
+    "jujutsu kaisen official trailer"
   ],
-  "scene_query": "A smiling bearded man in his late fifties wearing glasses, a dark blazer and an open-collar shirt, sitting behind a long press-conference table beside two older officials in suits, a wall of sponsor boards and a national football federation eagle crest behind him, camera flashes firing, rows of journalists and television cameras in front; then the same man standing and holding up a white national team shirt with both hands, laughing",
-  "footage_source": "official_or_press",
-  "music_mood": "hype",
-  "music_prompt": "Cinematic sports trailer instrumental crossed with modern hard trap, one hundred and forty BPM. Core sounds: a rising stadium crowd roar swell, punchy trap drums with rolling hi-hats, and short cinematic brass hits stabbing on the accents, with a low sub-bass drone underneath. Arc: warm and almost empty under the hook with just the crowd swell, a single brass note answering the setup, drums drop in and build through the payload, then a full brass-and-crowd explosion on the turn around the twenty second mark when the three matches land, easing into a single held chord for the closing question. sports short-form video background, no lyrics, exclude: sad piano ballad textures, slow ambient pads.",
-  "voice_name": "Hamid",
-  "script": "[curious] Germany just hired Jürgen Klopp, and the price they paid is the strangest part. He was Red Bull's global football boss, still under contract. Red Bull first wanted real compensation money. [thoughtful] Instead, not one cent changed hands. The German FA agreed to donate one million euros to Wings for Life, Red Bull's spinal cord research charity. *WAIT!* [surprised] They also promised to play THREE Germany home matches at Red Bull's stadium in Leipzig. [chuckles] So Klopp, unveiled last Friday, cost a charity donation and three football games. Smartest deal ever, or did Red Bull get robbed?"
+  "scene_query": "Three teenagers in dark blue high-collared school jackets standing on a crowded Tokyo shopping street outside a train station, one pink-haired boy wearing a hooded version of the jacket, a tall white-haired man in a black blindfold and long black coat talking to them, bright daylight and shop signs behind them, then a wider group shot of students in clearly different jacket styles, one all white, one zipped up over the mouth, one girl in a buttoned top with a skirt",
+  "music_mood": "curious",
+  "music_query": null,
+  "music_prompt": "Light lo-fi curiosity bed with a playful Japanese city-pop tilt, ninety BPM, soft muted electric guitar, warm upright bass and a gentle finger-snap percussion loop, plus a faint koto pluck for the jujutsu-world flavor. Starts casual and strolling, adds a small rising synth swell at the halfway mark for the reveal that Gojo ordered the hood, then drops back to relaxed and warm for the closing question. Short-form video background, no lyrics, exclude: dark horror drones, aggressive trap drums.",
+  "script": "Gojo custom-ordered Yuji's hoodie uniform, and the show says it out loud. [curious] Here's the thing. Jujutsu High uniforms are not fixed. Students can request their own version, and one tailor works only for the jujutsu world. The cloth is made to resist cursed energy. [surprised] In episode three, Yuji asks why he is the only one with a hood. Gojo admits he ordered it that way. *WAIT!* The strongest sorcerer alive went shopping for school clothes. [chuckles] [thoughtful] Look at the class. White jacket, high collar, short skirt, every one is a request form. Did you think that was just character design?",
 }
 
 

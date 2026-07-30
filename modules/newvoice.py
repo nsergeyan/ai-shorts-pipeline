@@ -69,10 +69,10 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        # Speed up 1.2x via FFmpeg atempo
+        # Speed up 1.3x via FFmpeg atempo
         sped_path = output_path + ".fast.mp3"
         subprocess.run(
-            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.2", sped_path],
+            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.3", sped_path],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
         )
         os.replace(sped_path, output_path)
@@ -117,7 +117,7 @@ def generate_voice(
 if __name__ == "__main__":
     print("🧪 Starting High-Speed V3 Test...\n")
 
-    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. [curious] This means when Yuji swallows one, his mouth gets squeaky clean, even if the curse is deadly. [laughs] It is so weird because they look like rotten beef jerky. [chuckles] Would you eat a soapy finger to gain absolute power? Tell me below!"
+    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. "
     try:
         for i in range(1, 3):
             path = generate_voice(
