@@ -62,7 +62,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.08
+MUSIC_VOLUME = 0.1
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -76,21 +76,23 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "Jujutsu Kaisen",
-  "title": "The Jujutsu Kaisen director fans thought got fired for season four actually got promoted",
-  "topic": "MAPPA's 15th anniversary reveal showed Takeru Sato taking over as JJK Season 4 director, while Shota Goshozono — who fans feared had been ousted — was actually moved up to chief director",
-  "pillar": "A",
-  "specific_subject": "Shota Goshozono and Takeru Sato director change, Jujutsu Kaisen Season 4",
+  "sport": "soccer",
+  "topic": "The fee Germany paid for Jürgen Klopp wasn't money",
+  "specific_subject": "The DFB released Klopp from Red Bull with a one million euro charity donation to Wings for Life plus three Germany home internationals in Leipzig, instead of a compensation fee",
   "youtube_queries": [
-    "jujutsu kaisen season 3 scenes",
-      "jjk season 3 moments",
-      "jjk season 3 part 2 trailer"
+    "DFB Klopp Bundestrainer Vorstellung",
+    "Klopp Germany press conference full",
+    "Klopp Red Bull head of global soccer",
+    "Jurgen Klopp Germany unveiling photos",
+    "Klopp Dortmund documentary",
+    "empty football stadium b roll"
   ],
-  "scene_query": "MAPPA anniversary livestream broadcast, Jujutsu Kaisen season four teaser trailer with Yuji Itadori, Megumi Fushiguro, Hakari and Kashimo in dynamic fight poses, cutting to an announcement graphic screen with director credit text showing Takeru Sato's name and Shota Goshozono's new chief director title",
-  "music_query": "jjk ost no soundrack",
-  "music_prompt": "Melodic phonk with subtle orchestral strings, ninety-five BPM, pulsing synth bass, distorted vocal chops, soft string swell. Emotional arc: mysterious low tension through the setup, a quick punchy rise at the WRONG reveal, settling into a curious steady pulse for the closing question. Short-form video background, no lyrics, exclude: happy pop synths, chiptune sounds.",
+  "scene_query": "A smiling bearded man in his late fifties wearing glasses, a dark blazer and an open-collar shirt, sitting behind a long press-conference table beside two older officials in suits, a wall of sponsor boards and a national football federation eagle crest behind him, camera flashes firing, rows of journalists and television cameras in front; then the same man standing and holding up a white national team shirt with both hands, laughing",
+  "footage_source": "official_or_press",
+  "music_mood": "hype",
+  "music_prompt": "Cinematic sports trailer instrumental crossed with modern hard trap, one hundred and forty BPM. Core sounds: a rising stadium crowd roar swell, punchy trap drums with rolling hi-hats, and short cinematic brass hits stabbing on the accents, with a low sub-bass drone underneath. Arc: warm and almost empty under the hook with just the crowd swell, a single brass note answering the setup, drums drop in and build through the payload, then a full brass-and-crowd explosion on the turn around the twenty second mark when the three matches land, easing into a single held chord for the closing question. sports short-form video background, no lyrics, exclude: sad piano ballad textures, slow ambient pads.",
   "voice_name": "Hamid",
-  "script": "[curious] Fans thought MAPPA fired the Jujutsu Kaisen director. *WRONG!* He got promoted. Here's the thing. Shota Goshozono directed seasons two and three. Then season four's teaser dropped at MAPPA's anniversary show, and Goshozono's name barely showed up. [nervously] People panicked online, thinking he quit. [surprised] But the official announcement confirms he's still there, just higher up now, as chief director overseeing everything. [mischievously] The new guy, Takeru Sato, was actually his own assistant on season three. So it's not a replacement, *IT'S* a promotion chain. [curiously] Did you catch that detail in the reveal?"
+  "script": "[curious] Germany just hired Jürgen Klopp, and the price they paid is the strangest part. He was Red Bull's global football boss, still under contract. Red Bull first wanted real compensation money. [thoughtful] Instead, not one cent changed hands. The German FA agreed to donate one million euros to Wings for Life, Red Bull's spinal cord research charity. *WAIT!* [surprised] They also promised to play THREE Germany home matches at Red Bull's stadium in Leipzig. [chuckles] So Klopp, unveiled last Friday, cost a charity donation and three football games. Smartest deal ever, or did Red Bull get robbed?"
 }
 
 
@@ -807,11 +809,11 @@ def find_scenes_with_gemini(video_paths, script_segments):
                 fi = client.files.get(name=uploaded_files[i].name)
                 _poll_error_counts[i] = 0
             except Exception as e:
-                if "500" in str(e) or "INTERNAL" in str(e):
+                if any(code in str(e) for code in ("500", "INTERNAL", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
                     _poll_error_counts[i] += 1
-                    print(f"⚠️ Gemini 500 polling video {i} ({_poll_error_counts[i]}/10), retrying...")
+                    print(f"⚠️ Gemini transient error polling video {i} ({_poll_error_counts[i]}/10), retrying...")
                     if _poll_error_counts[i] >= 10:
-                        raise RuntimeError(f"Gemini video {i} stuck in PROCESSING with repeated 500s") from e
+                        raise RuntimeError(f"Gemini video {i} stuck in PROCESSING with repeated transient errors") from e
                     still_pending.append(i)
                     continue
                 else:
