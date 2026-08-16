@@ -62,7 +62,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.09
+MUSIC_VOLUME = 0.1
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -76,23 +76,24 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "series": "Jujutsu Kaisen",
-  "specific_subject": "",
-  "title": "Gojo custom-ordered Yuji's hooded uniform, and Jujutsu High actually takes uniform requests in Jujutsu Kaisenwhy",
-  "topic": "Jujutsu High school uniforms are customizable by request, made by a jujutsu-world tailor from cursed-energy-resistant material, and Yuji's hood was ordered by Gojo",
+  "sport": "soccer",
+  "topic": "2026 uefa super cup final upset detail",
+  "specific_subject": "Brian Madjo becomes the youngest-ever scorer in UEFA Super Cup history days after a court battle nearly kept him off the pitch",
   "youtube_queries": [
-    "yuji new uniform scene",
-    "jujutsu kaisen first years goes hard",
-    "jujutsu kaisen first years edit",
-    "jujutsu kaisen episode three nobara introduction",
-    "nobara introduction english dub",
-    "jujutsu kaisen official trailer"
+    "Brian Madjo goal UEFA Super Cup official",
+    "Brian Madjo press conference Super Cup",
+    "Brian Madjo Aston Villa training",
+    "Brian Madjo Super Cup record photo",
+    "who is Brian Madjo Aston Villa",
+    "football stadium crowd cheering stock"
   ],
-  "scene_query": "Three teenagers in dark blue high-collared school jackets standing on a crowded Tokyo shopping street outside a train station, one pink-haired boy wearing a hooded version of the jacket, a tall white-haired man in a black blindfold and long black coat talking to them, bright daylight and shop signs behind them, then a wider group shot of students in clearly different jacket styles, one all white, one zipped up over the mouth, one girl in a buttoned top with a skirt",
-  "music_mood": "curious",
+  "scene_query": "A teenage footballer in Aston Villa's claret and blue kit with white boots, running onto a cross inside the penalty box and volleying the ball past a PSG goalkeeper in white and navy, then wheeling away with arms out to celebrate in front of a packed European stadium crowd under floodlights, teammates rushing over to embrace him.",
+  "footage_source": "official_or_press",
+  "music_mood": "dramatic",
   "music_query": null,
-  "music_prompt": "Light lo-fi curiosity bed with a playful Japanese city-pop tilt, ninety BPM, soft muted electric guitar, warm upright bass and a gentle finger-snap percussion loop, plus a faint koto pluck for the jujutsu-world flavor. Starts casual and strolling, adds a small rising synth swell at the halfway mark for the reveal that Gojo ordered the hood, then drops back to relaxed and warm for the closing question. Short-form video background, no lyrics, exclude: dark horror drones, aggressive trap drums.",
-  "script": "Gojo custom-ordered Yuji's hoodie uniform, and the show says it out loud. [curious] Here's the thing. Jujutsu High uniforms are not fixed. Students can request their own version, and one tailor works only for the jujutsu world. The cloth is made to resist cursed energy. [surprised] In episode three, Yuji asks why he is the only one with a hood. Gojo admits he ordered it that way. *WAIT!* The strongest sorcerer alive went shopping for school clothes. [chuckles] [thoughtful] Look at the class. White jacket, high collar, short skirt, every one is a request form. Did you think that was just character design?",
+  "music_prompt": "Cinematic sports trailer building tension, eighty-eight BPM, layered with a driving string ostinato, punchy cinematic brass hits, and a deep sub bass pulse; starts low and suspenseful under the hook, tightens through the setup, then swells into a triumphant brass hit right on the turn before settling into a proud, anthemic close. sports short-form video background, no lyrics, exclude: cheerful acoustic guitar, lo-fi chill beats.",
+  "voice_name": "animatoryoung",
+  "script": "[curious] Seventeen year old Brian Madjo just did something this week that no one has done in thirty years. [thoughtful] Making his first start for Aston Villa, he faced Paris Saint Germain in the Super Cup final. Just before halftime, he scored, becoming the youngest scorer in Super Cup history. [surprised] *BUT!* only eight days before that goal, a court had to step in, because FIFA said, technically, he wasn't even allowed to be there. He broke a record that had stood since nineteen ninety six. PSG still won the game. [mischievously] So, did you catch history happening in the background of that final?"
 }
 
 
@@ -1164,7 +1165,7 @@ def run_manual_pipeline(data):
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
         MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
         MUSIC_QUERY = data.get('music_query', None)
-        VOICE_NAME = data.get('voice_name', 'hamid')
+        VOICE_NAME = data.get('voice_name', 'animatoryoung')
         SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
 
         print(f"📋 PROCESSING MANUAL ORDER: {SUBJECT}")

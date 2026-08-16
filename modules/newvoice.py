@@ -19,10 +19,14 @@ if not ELEVENLABS_API_KEYS:
     raise RuntimeError("ELEVENLABS_API_KEY is not set. Add it to your .env file.")
 
 VOICES = {
+    "animatoryoung": "xlnOCsItpCGtYrgUKVqx",
     "hamid": "yr43K8H5LoTp6S1QFSGg",
     "Molodoy": "YjESejviApN7SHrbfnA2",
     "spanish_guy": "nR2KQXVwn2zMK8FALNCh",
 }
+
+# Set back to 1.3 to re-enable the speed boost. 1.0 = no change.
+SPEED_MULTIPLIER = 1.0
 
 
 def clean_text_for_speech(text: str) -> str:
@@ -69,13 +73,14 @@ def _try_generate_with_key(
 
         os.replace(tmp_path, output_path)
 
-        # Speed up 1.3x via FFmpeg atempo
-        sped_path = output_path + ".fast.mp3"
-        subprocess.run(
-            ["ffmpeg", "-y", "-i", output_path, "-filter:a", "atempo=1.3", sped_path],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
-        )
-        os.replace(sped_path, output_path)
+        if SPEED_MULTIPLIER != 1.0:
+            sped_path = output_path + ".fast.mp3"
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", output_path, "-filter:a",
+                 f"atempo={SPEED_MULTIPLIER}", sped_path],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+            )
+            os.replace(sped_path, output_path)
 
         print(f"✅ Voice ready → {output_path}")
         return True
@@ -90,12 +95,13 @@ def _try_generate_with_key(
 def generate_voice(
         script_text: str,
         filename: str = "narration.mp3",
-        voice: str = "hamid",
+        voice: str = "animatoryoung",
         lang: str = "en"
 ) -> str:
     """Generate narration audio via ElevenLabs and save to AUDIO_DIR. Raises if all keys fail."""
     output_path = os.path.join(AUDIO_DIR, filename)
-    voice_id = VOICES.get(voice, VOICES["hamid"])
+    voice_lookup = {name.lower(): vid for name, vid in VOICES.items()}
+    voice_id = voice_lookup.get(voice.lower(), VOICES["animatoryoung"])
 
     print(f"🎙️ Generating voice '{voice}' ({lang})...")
 
@@ -117,13 +123,13 @@ def generate_voice(
 if __name__ == "__main__":
     print("🧪 Starting High-Speed V3 Test...\n")
 
-    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger. [surprised] According to the official fanbook, these fingers taste exactly like soap! Yes, you heard that right. They are covered in grave wax, which smells and tastes just like household soap. "
+    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger."
     try:
         for i in range(1, 3):
             path = generate_voice(
                 script_text=test_script,
                 filename=f"test_option_{i}.mp3",
-                voice="hamid",
+                voice="animatoryoung",
                 lang="en"
             )
             print(f"🎧 Option {i} ready: {path}")
