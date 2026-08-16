@@ -16,6 +16,9 @@ SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
 _FLASH_SFX = "21 - Camera Flash.MP3"
 _PUNCH_SFX_FILES = ["awkward_moment.mp3", "radio_peep.mp3"]
+# Per-file punch volume. awkward_moment is ~7 dB quieter than radio_peep,
+# so boost it to land at a similar perceived loudness.
+_PUNCH_SFX_VOLUME = {"awkward_moment.mp3": 0.7, "radio_peep.mp3": 0.35}
 _PUNCH_SFX_STATE_FILE = os.path.join(DATA_DIR, "_punch_sfx_state.json")
 
 
@@ -208,7 +211,8 @@ def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float]
         if os.path.exists(abs_path):
             rel = os.path.relpath(abs_path, PROJECT_ROOT)
             encoded = urllib.parse.quote(rel, safe="/")
-            events.append({"time": round(pt, 3), "file": f"{base_url}/{encoded}", "volume": 0.4})
+            volume = _PUNCH_SFX_VOLUME.get(sfx_file, 0.4)
+            events.append({"time": round(pt, 3), "file": f"{base_url}/{encoded}", "volume": volume})
 
     return events
 
