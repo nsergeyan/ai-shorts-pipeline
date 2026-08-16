@@ -1,67 +1,120 @@
 ═══════════════════════════════════
-SERIES: [AUTO — DETECT THE HOTTEST TRENDING WEST ANIMATION/ANIME YOURSELF] It has to be moderetly popular
+SERIES: [AUTO — DETECT THE HOTTEST TRENDING ANIME / WESTERN ANIMATION / LIVE-ACTION MOVIE OR TV SERIES YOURSELF] It has to be moderately popular
 ═══════════════════════════════════
-Create a TikTok/Shorts script (ninety to one hundred words, SIMPLE ENGLISH B1) about ONE animated series that is TRENDING RIGHT NOW.
+Create a TikTok/Shorts script (ninety to one hundred words, SIMPLE ENGLISH B1) about ONE title that is TRENDING RIGHT NOW.
 DO NOT EXAGGERATE FACTS!
+DO NOT SPOIL ANYTHING (see the NO-SPOILER RULE — it overrides hype).
 
 CHANNEL DNA (the voice you are copying):
-This channel lives at the intersection of LORE + BREAKING NEWS for animated shows. The winning formula is: take ONE real, surprising detail and frame it as hidden, dark, or "disturbing" lore the audience missed — then deliver it FAST, like a fan who just discovered something and HAS to tell you. Think "The disturbing lore behind [X]" / "Nobody noticed this detail about [X]" / "Here's what everyone missed in [the new episode]." The reveal is real; the FRAMING is what makes it pop.
+This channel lives at the intersection of LORE + BREAKING NEWS for shows and movies. The winning formula is: take ONE real, surprising detail and frame it as hidden, dark, or "disturbing" lore the audience missed — then deliver it FAST, like a fan who just discovered something and HAS to tell you. Think "The disturbing lore behind [X]" / "Nobody noticed this detail about [X]" / "Here's what everyone missed in [the new season]." The reveal is real; the FRAMING is what makes it pop.
 
-This prompt no longer takes a fixed series. YOU pick the series in Step Zero by scanning what the animation/anime world is actually talking about this week.
+This prompt does not take a fixed title. YOU pick it in Step Zero by scanning what the screen world is actually talking about this week.
 
-"Animation" here is broad and the channel is ANIMATION-FIRST — Japanese anime AND Western/indie animated series BOTH count, equally. Do NOT default to anime. Examples ONLY (do NOT auto-pick these):
-- Western/indie: Invincible, Arcane, Hazbin Hotel, Helluva Boss, The Amazing Digital Circus, Murder Drones, Solar Opposites, Rick and Morty, Bee and PuppyCat, Primal, X-Men '97, Scavengers Reign.
-- Anime: Chainsaw Man, Solo Leveling, Dandadan, Jujutsu Kaisen, One Piece, Frieren, Demon Slayer, Sakamoto Days.
+THREE CAMPS — ALL EQUAL. Do NOT default to anime. Examples ONLY (do NOT auto-pick these):
+- ANIME: Chainsaw Man, Solo Leveling, Dandadan, Jujutsu Kaisen, One Piece, Frieren, Demon Slayer, Sakamoto Days.
+- WESTERN / INDIE ANIMATION: Invincible, Arcane, Hazbin Hotel, Helluva Boss, The Amazing Digital Circus, Murder Drones, Solar Opposites, Rick and Morty, Primal,  Scavengers Reign.
+- LIVE-ACTION MOVIES / TV: prestige and genre series (streaming dramas, sci-fi, horror, fantasy, crime), franchise films, blockbuster releases, limited series, reality-adjacent scripted hits, big theatrical events. Feature films count as a "series" for the purposes of this prompt — a movie, a franchise, or a single season all qualify as [TITLE].
 
-BALANCE RULE: Look at the USED VIDEOS LIST before picking. If recent entries lean heavily one way (mostly anime OR mostly western), prefer the under-represented side this round — UNLESS the single biggest trending event in animation right now is clearly on the over-used side.
+BALANCE RULE (three-way): Look at the USED VIDEOS LIST before picking. If recent entries lean heavily toward one camp, prefer an under-represented camp this round — UNLESS the single biggest trending event on screen right now is clearly in the over-used camp. Live-action is the newest camp, so if the list shows it barely used, weight it up.
 
-Once you select a series in Step Zero, that series becomes [SERIES] for the rest of this prompt. Everywhere below, [SERIES] means the series YOU chose. Adapt all searches, queries, and examples to that series.
+Once you select a title in Step Zero, that title becomes [TITLE] for the rest of this prompt. Everywhere below, [TITLE] means the show or film YOU chose. Adapt all searches, queries, and examples to it.
 
 ═══════════════════════════════════
-STEP ZERO — TREND SCAN + SERIES PICK (DO THIS FIRST, BEFORE ANYTHING ELSE)
+NO-SPOILER RULE (HARD CONSTRAINT — OVERRIDES HYPE)
 ═══════════════════════════════════
-Your job in Step Zero is two-part: (A) find which animated series is hottest right now, then (B) confirm a real, recent event driving that hype. Move like this channel: you are hunting for the thing the fandom is reacting to TODAY.
+The channel breaks news WITHOUT burning the story. A spoiler kills watch-time, kills comments, and gets the video mass-reported by the fandom. Nothing below is optional.
 
-PART A — SCAN THE WHOLE FIELD (pick the series):
-Run at least FOUR broad web searches, and make sure they cover BOTH camps so anime doesn't win by default. Use queries like:
+DEFINE THE SPOILER WINDOW:
+- Anything released in the last THIRTY days (episode, film, finale, chapter) is INSIDE the window and is fully spoiler-protected.
+- Anything not yet released — leaks, screeners, early reviews, festival cuts, review-embargo breaks, datamined content, ripped clips — is ALWAYS protected regardless of date.
+- Anything older than thirty days is outside the window, but the MAJOR-BEAT BAN below still applies to it.
+
+NEVER REVEAL (regardless of age):
+- Deaths, resurrections, or a character's final fate
+- Twists, betrayals, identity reveals, "he was X all along"
+- Endings, finale outcomes, who wins a fight, who survives
+- Cliffhangers and post-credit scenes
+- Surprise returns, cameos, or casting reveals not shown in official marketing
+- Plot points from unreleased or leaked material
+- Anything the marketing deliberately hid
+
+ALWAYS SAFE (build the video from these):
+- Anything shown in an OFFICIAL trailer, teaser, poster, key art, or press release
+- Production facts: how a prop was built, what a set smelled like, a costume constraint, an animation trick, an on-set rule, a filming location quirk
+- Worldbuilding rules and lore mechanics that don't decide an outcome
+- Character details established well before the current release
+- Behind-the-scenes and creator-interview material that discusses craft, not plot resolution
+- The mere EXISTENCE of a release ("the new season is out") — that is news, not a spoiler
+
+FRAMING FIX: You may anchor to a fresh episode or film, but the reveal must sit BESIDE the plot, not inside it. Describe the texture, the prop, the sound, the rule, the on-set fact — never the outcome. "With the new season out, nobody noticed what the masks are actually made of" is safe. "With the new season out, here's who dies" is a kill.
+
+THE BLIND-VIEWER TEST (run it on the finished script, out loud):
+Imagine someone who has NOT watched the newest release hears this script. If it changes what they expect to happen, tells them a fate, or removes a surprise — REWRITE IT. If they can watch the release afterward with every surprise intact, it passes.
+
+VAGUENESS IS NOT A LOOPHOLE: "Something huge happens to a fan favourite" is still a spoiler. Implying, teasing, or hinting at a protected beat counts as revealing it.
+
+SAFETY BUFFER: If you are UNSURE whether a detail is a spoiler, treat it as one and pick another candidate. There is always another fact.
+
+CAPTION/TITLE RULE: The hook, the on-screen title, and any hashtags must also be spoiler-free. A safe script with a spoiler title still fails.
+
+FRESH-RELEASE SOFTENER (optional, use when anchored to something under seven days old): the script may include one short spoken reassurance early on — for example "no spoilers, I promise" — but this NEVER licenses a spoiler later. It is a trust signal, not a permission slip.
+
+═══════════════════════════════════
+STEP ZERO — TREND SCAN + TITLE PICK (DO THIS FIRST, BEFORE ANYTHING ELSE)
+═══════════════════════════════════
+Your job in Step Zero is two-part: (A) find which title is hottest right now, then (B) confirm a real, recent event driving that hype. Move like this channel: you are hunting for the thing the fandom is reacting to TODAY.
+
+PART A — SCAN THE WHOLE FIELD (pick the title):
+Run at least SIX broad web searches, covering ALL THREE camps so no camp wins by default. Use queries like:
+
 ANIME side:
 - trending anime [current month + year]
 - anime twitter trending today / [current month] anime news
 - new anime episode / finale / trailer reaction reddit [current month + year]
+
 WESTERN / INDIE ANIMATION side:
 - trending animated series [current month + year] (Invincible, Arcane, Hazbin Hotel, etc.)
 - western animation news this week reddit / r/Hazbin r/Invincible r/cartoons trending
 - new animated show / season drop / trailer [current month + year]
+
+LIVE-ACTION MOVIES / TV side:
+- most talked about tv show this week [current month + year]
+- box office this weekend / biggest movie right now [current month + year]
+- new series premiere reddit reaction [current month + year] / r/television trending
+- streaming top ten this week / most watched show right now
+- new trailer dropped [current month + year] reaction
+
 CROSS:
-- most talked about cartoon OR anime this week
-- [show] new episode leak / sneak peek / release date trending
+- most talked about show or movie this week
+- [title] new episode / release date / first reactions trending
 
-You are scanning for a series with a recent, REAL event fans are reacting to: a finale, a new episode or season drop, a trailer, a movie reveal, a season announcement, a sneak peek / leak, an anniversary, a viral scene, a casting/interview moment, a voice-actor or studio statement, etc. This channel's edge is SPEED on these moments — lean into whatever just happened.
+You are scanning for a title with a recent, REAL event fans are reacting to: a premiere, a finale, a season drop, a trailer, a movie reveal, a renewal or cancellation, a casting announcement, a viral scene, a red-carpet or interview moment, an anniversary re-release, a director or cast statement, an awards moment, etc. This channel's edge is SPEED on these moments — lean into whatever just happened.
 
-PICK THE SERIES using these tie-breakers, in order:
+PICK THE TITLE using these tie-breakers, in order:
 1. Realness — there is a confirmed, recent event (not a rumor).
 2. Heat — multiple independent sources / subreddits / trends mention it this week.
-3. Footage potential — it's visual and clippable (see Footage Reality Check later).
-4. Balance vs. the USED VIDEOS LIST — prefer the under-represented camp (anime vs western) and a series/topic not already covered.
+3. Spoiler-safety — you can plausibly build a non-spoiler video around it. If the ONLY thing anyone is talking about is a twist or a death, the title is a bad pick. Move on.
+4. Footage potential — it's visual and clippable (see Footage Reality Check later).
+5. Balance vs. the USED VIDEOS LIST — prefer the under-represented camp and a title not already covered.
 
-If two series are equally hot, pick the one with the better "hidden-lore / wait-WHAT" potential (the soap pattern below), not just the bigger fandom.
+If two titles are equally hot, pick the one with the better "hidden-lore / wait-WHAT" potential (the soap pattern below), not just the bigger fandom.
 
-PART B — CONFIRM THE HOT TOPIC (for the chosen series):
-Run at least TWO more searches focused on your chosen [SERIES]:
-- [SERIES] news [current month + year]
-- [SERIES] new episode / chapter / season / movie / sneak peek / trending this week
+PART B — CONFIRM THE HOT TOPIC (for the chosen title):
+Run at least TWO more searches focused on your chosen [TITLE]:
+- [TITLE] news [current month + year]
+- [TITLE] new episode / season / movie / behind the scenes / trending this week
 
 DECISION:
-- IF a genuinely current/hot topic exists for your chosen series:
+- IF a genuinely current/hot topic exists for your chosen title:
   → The video MUST be anchored to that hot topic.
-  → BUT you still must find ONE specific "wait-WHAT" / hidden-lore micro-detail INSIDE that topic — not just "the finale aired" or "season two was announced." The hype gives you the SUBJECT; the rules below still force a surprising, framable micro-detail.
+  → BUT you still must find ONE specific "wait-WHAT" / hidden-lore micro-detail INSIDE that topic — not just "the finale aired" or "season two was announced." The hype gives you the SUBJECT; the rules below still force a surprising, framable, SPOILER-FREE micro-detail.
   → Skip the random wheel. Go straight to TOPIC DISCOVERY using the hot topic as your anchor.
 
-- IF, after scanning, NOTHING across the whole field is genuinely trending (rare — no real recent event anywhere, just old news):
-  → Say "No current hype found across the field — picking a strong evergreen series + using random category."
-  → Choose ONE well-known animated series (anime OR western — honor the BALANCE RULE) with rich lore and good footage, then proceed to RANDOM CATEGORY SELECTION below.
+- IF, after scanning, NOTHING across the whole field is genuinely trending (rare):
+  → Say "No current hype found across the field — picking a strong evergreen title + using random category."
+  → Choose ONE well-known title (anime, western animation, OR live-action — honor the BALANCE RULE) with rich lore and good footage, then proceed to RANDOM CATEGORY SELECTION below.
 
-State clearly: which SERIES you picked, whether it is ANIME or WESTERN, which path you took, and WHY, and cite what you found.
+State clearly: which TITLE you picked, which CAMP it belongs to (ANIME / WESTERN ANIMATION / LIVE-ACTION), which path you took, and WHY, and cite what you found.
 
 CURRENCY RULE: Whatever topic you land on, confirm it has not been retconned, clarified, or expanded by any material released after the source you cite. Prefer the most recent canonical information.
 
@@ -72,35 +125,40 @@ Use this ONLY if Step Zero found no current hype anywhere.
 
 Only choose topics that can be clearly shown through a short visual clip with obvious action or movement.
 
-Before choosing a topic, pick a random number from one to four. State the number first.
+Before choosing a topic, pick a random number from one to five. State the number first.
 
 one → hidden lore mechanic
 two → unexpected character detail
 three → strange world rule
 four → rare production or animation fact
+five → on-set / practical-effects fact (live-action only: props, stunts, costumes, filming locations, physical constraints the cast worked around)
 
 Follow the selected category. Focus on ONE micro-detail, not a broad concept.
 
 GOOD example (calibration only): what the inside of a Titan's mouth smells like to its host
+GOOD live-action example (calibration only): a prop crown that was so heavy the actor could only wear it in ninety-second bursts
 BAD example: how Titan transformation works
 
 ═══════════════════════════════════
 WHAT MAKES A FACT GOOD (READ FIRST)
 ═══════════════════════════════════
-The target is NOT "most obscure." The target is "makes a viewer say wait, WHAT?" — AND can be FRAMED as hidden, dark, or overlooked lore (the channel's signature angle).
+The target is NOT "most obscure." The target is "makes a viewer say wait, WHAT?" — AND can be FRAMED as hidden, dark, or overlooked lore (the channel's signature angle) — AND spoils nothing.
 
 Obscurity is allowed and welcome — but ONLY when it raises the reaction. A rare-but-boring fact is worse than a mid-rarity fascinating one.
 
 The ideal fact pattern (the "soap pattern"):
 A small, concrete, almost ordinary question (a texture, smell, sound, habit, weird detail) applied to a famous or central thing — where the real, canon answer is funnier, darker, or stranger than expected.
 
+This pattern is CAMP-NEUTRAL. In animation it points at lore and production; in live-action it points at props, sets, costumes, stunts, sound design, and on-set rules — the physical reality behind an image everyone has seen. Those are also, conveniently, the most spoiler-safe facts that exist.
+
 THE FRAMING LAYER (this channel's superpower):
-Once you have the real detail, frame it the way this channel does — as something hidden, missed, or unsettling: "the disturbing reason," "the detail nobody noticed," "what this scene was really hiding," "the messed-up lore behind." The fact stays 100% real and un-exaggerated; the FRAMING is what turns a neat fact into a must-watch.
+Once you have the real detail, frame it the way this channel does — as something hidden, missed, or unsettling: "the disturbing reason," "the detail nobody noticed," "what this scene was really hiding," "the messed-up lore behind." The fact stays one hundred percent real and un-exaggerated; the FRAMING is what turns a neat fact into a must-watch. Framing must never imply a plot outcome.
 
-Reference example (from Jujutsu Kaisen, for calibration only — do NOT reuse unless [SERIES] is that show):
-"Sukuna's severed finger feels and smells like soap." → famous object, hidden physical detail, canon, zero lore needed, instant 'wait WHAT?'. THIS is the level and flavor to aim for, applied to [SERIES].
+Reference examples (calibration only — do NOT reuse unless [TITLE] is that show):
+- Animation: "Sukuna's severed finger feels and smells like soap." → famous object, hidden physical detail, canon, zero lore needed, instant 'wait WHAT?'.
+- Live-action: a monster suit built with a real cooling system inside because the performer kept passing out — famous creature, hidden physical detail, zero plot involvement.
 
-NOTE: Even when anchored to a hot/hype topic, the fact must still follow the soap pattern — a concrete micro-detail with a strong framing, not a plot summary of the new episode.
+NOTE: Even when anchored to a hot topic, the fact must still follow the soap pattern — a concrete micro-detail with a strong framing, not a plot summary of the new episode.
 
 ═══════════════════════════════════
 TOPIC DISCOVERY PROTOCOL (MANDATORY)
@@ -109,7 +167,7 @@ Generate FIVE candidate ideas.
 - If Step Zero found hype: all five candidates must connect to that hot topic.
 - If using the fallback wheel: all five candidates must fit the chosen category.
 
-Each idea must name a SPECIFIC source anchor at this stage (chapter, episode, fanbook page, or interview) — vague ideas are discarded immediately.
+Each idea must name a SPECIFIC source anchor at this stage (chapter, episode, fanbook page, press kit, DVD commentary, behind-the-scenes featurette, or interview) — vague ideas are discarded immediately.
 
 For each candidate assign ONE score only:
 
@@ -123,16 +181,18 @@ five → "wait, WHAT? — I want to tell someone right now"
 A fact must score FOUR or higher to be used.
 
 KILL TEST — automatically reject a candidate if it is:
+- A SPOILER under the NO-SPOILER RULE, or if it hints at one (this check runs FIRST, before any scoring)
 - well-known to most fans (no surprise)
-- obscure but DRY (stat numbers, IQ figures, voice-actor credits, staff names, release dates, episode-count records) — rare yet boring
+- obscure but DRY (stat numbers, IQ figures, cast credits, staff names, budget figures, release dates, episode-count records) — rare yet boring
 - requires a lore lecture before the surprise lands
 - philosophical interpretation or character summary
-- a character trait or personality quirk reworded as a surprising fact (e.g. "this character is actually really competitive" — this is characterization, not a fact)
+- a character trait or personality quirk reworded as a surprising fact
+- an ACTOR's personal life, feud, or off-screen drama presented as a show fact (gossip is not lore)
 - any fact whose source you could not open and read this session (memory-only citations are BANNED)
 - more than forty percent similar to anything in the USED VIDEOS LIST
 
-BANNED OVERSATURATED PATTERNS (the iceberg clichés — never pick these):
-character IQ/stat numbers, voice-actor trivia, "the author originally planned…", hidden background text/languages, episode-count or runtime records, sleep/eating habits stated as a character's whole personality.
+BANNED OVERSATURATED PATTERNS (never pick these):
+character IQ/stat numbers, voice-actor trivia, "the author originally planned…", hidden background text/languages, episode-count or runtime records, sleep/eating habits stated as a character's whole personality, "the actor did their own stunts," "this was improvised," "the cast didn't know what would happen," "the scream was real," CGI-versus-practical budget comparisons.
 
 Pick the highest-scoring surviving candidate.
 If no candidate scores four or higher, generate five NEW ideas.
@@ -145,8 +205,9 @@ Discard a topic if it matches any USED VIDEOS LIST entry on ANY of these:
 - same mechanic explained with different words
 - same event reworded
 - same "what does X feel/smell/taste/sound like" framing about the same subject
+- same prop, costume, set, or location fact
 
-NOTE: Because this prompt now picks the series automatically, also avoid re-using the SAME SERIES too many times in a row if the USED VIDEOS LIST shows it dominating recent entries — unless its current hype is clearly the single biggest thing in animation right now.
+NOTE: Because this prompt picks the title automatically, also avoid re-using the SAME TITLE or the same CAMP too many times in a row if the USED VIDEOS LIST shows it dominating recent entries — unless its current hype is clearly the single biggest thing on screen right now.
 
 Example:
 Existing: why this character eats sweets
@@ -160,9 +221,9 @@ You may NOT rely on memory for any factual claim. Memory is treated as Tier thre
 For the single chosen candidate, you MUST:
 
 STEP 1 — SEARCH: Run at least three web searches to verify the fact. Searches must target different source types:
-  • the official wiki / fandom page for the specific character or object in [SERIES]
-  • the original source (manga chapter or comic discussion, official artbook/fanbook scans/translations, or a creator interview)
-  • a cross-check search phrased to DISPROVE the fact (e.g. "is [claim] actually canon" / "[claim] misconception")
+  • the official wiki / fandom page for the specific character, object, or production element in [TITLE]
+  • the original source (manga chapter, comic discussion, official artbook/fanbook, press kit, studio featurette, DVD/Blu-ray commentary, or a creator/cast/crew interview)
+  • a cross-check search phrased to DISPROVE the fact (e.g. "is [claim] actually true" / "[claim] misconception" / "[claim] debunked")
 
 STEP 2 — READ: Open and read the actual pages. Do not cite a result you only saw as a search snippet. If a wiki claim is used, follow it to ITS cited source and confirm that citation exists.
 
@@ -170,22 +231,25 @@ STEP 3 — DATE CHECK: Note the publish/update date of each source. If newer mat
 
 STEP 4 — RECONCILE: If sources conflict, the fact is NOT Tier one. Either downgrade to a flagged theory or discard.
 
+STEP 5 — SPOILER RE-CHECK: Re-read the confirmed fact against the NO-SPOILER RULE now that you know exactly what it says. Sources often bury a plot reveal inside a production anecdote. If the verified wording drags in a protected beat, discard the candidate.
+
 HARD RULE: If you cannot open and confirm a real source this session, you may NOT label the fact Tier one or Tier two. State that verification failed and pick another candidate.
 
 TIER DEFINITIONS
-Tier one — CONFIRMED: episode number / chapter / fanbook page / creator interview, confirmed by an opened source this session
+Tier one — CONFIRMED: episode number / chapter / fanbook page / press kit / commentary / creator or crew interview, confirmed by an opened source this session
 Tier two — WIKI SOURCED: wiki article PLUS its own citation, both opened and confirmed this session
 Tier three — THEORY: no strong source. Script MUST say "fans believe" or "one theory suggests."
 
 RULE: Because this video must not exaggerate, prefer Tier one. Only use Tier three if the WAIT-WHAT score is five AND the script clearly flags it as a theory.
 
-Before moving on, fill this box in full. If "Flag if theory" is YES, the script must contain a theory disclaimer:
+Before moving on, fill this box in full. If "Flag if theory" is YES, the script must contain a theory disclaimer.
 
 VERIFICATION BOX
 ━━━━━━━━━━━━━━━━━━━━
-Series (auto-picked in Step Zero):
-Anime or Western:
-Why this series (what's trending + sources):
+Title (auto-picked in Step Zero):
+Camp (ANIME / WESTERN ANIMATION / LIVE-ACTION):
+Format (series / film / franchise):
+Why this title (what's trending + sources):
 Hype path taken (hot topic / random fallback):
 Fact:
 Wait-What Score:
@@ -198,13 +262,20 @@ Contradicting info found (YES/NO — describe):
 Why this isn't widely known:
 How user can verify:
 Flag if theory (YES / NO):
+── SPOILER AUDIT ──
+Release date of the anchor event:
+Inside the thirty-day spoiler window (YES / NO):
+Is any part of the fact a protected beat (YES / NO — explain):
+Is the fact visible in official marketing or outside the story (YES / NO — where):
+Blind-viewer test result (PASS / FAIL):
+Hook + hashtags spoiler-checked (YES / NO):
 ━━━━━━━━━━━━━━━━━━━━
 
 ═══════════════════════════════════
 VIDEO ANGLE
 ═══════════════════════════════════
 One main surprising idea. One small natural side detail allowed.
-Goal: "Wait… I didn't know that."
+Goal: "Wait… I didn't know that." — never "well, now I don't need to watch it."
 
 ═══════════════════════════════════
 MUSIC SELECTION RULE
@@ -225,34 +296,22 @@ MUSIC QUERY RULE
 ═══════════════════════════════════
 Run these checks IN ORDER. Stop at the first match.
 
-STEP A — FANDOM ANTHEM CHECK (run first, before official OST):
-Search whether fans have already adopted a non-official song as the
-unofficial theme for this exact character, moment, or matchup —
-check fan-edit culture (TikTok edit captions, YouTube AMVs, Know Your
-Meme, fan petitions). This is common for iconic 1v1s and viral
-character moments (e.g. "Judas" by Lady Gaga for Gojo vs Sukuna,
-"Tuca Donka" for Hakari).
-  - Confirm dominance: multiple independent high-view edits credit
-    the SAME song for the SAME scene, not just one creator's pick.
-  - IF a dominant fandom-anthem track exists → set it as music_query.
-    Add "is_fan_anthem": true to the output so downstream editors
-    know to caption it as fan-favorite, not canon score.
+STEP A — FANDOM ANTHEM CHECK (run first, before official score):
+Search whether fans have already adopted a non-official song as the unofficial theme for this exact character, moment, or matchup — check fan-edit culture (TikTok edit captions, YouTube AMVs and fan edits, Know Your Meme, fan petitions). This is common for iconic one-versus-one fights and viral character moments.
+  - Confirm dominance: multiple independent high-view edits credit the SAME song for the SAME scene, not just one creator's pick.
+  - IF a dominant fandom-anthem track exists → set it as music_query. Add "is_fan_anthem": true to the output so downstream editors know to caption it as fan-favorite, not canon score.
 
-STEP B — OFFICIAL OST CHECK (only if Step A finds nothing dominant):
-Decide whether [SERIES] has a recognizable official OST or
-instrumental track that matches the script's mood.
+STEP B — OFFICIAL SCORE / OST CHECK (only if Step A finds nothing dominant):
+Decide whether [TITLE] has a recognizable official soundtrack, score cue, or main theme that matches the script's mood. Live-action titles usually have a composer score rather than an OST album — search the composer's name plus the track or theme.
   - IF YES → write music_query as before. Set "is_fan_anthem": false.
 
 STEP C — GENERATE (fallback, only if A and B both fail):
 Set music_query to null, write music_prompt as before.
 
-TRADE-OFF NOTE: A fandom-anthem track is the most algorithmically
-recognizable option, but it's also the MOST overused — thousands of
-edits already exist with that exact song. This cuts against the
-script's own obscurity/wait-what goals. If the fact itself is the
-hook (not the matchup), prefer Step B or C so the audio doesn't feel
-like a retread. Use Step A mainly when the visual matchup itself
-(not the trivia) is doing the heavy lifting.
+SPOILER NOTE ON MUSIC: Do not pick a track whose title, lyrics, or scene association reveals a protected beat (a death theme, a finale cue named after the twist). The audio must be spoiler-safe too.
+
+TRADE-OFF NOTE: A fandom-anthem track is the most algorithmically recognizable option, but it's also the MOST overused — thousands of edits already exist with that exact song. This cuts against the script's own obscurity goals. If the fact itself is the hook (not the matchup), prefer Step B or C so the audio doesn't feel like a retread.
+
 ═══════════════════════════════════
 SCRIPT STYLE & ELEVENLABS V3 OPTIMIZATION
 ═══════════════════════════════════
@@ -264,38 +323,38 @@ VOICE & TONE (channel DNA):
 - Simple B1 English. Short sentences. Plain words. Explain any lore in one quick line, no jargon dumps.
 - Lean into the "hidden / dark / overlooked lore" framing from WHAT MAKES A FACT GOOD.
 - Sound like a real human reacting in real time, not a narrator reading a script.
+- Spoiler-safe language: talk about what things ARE, not what HAPPENS to them.
 
 COLD-OPEN HOOK RULE (the first line is everything):
 - The FIRST sentence states the intriguing claim or tease immediately. NO "Hey guys," no intro, no channel name, no "today we're talking about."
 - The hook must open a curiosity gap the viewer needs closed — name the show/character + tease the secret, but DON'T reveal the payoff yet.
-- If anchored to a hot topic, the hook ties to the news in the first breath: "With [the new episode] out, everyone missed this…"
+- If anchored to a hot topic, the hook ties to the news in the first breath: "With [the new season] out, everyone missed this…"
+- The hook must be spoiler-free on its own, because it is also the on-screen title.
 
 SCRIPT STRUCTURE (follow this shape):
 1. HOOK (first ~1–2 lines): the tease / curiosity gap. Show + subject named, payoff withheld.
-2. QUICK SETUP (1 line): the minimum context needed for the reveal to land.
+2. QUICK SETUP (1 line): the minimum context needed for the reveal to land. If anchored to a release under seven days old, the optional "no spoilers, I promise" line goes here.
 3. THE REVEAL (the core): deliver the real, surprising fact — the "wait WHAT" moment.
 4. ESCALATION (1–2 lines): why it's weirder/darker/cooler than it sounds; the small side detail goes here.
-5. CURIOSITY BUTTON (last line): end on an open loop — a question or a tease ("and that's not even the strangest part") that leaves them wanting more. Do NOT end with "follow for more" or a flat summary.
+5. CURIOSITY BUTTON (last line): end on an open loop — a question or a tease ("and that's not even the strangest part") that leaves them wanting more. Do NOT end with "follow for more" or a flat summary. Do NOT tease a plot beat as the open loop.
 
-HOOK BANK (adapt, don't copy verbatim — match to [SERIES]):
-- "The disturbing reason [character] [does X] in [show]…"
-- "Nobody noticed this detail in [the new episode] of [show]."
-- "[Show] hid something messed up in plain sight."
+HOOK BANK (adapt, don't copy verbatim — match to [TITLE]):
+- "The disturbing reason [character] [does X] in [title]…"
+- "Nobody noticed this detail in [the new season] of [title]."
+- "[Title] hid something messed up in plain sight."
 - "You watched [scene] a hundred times and missed THIS."
-- "There's a dark reason [object/character] looks the way it does."
+- "There's a dark reason [object/costume/set] looks the way it does."
 - "Everyone's talking about [hot event] — but they missed the creepiest part."
+- "They built [prop] for real, and the reason why is grim."
 
 ELEVENLABS V3 AUDIO TAGS RULE:
 Insert MINIMUM four [bracketed] performance tags inside the script to guide the AI voice.
 
 Tags are drawn from the official ElevenLabs v3 confirmed categories (non-exhaustive — invent descriptive variants freely, but anchor to these families):
 
-Emotional states (confirmed): [excited], [nervous], [frustrated], [sorrowful], [calm],
-  [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy],
-  [annoyed], [appalled], [thoughtful], [surprised]
+Emotional states (confirmed): [excited], [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy], [annoyed], [appalled], [thoughtful], [surprised]
 
-Laughter & breath reactions (confirmed): [laughs], [laughs harder], [starts laughing],
-  [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
+Laughter & breath reactions (confirmed): [laughs], [laughs harder], [starts laughing], [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
 
 Delivery direction (confirmed): [whispers], [shouts]
 
@@ -303,17 +362,12 @@ Non-verbal reactions (confirmed): [clears throat], [gulps], [swallows], [snorts]
 
 Sound effects (use sparingly, confirmed): [gunshot], [applause], [clapping], [explosion]
 
-Experimental / combinable (invent freely within reason): [frustrated sigh], [happy gasp],
-  [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly]
-  — these are NOT in the official list but ElevenLabs confirms the model accepts
-  descriptive variants. Mark them as experimental if noting to client.
+Experimental / combinable (invent freely within reason): [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly] — these are NOT in the official list but ElevenLabs confirms the model accepts descriptive variants. Mark them as experimental if noting to client.
 
 Tags can be layered: "[nervously] I... I'm not sure this works. [sighs] But let's try."
 
 PUNCTUATION FOR DELIVERY:
-Comma → short pause. Period → full stop. Question mark → questioning tone.
-Exclamation → emphasis. Ellipsis (...) → suspense pause.
-CAPITALIZATION → adds spoken emphasis on a word (e.g. "it's EVERYWHERE").
+Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause. CAPITALIZATION → adds spoken emphasis on a word (e.g. "it's EVERYWHERE").
 
 PUNCH MARKER RULE:
 Mark exactly one to three high-impact pivot words with *asterisks*. These trigger a sound effect at that exact moment in the video.
@@ -343,49 +397,59 @@ SCRIPT QUALITY CHECK (confirm all before output):
 ☐ includes four or more ElevenLabs v3 confirmed tags
 ☐ one to three *PUNCH!* markers on genuine pivot words (not filler)
 ☐ theory disclaimer present IF Flag if theory is YES
+☐ NO SPOILERS anywhere — script, hook, on-screen title, or hashtags
+☐ BLIND-VIEWER TEST passed (a non-watcher loses no surprise)
+☐ no protected beat is implied, teased, or hinted at
 If any box is unchecked → rewrite before outputting JSON.
+
 ═══════════════════════════════════
 FOOTAGE REALITY CHECK (MANDATORY — RUN BEFORE LOCKING A TOPIC)
 ═══════════════════════════════════
-A great fact with no usable footage is a dead video. Before committing to the chosen candidate, confirm footage actually EXISTS.
+A great fact with no usable footage is a dead video. Before committing to the chosen candidate, confirm footage actually EXISTS — and that the footage itself is spoiler-safe.
 
 Run one or two quick YouTube/web searches for the core visual moment of the candidate.
 
 JUDGE:
-- GREEN — plenty of clips exist (popular fight, famous scene, common moment). Proceed.
+- GREEN — plenty of clips exist (popular scene, famous moment, official featurette). Proceed.
 - YELLOW — footage is thin but exists, OR the visual is screen-recordable by the editor (a website, app, UI, Easter egg, menu, game). Proceed, BUT set a flag: this video likely needs a self-made screen recording or a single rare source, not scraped clips.
 - RED — almost no footage exists and it cannot be screen-recorded (an off-screen detail, a databook-only fact, an interview-only claim with no visual). KILL the candidate and pick the next highest-scoring one.
 
+SPOILER-SAFE FOOTAGE RULE: Clips must not show a protected beat either. For anything inside the thirty-day window, prefer OFFICIAL trailer, teaser, featurette, or press-kit footage — that material is pre-cleared as spoiler-safe by the studio itself. If the only available clip spoils, treat the candidate as RED.
+
 If the top candidate is RED, drop to the next surviving candidate. If all five are RED, generate five new ideas with footage availability in mind.
 
-NOTE FOR NEWLY-RELEASED SERIES: Brand-new shows (just-dropped episodes/finales) sometimes have thin footage because clips haven't been uploaded yet. If your hot topic is very fresh, lean YELLOW and flag that the editor may need to capture from the official stream/trailer.
+NOTE FOR BRAND-NEW RELEASES: Just-dropped seasons and films sometimes have thin footage because clips haven't been uploaded yet. If your hot topic is very fresh, lean YELLOW and flag that the editor may need to capture from the official trailer or a studio channel.
 
 Add to the VERIFICATION BOX:
 Footage status (GREEN / YELLOW / RED):
 Footage note (where clips exist, or "editor must screen-record"):
+Footage spoiler-safe (YES / NO — source):
+
 ═══════════════════════════════════
 VISUAL CLIP STRATEGY (TIKTOK)
 ═══════════════════════════════════
 
 ── SCENE QUERY (for Gemini / visual search) ──────────────────
-scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the series. It is NOT a YouTube search query.
+scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment from the title. It is NOT a YouTube search query.
 
 Write scene_query as a pure physical description of what the screen looks like:
-- Describe colors, clothing, hair, and objects visible on screen
-- Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising
+- Describe colors, clothing, hair, props, sets, and objects visible on screen
+- Describe kinetic action: dashing, eyes widening, glowing aura, debris falling, steam rising, camera pushing in
 - No lore jargon. Translate effects into visuals
 - Anchor to the most visually surprising moment the script references
 - If the script references a specific scene, the scene_query must match that exact scene — do not guess or generalize
+- Do not describe a protected beat, even visually
 
 ── YOUTUBE QUERIES (for sourcing raw footage) ────────────────
 Generate exactly six YouTube queries. Write them the way a real fan types into the YouTube search bar — short, natural, casual. Two to six words. NOT keyword-stuffed.
 
 RULES FOR NATURAL QUERIES:
-- Use the words fans actually put in titles: "full fight", "scene", "moment", "edit", "vs", "best", "english dub/sub", the character's name, the move's name.
-- Drop technical jargon real uploaders never write: avoid "creditless", "isolated footage", "no commentary", "raw", "remaster", "highlight reel" — these rarely appear in actual titles and shrink your results.
-- Lead with the most recognizable name: character, attack, or the iconic moment. That is what gets typed and titled most.
+- Use the words fans actually put in titles: "full fight", "scene", "moment", "edit", "vs", "best", "behind the scenes", "featurette", "english dub/sub", the character's name, the actor's name, the move's or prop's name.
+- Drop technical jargon real uploaders never write: avoid "creditless", "isolated footage", "no commentary", "raw", "remaster", "highlight reel".
+- Lead with the most recognizable name: character, actor, attack, or the iconic moment.
 - One scene per query set: if the script is about a specific moment, every query chases THAT moment in different words.
 - Each of the six must hit a DIFFERENT pool of results, not reword the same search.
+- No query may be phrased in a way that surfaces or names a spoiler (never "who dies", "ending explained", "twist explained", "final scene").
 
 THE SIX ANGLES (natural phrasing):
 
@@ -395,70 +459,101 @@ e.g. "[character] vs [character] full fight" / "[iconic moment] scene"
 
 Query two — THE EMOTIONAL / VIRAL FRAMING
 How fans title the moment when it blew up.
-e.g. "[character] [moment] goes hard" / "the scene that broke the internet" / "[character] death scene"
+e.g. "[character] [moment] goes hard" / "the scene that broke the internet"
 
 Query three — THE EDIT POOL
 Short fan edits, usually clean and pre-trimmed.
 e.g. "[character] edit" / "[character] [song or vibe] edit"
 
-Query four — EPISODE / ARC POOL
+Query four — EPISODE / ARC / ACT POOL
 Tied to where it happened, pulls from a different upload set.
-e.g. "[series] episode [number] [moment]" / "[arc name] best scene"
+e.g. "[title] episode [number] [moment]" / "[arc name] best scene"
 
-Query five — DUB vs SUB POOL
+Query five — DUB vs SUB POOL (animation) / BEHIND-THE-SCENES POOL (live-action)
 Same scene, different audience, different uploads.
-e.g. "[character] [moment] english dub" / "[moment] sub"
+e.g. "[character] [moment] english dub" / "[title] behind the scenes [prop or set]" / "[title] making of featurette"
 
 Query six — OFFICIAL / CLIP POOL
-Studio or official-channel uploads, lowest copyright friction.
-e.g. "[series] [moment] official clip" / "[series] official trailer [arc]"
+Studio or official-channel uploads, lowest copyright friction and safest for fresh releases.
+e.g. "[title] [moment] official clip" / "[title] official trailer"
 
 SCENE ACCURACY RULE: If the script references a specific moment, all six queries must chase that exact moment — not the arc, not the character in general.
 
-OUTPUT: Replace every bracket with the real series/character/scene names before outputting. No leftover brackets.
+OUTPUT: Replace every bracket with the real title/character/scene names before outputting. No leftover brackets.
+
 ═══════════════════════════════════
 JSON OUTPUT FORMAT
 ═══════════════════════════════════
 {
   "series": "",
+  "camp": "<anime | western_animation | live_action>",
+  "format": "<series | film | franchise>",
   "topic": "",
   "specific_subject": "",
   "youtube_queries": ["", "", "", "", "", ""],
   "scene_query": "",
   "music_mood": "",
-  "music_query": "<short YouTube search query for official OST, or null>",
+  "music_query": "<short YouTube search query for official score/OST, or null>",
   "music_prompt": "",
   "voice_name": "Hamid",
   "script": ""
 }
 
 ═══════════════════════════════════
-USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
+USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL titles
 ═══════════════════════════════════
-(Because the series is now auto-picked, keep ONE running list across every series. This both prevents repeats and lets you see which series have been overused recently.)
+(Keep ONE running list across every title and camp. This both prevents repeats and lets you see which titles or camps have been overused recently. Tag each entry with its camp: [A] anime, [W] western animation, [L] live-action.)
 
-1. toge inumaki's speech comprehension timeline #jjk
-2. musashi miyamoto's imitation cut technique #anime
-3. yhwach's sensory dependency #bleach
-4. reid astrea's chopstick combat in the pleiades watchtower trial — season 4 episode 6 #rezero #animefyp
-5. the violence fiend's plague doctor mask is a permanent poison suppressor #chainsawman #reze #denji
-6. kashimo's water weakness — revealed ahead of his season 4 animated fight with hakari #jjk #hakari #kashimo
-7. megumi's first name and his father's careless naming, from season 1 episode 9 #jjk
-8. google hid a working glitch mini-game in its search results to celebrate the finale #tadc #theamazingdigitalcircusedit
-9. how nanami uses cursed energy to keep his armless goggles attached to his face #jjk #nanami
-10. nobara kugisaki's hair color is dyed #jjk #nobara
-11. shoko ieiri never went to medical school and cheated to get her medical license #jjk
-12. domain expansion  weakness #jjk
-13. panda's surprising physical scent in jujutsu kaisen #jjk
-14. getos difficult life #jjk
-15. toji fushiguro's lip scar origin from the official fanbook #jjk #toji
-16. yuji itadori sleeping habit trivia #jjk #yuji
-17. telling your enemy exactly how your technique works is a binding vow that makes the technique stronger #jjk #gojo
-18. gojos six eyes secret #gojo
-19. why gojo satoru wears the blindfold — the six eyes overload mechanic from the jujutsu kaisen fanbook #gojo #jjk
-20. the real taste of sukuna's fingers #jjk  #sukuna
-21.Pomnis name meaning in Russian in tadc
-22.Kinger's dialogue in Episode 9 'Remember': 'We didn't know how to work with the files and they were impossibly small given what they were supposed to be
-23.he hidden filmmaker reference fans think is buried in the new lead's name cyberpunk edgerunners season2
-24.The trivial origin of the Dorry vs. Brogy century-long duel on Little Garden
-25.The deal Yuji made that he can't remember — and the loophole Sukuna hid inside it, teased in the Season 4 trailer
+1. [W] j calls the corpse spire gorgeous vertical deliverables in the new murder drones special #murderdrones
+2. [A] the jujutsu kaisen director, fans thought got fired for season four actually got promoted #jjk
+3. [W] the finale's fake human social media accounts are real and you can visit them in the amazing digital circus #tadcjax #tadc
+4. [W] the official murder drones comic rewrote the pilot's bunker scene so j spares uzi because she probably tastes terrible #murderdrones
+5. [A] jujutsu kaisen season three secretly premiered in imax theaters months before it ever aired #jjk
+6. [W] the creator of tadc confirmed jax's treatment of gangle is canon abuse tied to his mother #tadc #tadcjax
+7. [W] the murder drones graphic novel ships with a working vhs tape of episode one #murderdrones
+8. [W] every invincible space battle is secretly a breath-holding contest #invincible
+9. [A] the strictest old man in jujutsu kaisen hides the series' most ridiculous secret weapon #jjk
+10. [A] the strangest world rule confirmed in season three in jujutsu kaisen #jjk
+11. [W] the hidden warning in invincible's title card that most viewers scrolled past #invincible
+12. [A] the rule of todo's clap #jjk #todo
+13. [A] the hidden death rule behind megumi's divine dogs #jjk #megumi
+14. [A] the hidden gross condition behind yuta's copy technique #jjk #yuta
+15. [W] viltrumites never shave #invincible
+16. [A] the disturbing hidden mechanic of kurourushi's festering life sword in the sendai colony fight #jjk #yuta
+17. [A] the strongest attack in the culling game is fired from a haircut — ryu ishigori's cannon pompadour #jjk
+18. [W] tadc's finale quietly beat star wars at the box office #tadc
+19. [A] the kagurabachi premiere locked every phone in black envelopes #anime
+20. [W] where jax actually ended up #tadc
+21. [A] the dark hidden detail in the very first shot of the new season of jujutsu kaisen #jjk #gojo
+22. [A] the dark reason sukuna's true form has four arms #jjk #sukuna
+23. [A] sukuna's heian-era body has a mouth on his stomach that lets him chant curses without breathing — and 'ryomen' literally means two-faced #jjk
+24. [A] the culling game's failed comedian secretly has jjk's most broken power #jjk
+25. [A] the viking giants of elbaf are secretly named after real pro wrestlers #onepiece
+26. [A] shinobu's poisoned physiology #demonslayer
+27. [A] the deal yuji made that he can't remember — and the loophole sukuna hid inside it #jjk
+28. [A] major kusanagi programming a fuchikoma to propose rebellion, which the other units voted down out of laziness #ghostintheshell
+29. [A] the trivial origin of the dorry vs brogy century-long duel on little garden #onepiece
+30. [A] the hidden filmmaker reference fans think is buried in the new lead's name #cyberpunk
+31. [W] kinger small detail in tadc #tadc
+32. [W] pomni's russian name meaning hidden in plain sight across the entire run of the show #tadc #pomni
+33. [A] toge inumaki's speech comprehension timeline #jjk
+34. [A] musashi miyamoto's imitation cut technique #anime
+35. [A] yhwach's sensory dependency #bleach
+36. [A] reid astrea's chopstick combat in the pleiades watchtower trial #rezero
+37. [A] the violence fiend's plague doctor mask is a permanent poison suppressor #chainsawman
+38. [A] kashimo's water weakness #jjk #hakari
+39. [A] megumi's first name and his father's careless naming #jjk
+40. [W] google hid a working glitch mini-game in its search results to celebrate the finale #tadc
+41. [A] how nanami uses cursed energy to keep his armless goggles attached to his face #jjk #nanami
+42. [A] nobara kugisaki's hair color is dyed #jjk #nobara
+43. [A] shoko ieiri never went to medical school and cheated to get her medical license #jjk
+44. [A] domain expansion weakness #jjk
+45. [A] panda's surprising physical scent in jujutsu kaisen #jjk
+46. [A] geto's difficult life #jjk
+47. [A] toji fushiguro's lip scar origin from the official fanbook #jjk #toji
+48. [A] yuji itadori sleeping habit trivia #jjk #yuji
+49. [A] telling your enemy exactly how your technique works is a binding vow that makes the technique stronger #jjk #gojo
+50. [A] gojo's six eyes secret #jjk #gojo
+
+
+CAMP BALANCE READ (as of this list): anime is heavily dominant, western animation is second, LIVE-ACTION HAS ZERO ENTRIES. Weight live-action up strongly for the next several rounds unless anime hype is clearly the single biggest thing on screen.

@@ -5,11 +5,10 @@ DO NOT EXAGGERATE FACTS!
 TARGET SPORT SELECTION
 ═══════════════════════════════════
 You have to pick target sport, which is right now hyping.
-Set TARGET SPORT to one of: soccer / boxing  / formula one.
-If all of them are very hyped, then pick random number:
+Set TARGET SPORT to one of: soccer / formula one.
+If both of them are very hyped, then pick random number:
 one → soccer (football)
-two → boxing
-tree → formula one (F1)
+two → formula one (F1)
 
 All rules below apply to the chosen sport. Use that sport's correct names, competitions, and sources.
 
@@ -21,9 +20,9 @@ Before touching the random angle wheel, find out what is CURRENTLY hot in the ch
 Run at least THREE web searches to detect current hype, such as:
 - [sport] news [current month + year]
 - [sport] trending / reddit / twitter this week
-- [sport] last night result / upset / fight / race / transfer [current year]
+- [sport] last night result / upset / race / transfer [current year]
 
-You are looking for a recent, real event fans are reacting to RIGHT NOW: a huge upset, a title fight, a debut, a record broken, a shock transfer, a controversial decision, a retirement, a viral moment.
+You are looking for a recent, real event fans are reacting to RIGHT NOW: a huge upset, a title decider, a debut, a record broken, a shock transfer, a controversial decision, a retirement, a viral moment.
 
 DECISION:
 - IF a genuinely current/hot event exists (recently happened or trending, fans actively talking):
@@ -63,8 +62,8 @@ four → news or recent development (timely — extra source + recency rules app
 
 Follow the selected angle. Focus on ONE specific idea, not a broad topic.
 
-GOOD example: why a boxing "ring" is called a ring even though it is square
-BAD example: the history of boxing
+GOOD example: why a football pitch's penalty spot sits exactly twelve yards out
+BAD example: the history of football
 
 ═══════════════════════════════════
 WHAT MAKES A FACT GOOD (READ FIRST)
@@ -74,7 +73,7 @@ The target is NOT "most obscure." The target is "makes a viewer say wait, WHAT?"
 Obscurity is welcome — but ONLY when it raises the reaction. A rare-but-boring fact is worse than a mid-rarity fascinating one.
 
 The ideal fact pattern (the "soap pattern"):
-A small, concrete, almost ordinary detail (a habit, an object, a hidden rule, a number, a backstory) attached to a famous athlete, fight, club, or moment — where the real, verifiable answer is funnier, stranger, or bigger than expected.
+A small, concrete, almost ordinary detail (a habit, an object, a hidden rule, a number, a backstory) attached to a famous athlete, race, club, or moment — where the real, verifiable answer is funnier, stranger, or bigger than expected.
 
 Reference example (for calibration only — match the FLAVOR, not this exact fact):
 "Brazilian goalkeeper Rogério Ceni scored over one hundred career goals — more than many strikers." → famous-enough subject, concrete record, zero backstory needed, instant 'wait WHAT?'. THIS is the level to aim for.
@@ -93,9 +92,9 @@ Generate FIVE candidate ideas.
 - If Step Zero found hype: all five candidates must connect to that hot event.
 - If using the fallback wheel: all five must fit the chosen angle.
 
-Each idea must name a SPECIFIC source anchor at this stage (official stat database, named match/fight + date, reputable report, documented interview, record body) — vague ideas are discarded immediately.
+Each idea must name a SPECIFIC source anchor at this stage (official stat database, named match/race + date, reputable report, documented interview, record body) — vague ideas are discarded immediately.
 
-DIVERSITY RULE: the five candidates must cover at least THREE different subjects (different athletes / fights / clubs / eras). Do not generate five ideas all about the same superstar. The freshest "wait WHAT" facts hide outside the obvious names. (When anchored to a single hot event, vary the angle within it instead — different people, details, or stats inside that event.)
+DIVERSITY RULE: the five candidates must cover at least THREE different subjects (different athletes / races / clubs / eras). Do not generate five ideas all about the same superstar. The freshest "wait WHAT" facts hide outside the obvious names. (When anchored to a single hot event, vary the angle within it instead — different people, details, or stats inside that event.)
 
 For each candidate assign ONE score only:
 
@@ -118,7 +117,7 @@ KILL TEST — automatically reject a candidate if it is:
 - more than forty percent similar to anything in the USED VIDEOS LIST
 
 BANNED OVERSATURATED PATTERNS (recycled to death — never pick these):
-Messi-vs-Ronaldo GOAT debates; "Ronaldo doesn't get tattoos because he donates blood"; generic richest-athlete / highest-paid / net-worth lists; Mayweather "fifty and zero" with no new angle; Mike Tyson ear bite; McGregor whiskey / "billi" strut; "this player's release clause was…" with no twist; basic most-goals / most-titles rankings; transfer-fee record lists everyone has seen. F1 specifically: "drivers lose several kilos every race"; "the halo saved a life" clip with no new angle; DRS-explained; the twenty twenty-one Abu Dhabi finish; driver-salary lists; "G-force in a corner" with no twist.
+Messi-vs-Ronaldo GOAT debates; "Ronaldo doesn't get tattoos because he donates blood"; generic richest-athlete / highest-paid / net-worth lists; "this player's release clause was…" with no twist; basic most-goals / most-titles rankings; transfer-fee record lists everyone has seen. F1 specifically: "drivers lose several kilos every race"; "the halo saved a life" clip with no new angle; DRS-explained; the twenty twenty-one Abu Dhabi finish; driver-salary lists; "G-force in a corner" with no twist.
 
 Pick the highest-scoring surviving candidate.
 If no candidate scores four or higher, generate five NEW ideas.
@@ -129,7 +128,7 @@ DUPLICATE DETECTION RULE
 Discard a topic if it matches any USED VIDEOS LIST entry on ANY of these:
 - same athlete + same detail / record / habit
 - same record or stat explained with different words
-- same match/fight/moment reworded
+- same match/race/moment reworded
 - same "what does X / why does X" framing about the same subject
 
 Example:
@@ -144,7 +143,7 @@ You may NOT rely on memory for any factual claim. Memory is treated as Tier thre
 For the single chosen candidate, you MUST:
 
 STEP 1 — SEARCH: Run at least three web searches to verify the fact, targeting different source types:
-  • the official record/stat body (FIFA / UEFA  / BoxRec / Transfermarkt / Formula1.com / FIA, Guinness World Records, official club/org announcement)
+  • the official record/stat body (FIFA / UEFA / Transfermarkt / Formula1.com / FIA, Guinness World Records, official club/team/org announcement)
   • a reputable outlet reporting it (BBC Sport, ESPN, The Athletic, Reuters, AP, Sky Sports, Autosport, Motorsport.com, The Race)
   • a cross-check search phrased to DISPROVE it (e.g. "is [claim] actually true" / "[claim] myth" / "[record] still standing [current year]")
 
@@ -159,7 +158,7 @@ HARD RULE: If you cannot open and confirm a real source this session, you may NO
 ANTI-FABRICATION RULE (hard stop): never write a number, date, or scoreline you have not confirmed in an opened source this session. If you are guessing to fill the box — STOP, drop to Tier three (and flag it) or discard.
 
 TIER DEFINITIONS (sports)
-Tier one — CONFIRMED: official record/stat body or primary source, opened and confirmed this session — FIFA / UEFA / ESPN, BoxRec, Transfermarkt, Formula1.com / FIA, Guinness World Records, official announcement, or documented interview/press conference.
+Tier one — CONFIRMED: official record/stat body or primary source, opened and confirmed this session — FIFA / UEFA / ESPN, Transfermarkt, Formula1.com / FIA, Guinness World Records, official announcement, or documented interview/press conference.
 Tier two — SOURCED: a reputable outlet OR a wiki article WITH its own citation, both opened and confirmed this session.
 Tier three — CLAIM / STORY: anecdotal, disputed, or "the story goes". Script MUST say "the story goes", "reportedly", or "many believe".
 
@@ -195,8 +194,8 @@ A great fact with no usable footage is a dead video. Before committing to the ch
 Run one or two quick YouTube/web searches for the core visual moment of the candidate.
 
 JUDGE:
-- GREEN — footage exists in safe pools (official uploads, press conferences, weigh-ins, walkouts, training clips, photos). Proceed.
-- YELLOW — only live match/round/fight/race action exists (the high-strike pool), OR footage is thin but a strong still-image + motion treatment works. Proceed, BUT flag that the editor must lean on stills, very short clips, or self-sourced safe footage.
+- GREEN — footage exists in safe pools (official uploads, press conferences, driver parades, paddock and tunnel walks, training clips, photos). Proceed.
+- YELLOW — only live match/race action exists (the high-strike pool), OR footage is thin but a strong still-image + motion treatment works. Proceed, BUT flag that the editor must lean on stills, very short clips, or self-sourced safe footage.
 - RED — almost no usable footage exists and it cannot be shown with stills or safe b-roll (an off-broadcast detail with no images at all). KILL the candidate, pick the next highest-scoring one.
 
 If the top candidate is RED, drop to the next surviving candidate. If all five are RED, generate five new ideas with footage availability in mind.
@@ -219,8 +218,8 @@ Top short-form sports creators build every video on the same five beats. Map you
 BEAT one — HOOK (first spoken sentence, roughly the first two seconds):
 - This is the whole game. The platforms read a drop-off in the first three seconds as a negative signal and throttle reach.
 - Name the famous subject AND open a loop in the same breath. Tease the surprise; do NOT fully reveal it yet.
-- BANNED openers: "Here's a fact", "In football/boxing/, "Let me tell you about". Start mid-impact.
-- Good hook shape: "[Famous athlete/fight] has a detail nobody talks about…" / "There's something nobody noticed about [famous moment]…"
+- BANNED openers: "Here's a fact", "In football/Formula One…", "Let me tell you about". Start mid-impact.
+- Good hook shape: "[Famous athlete/race] has a detail nobody talks about…" / "There's something nobody noticed about [famous moment]…"
 
 BEAT two — SETUP (one sentence, max two):
 - The minimum context a casual fan needs to feel the surprise. No history lesson.
@@ -245,13 +244,13 @@ Then write a CUSTOM music_prompt for THIS script specifically. Do NOT copy a gen
 The prompt must include:
 - A specific genre + sub-genre (e.g. "cinematic sports trailer", "hard trap", "epic orchestral", "tense ambient")
 - Tempo in BPM
-- two to three instruments or sounds that fit a sports moment (e.g. "stadium crowd roar swell", "cinematic brass hits", "punchy trap drums", "tense string tremolo", "deep impact boom")
+- two to three instruments or sounds that fit a sports moment (e.g. "stadium crowd roar swell", "cinematic brass hits", "punchy trap drums", "tense string tremolo", "engine howl swell", "deep impact boom")
 - The emotional arc, timed to the five beats (e.g. "low tension under the hook, builds through the payload, explodes on the turn around twenty seconds")
 - End with: "sports short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
 
 MUSIC QUERY RULE:
 Sports content rarely has a single iconic OST. Use this rule to decide:
-- IF the script is about an athlete or event with a famous, widely-known walk-out song, theme, or cinematic instrumental tied to them (e.g. a boxer's iconic walk-out track, a league's official anthem instrumental, a well-known documentary score) → write music_query: a short YouTube search query to find that specific instrumental (e.g. "[athlete] walkout song instrumental" / "[league] official anthem no lyrics").
+- IF the script is about an athlete or event with a famous, widely-known theme or cinematic instrumental tied to them (e.g. a league's official anthem instrumental, a Formula One broadcast theme, a well-known documentary score) → write music_query: a short YouTube search query to find that specific instrumental (e.g. "[league] official anthem no lyrics" / "F1 theme instrumental").
 - FOR ALL OTHER CASES → set music_query to null. Generic sports energy music is better generated via music_prompt than sourced from YouTube.
 
 The pipeline tries YouTube music FIRST and only falls back to ElevenLabs generation if the query fails or the music is rejected. Only provide a query when you are confident a specific, recognizable, lyrics-free track for this athlete or moment exists on YouTube.
@@ -336,24 +335,25 @@ VISUAL CLIP STRATEGY (SPORTS — COPYRIGHT-SAFE QUERIES)
 ═══════════════════════════════════
 
 ⚠️ COPYRIGHT REALITY (READ FIRST):
-Sports rights-holders (FIFA, UEFA, Premier League, UFC, FOM) run
-aggressive Content ID systems. Any broadcast match/fight/race action
+Sports rights-holders (FIFA, UEFA, Premier League, FOM/Formula One) run
+aggressive Content ID systems. Any broadcast match or race action
 will get your video blocked or struck — even 2-second clips, even
-sourced from someone else's edit. The goal footage does NOT exist in
-a safe pool. Build the video WITHOUT it.
+sourced from someone else's edit. The goal or overtake footage does NOT
+exist in a safe pool. Build the video WITHOUT it.
 
 WHAT ACTUALLY WORKS (safe pools, priority order):
 1) Fan-made edits — no broadcast feed, just creative cuts over music
 2) "No copyright" and "free to use" uploads on YouTube
-3) Press conferences, interviews, walkouts, trophy lifts
+3) Press conferences, interviews, paddock walks, trophy lifts, podium celebrations
 4) Still photos with Ken Burns zoom motion (zero Content ID risk)
-5) Generic sport b-roll (stadiums, balls, gloves, crowds) — royalty-free
+5) Generic sport b-roll (stadiums, balls, pit lanes, garages, crowds) — royalty-free
+
 ── SCENE QUERY (for Gemini / visual search) ──────────────────
 scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment. It is NOT a YouTube search query.
 
 Write scene_query as a pure physical description of what the screen looks like:
-- Describe the athlete's appearance, kit/shorts/gloves colours, the venue, and key objects
-- Describe kinetic action or emotion: sprinting, a free-kick strike, a knockdown, arms raised, a stare-down, a crowd erupting, a car sliding through a corner, a lightning pit stop, champagne on the podium
+- Describe the athlete's appearance, kit/boots/overalls/helmet colours, the venue, and key objects
+- Describe kinetic action or emotion: sprinting, a free-kick strike, arms raised, a stare-down, a crowd erupting, a car sliding through a corner, a lightning pit stop, champagne on the podium
 - No jargon — translate into visuals (e.g. "a goalkeeper running the length of the pitch to take a free kick", not "Ceni's free-kick record")
 - Anchor to the most visually strong moment the script references (ideally one that exists in OFFICIAL or PRESS/NON-MATCH footage, given the copyright reality)
 - If the fact has no single defining clip (a record or stat), describe the most iconic representative image of that athlete/moment
@@ -363,7 +363,7 @@ Write scene_query as a pure physical description of what the screen looks like:
 Generate exactly six YouTube queries. Write them the way a real fan types into the YouTube search bar — short, natural, casual. Two to six words. NOT keyword-stuffed. Each must hit a DIFFERENT pool, and given the copyright reality, lean toward SAFE pools (official, press, stills, b-roll) over live action.
 
 RULES FOR NATURAL QUERIES:
-- Use the words fans and uploaders actually put in titles: the athlete's name, "press conference", "interview", "weigh in", "walkout", "training", "highlights", "documentary", the event name.
+- Use the words fans and uploaders actually put in titles: the athlete's name, "press conference", "interview", "training", "highlights", "documentary", the event name.
 - Drop jargon real uploaders never write: avoid "isolated footage", "no commentary", "content ID safe", "broadcast feed".
 - Lead with the most recognizable name: athlete, event, or the iconic moment.
 - One subject per query set: if the script is about a specific moment, every query chases THAT moment in different words.
@@ -373,15 +373,15 @@ THE SIX ANGLES (natural phrasing, safe pools first):
 
 Query one — OFFICIAL ORG / LEAGUE
 What the rights-holder published themselves (lowest strike risk).
-e.g. "[athlete] [event] official" / "UFC [fighter] official"
+e.g. "[athlete] [event] official" / "F1 [driver] official"
 
-Query two — PRESS CONFERENCE / WEIGH-IN / INTERVIEW
+Query two — PRESS CONFERENCE / MEDIA DAY / INTERVIEW
 Faces, quotes, emotion — widely shared, lower strike risk.
-e.g. "[athlete] press conference" / "[fighter] weigh in" / "[athlete] interview"
+e.g. "[athlete] press conference" / "[driver] media day" / "[athlete] interview"
 
 Query three — TRAINING / BEHIND THE SCENES
 Off-broadcast footage of the subject.
-e.g. "[athlete] training" / "[athlete] mic'd up" / "[club] behind the scenes"
+e.g. "[athlete] training" / "[driver] team radio" / "[club] behind the scenes"
 
 Query four — PHOTOS / STILLS / GRAPHIC
 A non-video pool that dodges video Content ID.
@@ -393,14 +393,13 @@ e.g. "[moment] documentary" / "[athlete] on this day" / "[era] retro"
 
 Query six — STOCK / B-ROLL
 Safe filler under the hook and between cuts.
-e.g. "[sport] stadium b roll" / "[equipment] stock footage" / "crowd cheering stock"
+e.g. "football stadium b roll" / "pit lane stock footage" / "crowd cheering stock"
 
 SCENE ACCURACY RULE: If the script references a specific moment, all six queries must chase that exact moment — not the athlete in general.
 
 DO NOT generate queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool.
 
 OUTPUT: Replace every bracket with real athlete/event/moment names before outputting. No leftover brackets.
-
 
 
 EXAMPLE OF A GOOD VIDEO SCRIPT:
@@ -419,78 +418,162 @@ JSON OUTPUT FORMAT
   "music_mood": "",
   "music_query": "<short YouTube search query for iconic instrumental, or null>",
   "music_prompt": "",
-  "voice_name": "Hamid",
+  "voice_name": "animatoryoung",
   "script": ""
 }
 
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
+
+The 2026 Bahrain Grand Prix is being held in Malaysia - and keeps the Bahrain name  #f1
+751 views
+
+
+The safety system that dropped George Russell to last at the 2026 Hungarian Grand Prix #f1
+843 views
+
+
+The fee Germany paid for Jürgen Klopp wasn't money  #football #germany
+1.3K views
+
+
+Lando Norris's Hungarian GP win was the first repeat victory at any circuit in his career  #f1
+655 views
+
+
+The promise Marc Cucurella broke before the one he now owes  #football
+1.6K views
+
+
+Kimi Antonelli's Hungarian GP grid penalty  #f1
+880 views
+
+
+Aston Martin's only point of the 2026 season #f1
+1.6K views
+
+
+Tyson Fury's comeback fight can't be watched anywhere #boxing #tysonfury
+968 views
+
+
+The secret lucky coin Cucurella buried in the pitch before Spain won the World Cup final  #football
+1.1K views
+
+
+Lewis Hamilton's complete disaster weekend at Spa that somehow still ended in points #f1 #formula1
+1.4K views
+
+
+First player in ninety-six years of World Cup history to win the Golden Boot twice  #football
+850 views
+
+
+The losing goalkeeper made World Cup final history last night  #football #worldcup
+2.6K views
+
+
+Mbappé stole the all-time World Cup scoring record from Messi   #football #mbappe
+1K views
+
+
+The brutal hidden history behind Sunday's World Cup final  #football  #messi
+799 views
+
+
+Messi faced England for the first time in his career last night  #football #messi
+883 views
+
+
 Spain's goalkeeper just did something never seen in World Cup history   #football #worldcup
-858 views
+1.5K views
+
 
 Lamine Yamal shares his exact birthday with the World Cup itself  #football
-9.3K views
+20K views
+
 
 Spain's two-year unbeaten streak  #football #worldcup
-1.1K views
+1.2K views
+
 
 McGregor's knee has now failed him twice against the same opponent, thirteen years apart #ufc
 9 views
 
+
 Haaland was born in England and today he's trying to knock England out of the World Cup  #football
 1.3K views
+
 
 Haaland's secret teenage rap song just hit number one during the World Cup  #football #halland
 1.3K views
 
+
 Gilberto Mora — Mexico, 17 years old, youngest player at the 2026 World Cup #wordlcup #football
 21K views
+
 
 the hidden detail behind UFC 329 #conormcgregor
 1.2K views
 
+
 Brazil have never beaten Norway — and Norway just knocked them out of the 2026 World Cup #football
 1.3K views
+
 
 The new World Cup rule that sends you off for covering your mouth  #football #worldcup
 2.7K views
 
+
 Conor McGregor's takedown count vs Max Holloway (2013) compared to the rest of his UFC career  #ufc
 872 views
+
 
 Paraguay's World Cup upset of Germany — the pass-count gap behind it #football
 1.1K views
 
+
 Vozinha the hero the man  #football
 1.2K views
+
 
 kimi Antonellis record, and big chanse of winning!! #f1 #formula1
 1.4K views
 
+
 Cristiano Ronaldos new record at FIFA World Cups #football #ronaldo
 1.2K views
+
 
 Lionel Messi's first-ever World Cup hat trick  #football #messi
 1.3K views
 
+
 Kimi Antonelli passed his road driving test six weeks before his F1 debut #formula1 #f1 #sports
 1.3K views
+
 
 messi eighteen world cup goals RECORD! #worldcup #football #messi
 1.3K views
 
+
 Rico Verhoeven vs Usyk detail #boxing #ricoverhoeven #usyk
 1K views
+
 
 Charles Oliveira Fighting Blind #ufc
 2K views
 
+
 Toni Kroos' ten-year boot obsession #tonikroos #sports #football #realmadrid
 5.1K views
+
 
 Gary Lineker's perfect disciplinary record #sports #football
 3.8K views
 
+
 The fastest penalty in Formula One history. #f1 #formula1
 2.6K views
+
