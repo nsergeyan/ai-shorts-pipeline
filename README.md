@@ -111,6 +111,7 @@ After the video is saved, the pipeline builds a matching thumbnail image. `find_
 ```
 YOutuber/
 ├── main.py                    # Main pipeline entrypoint
+├── clipmaker.py               # Promo clip entrypoint (cuts the best moment out of a video you already have)
 ├── config.py                  # Directory and API configuration
 ├── manualprompt.txt           # Structured script prompt template (auto anime/cartoon)
 ├── specifixprompt             # Structured script prompt template (specific series)
@@ -192,6 +193,16 @@ To trigger impact SFX at key moments, add `*WORD!*` markers in the script:
 ```
 
 Markers are stripped before voice generation; after Whisper transcription the words are matched to timestamps and a random SFX fires at each moment during the Remotion render.
+
+### Promo Clip Maker
+
+`clipmaker.py` is a second entrypoint for a different job: cutting a short promo clip out of a video you already have, instead of sourcing footage from YouTube. Set `source_video_path` in `CLIP_MAKER_DATA`, then run:
+
+```bash
+python clipmaker.py
+```
+
+Gemini watches the full video and picks the single most interesting continuous moment (the target length is set by `clip_duration`, default 30s). FFmpeg trims to that moment, keeping the video's own original audio, no script, no AI narration, no music. That audio is transcribed by Whisper and the clip is rendered through the same Remotion pipeline as `main.py`, so it gets the same blurred/contained 9:16 layout, the same word-highlighted subtitles, and the same follow-button CTA. Output lands in `data/final/` as `Promo_<filename>_XX.mp4`; the original source video is never deleted.
 
 ---
 
