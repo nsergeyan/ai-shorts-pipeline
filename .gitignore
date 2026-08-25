@@ -31,7 +31,7 @@ clip_*.mp4
 
 
 Green_Screen_Footage_*.mp4
-manualprompt.txt
+prompts/manualprompt.txt
 
 
 remotion/node_modules/

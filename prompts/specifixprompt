@@ -1,5 +1,5 @@
 do web search  and follow the prompt
-Series: murder drones
+Series: jjk
 EDITORIAL & RESEARCH PROTOCOL
 1. TOPIC SELECTION (THE COIN FLIP RULE)
 Upon receiving the series/movie name, randomly select ONE of these two content tracks:
@@ -29,6 +29,7 @@ Language Limit: Write the script strictly in B1 Simple English. Use everyday voc
 Brand Voice: The narrative must be memorable and highly engaging—like a passionate friend sharing a mind-blowing cinematic secret. The storytelling must make the viewer feel like they are getting exclusive insider info, naturally making them want to follow the channel for more.
 
 TECHNICAL SPECS — OUTPUT FORMATTING, DELIVERY & API CONSTRAINTS
+do not use \n,"",\,\ stuff in script
 TITLE RULE
 Output a "title" field: ONE declarative sentence that fully states the fact, plus the film/series name.
 

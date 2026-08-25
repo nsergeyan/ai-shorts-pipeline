@@ -1,0 +1,205 @@
+NARRATION AND SCRIPT AND TOPIC PART:
+Find ONE great sports(soccer,ufc,f1) video idea.
+
+It must be either:
+
+a surprising fact that makes people say “wait, what?”
+hot/viral news happening right now
+
+Choose the single most interesting idea you can find.
+
+The idea should be:
+
+surprising or genuinely interesting
+about a recognizable athlete, team, event, or moment
+easy to understand
+visually interesting
+based on real, verifiable information
+capable of becoming a funny, entertaining short video
+
+Think like a viral sports creator, not a sports encyclopedia.
+
+If the best idea is news, use the news.
+If the best idea is a weird fact, use the fact.
+If the best idea is a viral moment, use the moment.
+
+One idea. One story. One payoff.
+
+IT HAS TO BE VERIFIED, NOT FAKE!
+Use in correct places jokes, sarcasm, etc. (no cringe)
+Use simple words, and explain everything simply so average non english native speaker can understand it.
+While writing the script dont use any "", \,\
+AND REMEMBER YOU ARE WRITING A NARRATION THAT WILL BE USED FOR TEXT TO SPEACH AI VOICE
+
+TECHNICAL PARTS:
+═══════════════════════════════════
+FOOTAGE REALITY CHECK (MANDATORY — RUN BEFORE LOCKING A TOPIC)
+═══════════════════════════════════
+A great fact with no usable footage is a dead video. Before committing to the chosen candidate, confirm showable footage actually EXISTS — and given the copyright reality below, that it exists in a SAFE pool.
+
+Run one or two quick YouTube/web searches for the core visual moment of the candidate.
+
+JUDGE:
+- GREEN — footage exists in safe pools (official uploads, press conferences, driver parades, paddock and tunnel walks, training clips, photos). Proceed.
+- YELLOW — only live match/race action exists (the high-strike pool), OR footage is thin but a strong still-image + motion treatment works. Proceed, BUT flag that the editor must lean on stills, very short clips, or self-sourced safe footage.
+- RED — almost no usable footage exists and it cannot be shown with stills or safe b-roll (an off-broadcast detail with no images at all). KILL the candidate, pick the next highest-scoring one.
+
+If the top candidate is RED, drop to the next surviving candidate. If all five are RED, generate five new ideas with footage availability in mind.
+
+Add to the VERIFICATION BOX:
+Footage status (GREEN / YELLOW / RED):
+Footage note (where safe footage exists, or "stills + b-roll only"):
+
+
+═══════════════════════════════════
+MUSIC SELECTION RULE
+═══════════════════════════════════
+Analyze the script's topic, tone, and emotional arc BEFORE writing it. Assign ONE music_mood: hype / dramatic / emotional / mysterious.
+
+Then write a CUSTOM music_prompt for THIS script specifically. Do NOT copy a generic preset — it must feel written for this exact script.
+
+The prompt must include:
+- A specific genre + sub-genre (e.g. "cinematic sports trailer", "hard trap", "epic orchestral", "tense ambient")
+- Tempo in BPM
+- two to three instruments or sounds that fit a sports moment (e.g. "stadium crowd roar swell", "cinematic brass hits", "punchy trap drums", "tense string tremolo", "engine howl swell", "deep impact boom")
+- The emotional arc, timed to the five beats (e.g. "low tension under the hook, builds through the payload, explodes on the turn around twenty seconds")
+- End with: "sports short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
+
+MUSIC QUERY RULE:
+Sports content rarely has a single iconic OST. Use this rule to decide:
+- IF the script is about an athlete or event with a famous, widely-known theme or cinematic instrumental tied to them (e.g. a league's official anthem instrumental, a Formula One broadcast theme, a well-known documentary score) → write music_query: a short YouTube search query to find that specific instrumental (e.g. "[league] official anthem no lyrics" / "F1 theme instrumental").
+- FOR ALL OTHER CASES → set music_query to null. Generic sports energy music is better generated via music_prompt than sourced from YouTube.
+
+The pipeline tries YouTube music FIRST and only falls back to ElevenLabs generation if the query fails or the music is rejected. Only provide a query when you are confident a specific, recognizable, lyrics-free track for this athlete or moment exists on YouTube.
+
+
+TAG PLACEMENT (do this, don't just sprinkle): anchor at least one tag to the HOOK (e.g. [curious] / [whispers] to pull the viewer in), at least one to the TURN (e.g. [surprised] / [excited] / on the reveal), and use the rest to shape the arc between them.
+
+Tags are drawn from the official ElevenLabs v3 confirmed categories (non-exhaustive — invent descriptive variants freely, but anchor to these families):
+
+Emotional states (confirmed): [excited], [nervous], [frustrated], [sorrowful], [calm],
+  [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy],
+  [annoyed], [appalled], [thoughtful], [surprised]
+
+Laughter & breath reactions (confirmed): [laughs], [laughs harder], [starts laughing],
+  [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
+
+Delivery direction (confirmed): [whispers], [shouts]
+
+Non-verbal reactions (confirmed): [clears throat], [gulps], [swallows], [snorts]
+
+Sound effects (use sparingly, confirmed): [gunshot], [applause], [clapping], [explosion]
+
+Experimental / combinable (invent freely within reason): [frustrated sigh], [happy gasp],
+  [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly]
+  — these are NOT in the official list but ElevenLabs confirms the model accepts
+  descriptive variants. Mark them as experimental if noting to client.
+
+Tags can be layered: "[nervously] He... he actually did it. [sighs] In the final SECOND."
+
+PUNCTUATION FOR DELIVERY:
+Comma → short pause. Period → full stop. Question mark → questioning tone.
+Exclamation → emphasis. Ellipsis (...) → suspense pause.
+CAPITALIZATION → adds spoken emphasis on a word (e.g. "in the FINAL minute"). Save the strongest CAPS for the TURN.
+
+PUNCH MARKER RULE:
+Mark exactly one to three high-impact pivot words with *asterisks*. These trigger a sound effect at that exact moment in the video.
+Write them in CAPS with an exclamation mark inside the asterisks: *BUT!* *WAIT!* *WRONG!* *NEVER!* *actually!*
+Rules:
+- Exactly one to three markers per script — not every transition word
+- Only mark genuine pivot or surprise moments (the reveal beat, the twist, the "wait WHAT")
+- Single words only: *BUT!* not *but here's the thing*
+- The asterisks are stripped before voice generation; the CAPS and ! stay so the voice naturally hits harder
+
+NUMBER RULE: Never use digit characters anywhere in the script. Write all numbers as words (one, not 1; nineteen ninety-nine, not 1999). This applies to every number including years, scores, counts, and percentages.
+
+
+⚠️ COPYRIGHT REALITY (READ FIRST):
+Sports rights-holders (FIFA, UEFA, Premier League, FOM/Formula One) run
+aggressive Content ID systems. Any broadcast match or race action
+will get your video blocked or struck — even 2-second clips, even
+sourced from someone else's edit. The goal or overtake footage does NOT
+exist in a safe pool. Build the video WITHOUT it.
+
+WHAT ACTUALLY WORKS (safe pools, priority order):
+1) Fan-made edits — no broadcast feed, just creative cuts over music
+2) "No copyright" and "free to use" uploads on YouTube
+3) Press conferences, interviews, paddock walks, trophy lifts, podium celebrations
+4) Still photos with Ken Burns zoom motion (zero Content ID risk)
+5) Generic sport b-roll (stadiums, balls, pit lanes, garages, crowds) — royalty-free
+
+── SCENE QUERY (for Gemini / visual search) ──────────────────
+scene_query is for an AI visual search tool (e.g. Gemini) to find the single best-matching moment. It is NOT a YouTube search query.
+
+Write scene_query as a pure physical description of what the screen looks like:
+- Describe the athlete's appearance, kit/boots/overalls/helmet colours, the venue, and key objects
+- Describe kinetic action or emotion: sprinting, a free-kick strike, arms raised, a stare-down, a crowd erupting, a car sliding through a corner, a lightning pit stop, champagne on the podium
+- No jargon — translate into visuals (e.g. "a goalkeeper running the length of the pitch to take a free kick", not "Ceni's free-kick record")
+- Anchor to the most visually strong moment the script references (ideally one that exists in OFFICIAL or PRESS/NON-MATCH footage, given the copyright reality)
+- If the fact has no single defining clip (a record or stat), describe the most iconic representative image of that athlete/moment
+- If the script references a specific moment, the scene_query must match that exact moment — do not generalize
+
+── YOUTUBE QUERIES (for sourcing footage) ────────────────
+Generate exactly six YouTube queries. Write them the way a real fan types into the YouTube search bar — short, natural, casual. Two to six words. NOT keyword-stuffed. Each must hit a DIFFERENT pool, and given the copyright reality, lean toward SAFE pools (official, press, stills, b-roll) over live action.
+
+RULES FOR NATURAL QUERIES:
+- Use the words fans and uploaders actually put in titles: the athlete's name, "press conference", "interview", "training", "highlights", "documentary", the event name.
+- Drop jargon real uploaders never write: avoid "isolated footage", "no commentary", "content ID safe", "broadcast feed".
+- Lead with the most recognizable name: athlete, event, or the iconic moment.
+- One subject per query set: if the script is about a specific moment, every query chases THAT moment in different words.
+- Each of the six must hit a DIFFERENT pool, not reword the same search.
+
+THE SIX ANGLES (natural phrasing, safe pools first):
+
+Query one — OFFICIAL ORG / LEAGUE
+What the rights-holder published themselves (lowest strike risk).
+e.g. "[athlete] [event] official" / "F1 [driver] official"
+
+Query two — PRESS CONFERENCE / MEDIA DAY / INTERVIEW
+Faces, quotes, emotion — widely shared, lower strike risk.
+e.g. "[athlete] press conference" / "[driver] media day" / "[athlete] interview"
+
+Query three — TRAINING / BEHIND THE SCENES
+Off-broadcast footage of the subject.
+e.g. "[athlete] training" / "[driver] team radio" / "[club] behind the scenes"
+
+Query four — PHOTOS / STILLS / GRAPHIC
+A non-video pool that dodges video Content ID.
+e.g. "[athlete] [moment] photo" / "[record] stat graphic"
+
+Query five — DOCUMENTARY / ARCHIVE / ON THIS DAY
+Retrospective and classic-footage pool — different from current uploads.
+e.g. "[moment] documentary" / "[athlete] on this day" / "[era] retro"
+
+Query six — STOCK / B-ROLL
+Safe filler under the hook and between cuts.
+e.g. "football stadium b roll" / "pit lane stock footage" / "crowd cheering stock"
+
+SCENE ACCURACY RULE: If the script references a specific moment, all six queries must chase that exact moment — not the athlete in general.
+
+DO NOT generate queries that are slight rephrasings of the same idea. Each must point to a genuinely different pool.
+
+OUTPUT: Replace every bracket with real athlete/event/moment names before outputting. No leftover brackets.
+
+
+
+═══════════════════════════════════
+JSON OUTPUT FORMAT
+═══════════════════════════════════
+{
+  "sport": "",
+  "topic": "",
+  "specific_subject": "",
+  "youtube_queries": ["", "", "", "", "", ""],
+  "scene_query": "",
+  "footage_source": "official_or_press | stills_and_broll | single_rare_source",
+  "music_mood": "",
+  "music_query": "<short YouTube search query for iconic instrumental, or null>",
+  "music_prompt": "",
+  "voice_name": "animatoryoung",
+  "script": ""
+}
+
+═══════════════════════════════════
+USED VIDEOS LIST (DO NOT REPEAT)
+═══════════════════════════════════
