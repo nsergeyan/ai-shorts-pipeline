@@ -77,23 +77,23 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 
 MANUAL_DATA ={
   "sport": "soccer",
-  "topic": "2026 uefa super cup final upset detail",
-  "specific_subject": "Brian Madjo becomes the youngest-ever scorer in UEFA Super Cup history days after a court battle nearly kept him off the pitch",
+  "topic": "Martin Palermo misses three penalties in one match",
+  "specific_subject": "Martin Palermo",
   "youtube_queries": [
-    "Brian Madjo goal UEFA Super Cup official",
-    "Brian Madjo press conference Super Cup",
-    "Brian Madjo Aston Villa training",
-    "Brian Madjo Super Cup record photo",
-    "who is Brian Madjo Aston Villa",
-    "football stadium crowd cheering stock"
+    "copa america martin palermo penalties official",
+    "martin palermo interview 1999 colombia",
+    "martin palermo 3 penalties retro",
+    "martin palermo penalty miss 1999 photo",
+    "martin palermo colombia 1999 documentary",
+    "stadium fans reacting stock footage"
   ],
-  "scene_query": "A teenage footballer in Aston Villa's claret and blue kit with white boots, running onto a cross inside the penalty box and volleying the ball past a PSG goalkeeper in white and navy, then wheeling away with arms out to celebrate in front of a packed European stadium crowd under floodlights, teammates rushing over to embrace him.",
-  "footage_source": "official_or_press",
+  "scene_query": "Martin Palermo, wearing the iconic light blue and white striped Argentina kit with a bleach-blond buzzcut, standing on the pitch in 1999 with his hands on his head in utter disbelief after missing his third penalty kick against Colombia, looking completely crushed.",
+  "footage_source": "stills_and_broll",
   "music_mood": "dramatic",
   "music_query": null,
-  "music_prompt": "Cinematic sports trailer building tension, eighty-eight BPM, layered with a driving string ostinato, punchy cinematic brass hits, and a deep sub bass pulse; starts low and suspenseful under the hook, tightens through the setup, then swells into a triumphant brass hit right on the turn before settling into a proud, anthemic close. sports short-form video background, no lyrics, exclude: cheerful acoustic guitar, lo-fi chill beats.",
+  "music_prompt": "cinematic orchestral comedy, 110 BPM, ticking clock tension, dramatic brass hits, comedic pizzicato strings, starts deadly serious like a sports documentary, pauses for the punchline, then turns chaotic and bumbling for the three misses, sports short-form video background, no lyrics, exclude: EDM drops, trap drums",
   "voice_name": "animatoryoung",
-  "script": "[curious] Seventeen year old Brian Madjo just did something this week that no one has done in thirty years. [thoughtful] Making his first start for Aston Villa, he faced Paris Saint Germain in the Super Cup final. Just before halftime, he scored, becoming the youngest scorer in Super Cup history. [surprised] *BUT!* only eight days before that goal, a court had to step in, because FIFA said, technically, he wasn't even allowed to be there. He broke a record that had stood since nineteen ninety six. PSG still won the game. [mischievously] So, did you catch history happening in the background of that final?"
+  "script": "[curious] Have you ever had a really bad day at work? [laughs] Well, let me tell you about Martin Palermo in nineteen ninety nine. [excited] He was the star striker for Argentina. [calm] They were playing Colombia in the Copa America. [thoughtful] Five minutes in, Argentina gets a penalty. [sighs] Palermo steps up, kicks it hard, and hits the crossbar. Unlucky, sure. [surprised] Fast forward to the seventy sixth minute. Another penalty for Argentina! Palermo gets his chance at redemption. He runs up, strikes it... *BUT!* [happy gasp] He sends it completely over the goal into the stands! [laughs harder] Two misses in one match! [whispers] The soccer gods were not done. [nervous] Ninetieth minute. A third penalty. Palermo takes it... *AGAIN!* [shouts] And the goalkeeper saves it! [wheezing] He missed three penalties in one single match! [exhales sharply] Argentina lost three nil, and Palermo earned a Guinness World Record that no player EVER wants."
 }
 
 

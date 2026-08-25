@@ -123,7 +123,7 @@ def generate_voice(
 if __name__ == "__main__":
     print("🧪 Starting High-Speed V3 Test...\n")
 
-    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? They look like dry, old meat, but the real answer is much stranger."
+    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? "
     try:
         for i in range(1, 3):
             path = generate_voice(

@@ -35,7 +35,7 @@ from modules.video_editor import merge_audio_video
 
 CLIP_MAKER_DATA = {
     # Drag your video in (anywhere on disk) and paste its path here.
-    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/ordinary_sailor_on_odysseus_crew/final.mp4",
+    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/moon_landing_fake/final.mp4",
     # Target length in seconds for the promo clip. Gemini can shift a few
     # seconds either way to land on a clean start/end.
     "clip_duration": 30,
