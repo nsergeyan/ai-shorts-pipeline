@@ -35,11 +35,38 @@ from modules.video_editor import merge_audio_video
 
 CLIP_MAKER_DATA = {
     # Drag your video in (anywhere on disk) and paste its path here.
-    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/moon_landing_fake/final.mp4",
+    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/why_people_hate_anime/final.mp4",
     # Target length in seconds for the promo clip. Gemini can shift a few
     # seconds either way to land on a clean start/end.
     "clip_duration": 30,
 }
+
+
+def _parse_ts(value) -> float:
+    """Gemini timestamps video natively in MM:SS. Accept that or plain seconds
+    rather than forcing it to do the conversion arithmetic itself."""
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip()
+    if ":" in text:
+        parts = [float(p) for p in text.split(":")]
+        return sum(p * 60 ** i for i, p in enumerate(reversed(parts)))
+    return float(text)
+
+
+def _enforce_duration(start: float, end: float, target: float, video_duration: float):
+    """Gemini often returns a span far shorter than asked for, and nothing used to
+    check it, so a 30s request could render as 8s. Anchor on the start it picked
+    (that is where the hook begins) and force the clip to run `target` long,
+    sliding it back only if it would overrun the video."""
+    span = end - start
+    if abs(span - target) <= target * 0.2:
+        return start, end
+    target = min(target, video_duration)
+    new_start = max(0.0, min(start, video_duration - target))
+    new_end = new_start + target
+    print(f"📏 Gemini returned {span:.1f}s, forcing to {new_end - new_start:.1f}s")
+    return new_start, new_end
 
 
 def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
@@ -54,30 +81,45 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
     uploaded_file = _upload_and_wait(client, video_path, label="source video")
 
     prompt = f"""
-    You are picking a short highlight clip from this video to promote the full video on
-    social media, a teaser/trailer cut. Watch the whole video.
+    You are cutting a promo clip out of this video to post as a standalone short on
+    social media, a teaser/trailer cut. Watch and listen to the whole video first.
 
     VIDEO DURATION: {video_duration:.1f} seconds
+    TARGET CLIP LENGTH: {target_duration:.0f} seconds (hard requirement, not a suggestion)
 
     TASK:
-    Find the single most interesting, exciting, or intriguing continuous moment in this
-    video, the kind of moment that would make someone stop scrolling and want to watch
-    the full video. It must be ONE continuous segment, no cuts.
+    Find the single most interesting, exciting, or intriguing continuous moment in
+    this video, the kind of moment that would make someone stop scrolling and want
+    to watch the full video. It must be ONE continuous segment, no cuts.
+    Judge it on both what is on screen and what is being said.
 
-    RULES:
-    - Target length: about {target_duration:.0f} seconds. Shift a few seconds either way
-      to start and end on a clean beat: start right as the action begins, end on a
-      natural pause or payoff, not mid-sentence or mid-motion.
-    - Avoid the first 3 seconds (likely intro) and the last 5 seconds (likely outro),
-      unless the best moment genuinely happens there.
-    - Prefer a moment with clear visual or narrative payoff over a calm or static one.
+    WHAT MAKES A GOOD PICK:
+    - It opens on a line that works cold, with zero setup: a question, a bold claim,
+      a reveal, a surprising fact. Someone hearing it with no context wants the answer.
+    - The payoff happens INSIDE the clip. Do not end right before the reveal.
+    - It is a complete thought: starts at the top of a sentence, ends at the end of one,
+      not mid-sentence or mid-motion.
 
-    TIMESTAMP RULES:
-    - All timestamps in seconds only, decimal, never mm:ss.
+    WHAT MAKES A BAD PICK:
+    - Intro, outro, channel plugs, "in this video I'll show you", "subscribe".
+    - Setup with no payoff, list filler, a calm or static transitional passage.
+    - Anything in the last 5 seconds of the video.
+
+    HARD RULES:
+    - end - start MUST be between {target_duration * 0.85:.0f} and {target_duration * 1.15:.0f} seconds.
+      A shorter span is a failed answer.
+    - Timestamps may be MM:SS or plain seconds, whichever you are confident in.
     - Ensure: 0 <= start, end <= {video_duration:.1f}, end > start.
 
+    Give THREE candidates ranked best first, so you actually compare options
+    instead of returning the first thing you notice.
+
     OUTPUT: Return ONLY valid JSON, no markdown, no explanation.
-    {{"start": <float>, "end": <float>, "reason": "<one short sentence on why this moment>"}}
+    {{"candidates": [
+      {{"start": <timestamp>, "end": <timestamp>,
+        "hook": "<the opening line, quoted from the video>",
+        "reason": "<one short sentence on why this stops the scroll>"}}
+    ]}}
     """
 
     max_attempts = 5
@@ -113,12 +155,27 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
             raise RuntimeError(f"Failed to parse clip JSON from Gemini: {text[:300]}")
         result = json.loads(match.group(0))
 
-    start = max(0.0, float(result.get("start", 0.0)))
-    end = min(video_duration, float(result.get("end", start + target_duration)))
+    candidates = result.get("candidates") or [result]  # tolerate a flat answer
+    print("🎬 Gemini's candidates:")
+    for i, c in enumerate(candidates[:3], 1):
+        try:
+            c_start, c_end = _parse_ts(c.get("start", 0)), _parse_ts(c.get("end", 0))
+        except Exception:
+            continue
+        print(f"   {i}. {c_start:.1f}s → {c_end:.1f}s ({c_end - c_start:.1f}s)  {str(c.get('hook', ''))[:70]}")
+
+    best = candidates[0]
+    start = max(0.0, _parse_ts(best.get("start", 0.0)))
+    try:
+        end = min(video_duration, _parse_ts(best["end"]))
+    except (KeyError, TypeError, ValueError):
+        end = min(video_duration, start + target_duration)
     if end <= start:
         end = min(video_duration, start + target_duration)
 
-    print(f"✂️ Gemini picked {start:.1f}s to {end:.1f}s ({end - start:.1f}s): {result.get('reason', '')}")
+    start, end = _enforce_duration(start, end, target_duration, video_duration)
+
+    print(f"✂️ Picked {start:.1f}s → {end:.1f}s ({end - start:.1f}s): {best.get('reason', '')}")
     return start, end
 
 
