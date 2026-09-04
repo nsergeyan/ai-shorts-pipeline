@@ -15,6 +15,11 @@ COOKIEFILE = ""
 # YouTube search filter for 4-20 minute videos
 YT_FILTER = "EgIYAw%3D%3D"
 
+# Download sanity thresholds. Real 360p runs well above 100 KB/s; SABR stubs
+# land near 0.5 KB/s, so 10 KB/s separates them with a wide margin on both sides.
+MIN_BYTES_PER_SEC = 10_000
+MIN_DOWNLOAD_BYTES = 100_000
+
 
 def _get_yt_dlp_version():
     """Check yt-dlp version"""
@@ -116,6 +121,62 @@ def _make_opts_no_cookies(skip_download: bool):
         "sleep_interval": 3,
         "max_sleep_interval": 6,
     }
+
+
+def _probe_duration(path: str) -> Optional[float]:
+    """Return container duration in seconds, or None if ffprobe cannot read it."""
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", path],
+            capture_output=True, text=True, timeout=30
+        )
+        return float(result.stdout.strip())
+    except Exception:
+        return None
+
+
+def _download_is_healthy(path: Optional[str]) -> bool:
+    """Reject stub downloads and delete them.
+
+    Under YouTube's SABR rollout, yt-dlp can write a container whose header
+    claims the full duration while holding almost no video data. ffprobe reads
+    that header and reports the real length, so a size-only check passes and a
+    few hundred KB of nothing flows down the pipeline. Compare bytes against
+    duration instead: a genuine 360p stream is well above 100 KB/s, whereas the
+    stubs come in around 0.5 KB/s.
+    """
+    if not path or not os.path.exists(path):
+        return False
+
+    size = os.path.getsize(path)
+    if size < MIN_DOWNLOAD_BYTES:
+        print(f"   ⚠️ Download too small: {size / 1024:.0f} KB, discarding")
+        _discard(path)
+        return False
+
+    duration = _probe_duration(path)
+    if not duration:
+        print(f"   ⚠️ Download unreadable by ffprobe, discarding")
+        _discard(path)
+        return False
+
+    rate = size / duration
+    if rate < MIN_BYTES_PER_SEC:
+        print(f"   ⚠️ Stub download: {size / 1e6:.2f} MB for {duration:.0f}s "
+              f"({rate / 1024:.1f} KB/s), discarding")
+        _discard(path)
+        return False
+
+    return True
+
+
+def _discard(path: str) -> None:
+    """Delete a bad download so the next fallback method starts from a clean path."""
+    try:
+        os.remove(path)
+    except Exception:
+        pass
 
 
 def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
@@ -356,7 +417,7 @@ def fetch_video_material_by_search(
                     info = ydl.extract_info(webpage_url, download=True)
                     filepath = _final_filepath(ydl, info)
 
-                    if os.path.exists(filepath) and os.path.getsize(filepath) > 10000:
+                    if _download_is_healthy(filepath):
                         download_success = True
                         print(f"   ✅ Method 1 succeeded!")
 
@@ -373,7 +434,7 @@ def fetch_video_material_by_search(
                     info = ydl.extract_info(webpage_url, download=True)
                     filepath = _final_filepath(ydl, info)
 
-                    if os.path.exists(filepath) and os.path.getsize(filepath) > 10000:
+                    if _download_is_healthy(filepath):
                         download_success = True
                         print(f"   ✅ Method 2 succeeded!")
 
@@ -396,7 +457,7 @@ def fetch_video_material_by_search(
                     webpage_url
                 ], capture_output=True, text=True, timeout=300)
 
-                if os.path.exists(output_path) and os.path.getsize(output_path) > 10000:
+                if _download_is_healthy(output_path):
                     filepath = output_path
                     download_success = True
                     print(f"   ✅ Method 3 succeeded!")
