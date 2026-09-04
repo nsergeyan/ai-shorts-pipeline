@@ -1,8 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Img } from "remotion";
-import { loadFont, fontFamily } from "@remotion/google-fonts/LuckiestGuy";
-
-loadFont();
+import { loadFont } from "@remotion/google-fonts/LuckiestGuy";
 
 export interface HookLine {
   text: string;
@@ -27,6 +25,9 @@ const fitFontSize = (lines: HookLine[]) => {
 };
 
 export const Thumbnail: React.FC<ThumbnailProps> = ({ framePath, hookLines }) => {
+  // Loaded here, not at module scope: a top-level fetch would also run during
+  // ShortVideo renders and can time out delayRender mid-render.
+  const { fontFamily } = loadFont();
   const fontSize = fitFontSize(hookLines);
   const strokeWidth = Math.round(fontSize * 0.05);
 
