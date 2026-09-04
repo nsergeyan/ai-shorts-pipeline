@@ -28,6 +28,45 @@ def _gemini_client():
     print(f"🔑 Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
 
+def _state_name(file_info):
+    """Gemini returns a FileState enum; normalize it to a plain string like 'ACTIVE'."""
+    state = getattr(file_info, "state", None)
+    return getattr(state, "name", str(state)).upper()
+
+
+def _wait_for_active(client, file_name, label="File", timeout=300):
+    """Poll a Gemini file until it is ACTIVE.
+
+    FAILED is terminal: a corrupt or truncated upload never becomes ACTIVE, so
+    raise instead of looping forever. The timeout is a backstop for a file that
+    never leaves PROCESSING.
+    """
+    file_info = client.files.get(name=file_name)
+    deadline = time.time() + timeout
+    poll_errors = 0
+    while _state_name(file_info) != "ACTIVE":
+        state = _state_name(file_info)
+        if state == "FAILED":
+            raise RuntimeError(f"{label} failed to process on Gemini (corrupt or truncated upload)")
+        if time.time() > deadline:
+            raise RuntimeError(f"{label} still {state} after {timeout}s on Gemini")
+        print(f"{label} state: {state}, waiting...")
+        time.sleep(2)
+        try:
+            file_info = client.files.get(name=file_name)
+            poll_errors = 0
+        except Exception as e:
+            if any(code in str(e) for code in ("500", "INTERNAL", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
+                poll_errors += 1
+                print(f"⚠️ Gemini transient error polling {label} ({poll_errors}/10), retrying...")
+                if poll_errors >= 10:
+                    raise RuntimeError(f"{label} stuck in PROCESSING with repeated transient errors") from e
+            else:
+                raise
+    print(f"{label} ACTIVE ✅")
+    return file_info
+
+
 def _upload_and_wait(client, path, label=None):
     """Upload a file to Gemini and block until ACTIVE, retrying transient 500s.
 
@@ -36,20 +75,7 @@ def _upload_and_wait(client, path, label=None):
     """
     uf = client.files.upload(file=path)
     print(f"📤 Uploaded {label or os.path.basename(path)}: {uf.name}")
-    file_info = client.files.get(name=uf.name)
-    poll_errors = 0
-    while file_info.state != "ACTIVE":
-        time.sleep(2)
-        try:
-            file_info = client.files.get(name=uf.name)
-            poll_errors = 0
-        except Exception as e:
-            if "500" in str(e) or "INTERNAL" in str(e):
-                poll_errors += 1
-                if poll_errors >= 10:
-                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s") from e
-            else:
-                raise
+    _wait_for_active(client, uf.name, label=label or os.path.basename(path))
     return uf
 try:
     from modules.video_material_fetcher import fetch_video_material_by_search
@@ -76,24 +102,25 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
-  "sport": "soccer",
-  "topic": "Martin Palermo misses three penalties in one match",
-  "specific_subject": "Martin Palermo",
-  "youtube_queries": [
-    "copa america martin palermo penalties official",
-    "martin palermo interview 1999 colombia",
-    "martin palermo 3 penalties retro",
-    "martin palermo penalty miss 1999 photo",
-    "martin palermo colombia 1999 documentary",
-    "stadium fans reacting stock footage"
-  ],
-  "scene_query": "Martin Palermo, wearing the iconic light blue and white striped Argentina kit with a bleach-blond buzzcut, standing on the pitch in 1999 with his hands on his head in utter disbelief after missing his third penalty kick against Colombia, looking completely crushed.",
-  "footage_source": "stills_and_broll",
-  "music_mood": "dramatic",
-  "music_query": null,
-  "music_prompt": "cinematic orchestral comedy, 110 BPM, ticking clock tension, dramatic brass hits, comedic pizzicato strings, starts deadly serious like a sports documentary, pauses for the punchline, then turns chaotic and bumbling for the three misses, sports short-form video background, no lyrics, exclude: EDM drops, trap drums",
-  "voice_name": "animatoryoung",
-  "script": "[curious] Have you ever had a really bad day at work? [laughs] Well, let me tell you about Martin Palermo in nineteen ninety nine. [excited] He was the star striker for Argentina. [calm] They were playing Colombia in the Copa America. [thoughtful] Five minutes in, Argentina gets a penalty. [sighs] Palermo steps up, kicks it hard, and hits the crossbar. Unlucky, sure. [surprised] Fast forward to the seventy sixth minute. Another penalty for Argentina! Palermo gets his chance at redemption. He runs up, strikes it... *BUT!* [happy gasp] He sends it completely over the goal into the stands! [laughs harder] Two misses in one match! [whispers] The soccer gods were not done. [nervous] Ninetieth minute. A third penalty. Palermo takes it... *AGAIN!* [shouts] And the goalkeeper saves it! [wheezing] He missed three penalties in one single match! [exhales sharply] Argentina lost three nil, and Palermo earned a Guinness World Record that no player EVER wants."
+"topic": "Attack on Titan",
+"specific_subject": "Sasha Braus original death scene delayed by editor",
+"title": "Sasha was originally supposed to die in season two in Attack on Titan",
+"youtube_queries": [
+"sasha vs titan season 2 bow and arrow",
+"sasha braus best moments attack on titan",
+"sasha braus edit",
+"attack on titan season 2 episode 2",
+"sasha saves kaya english dub",
+"attack on titan sasha saves girl clip"
+],
+"scene_query": "a young girl with reddish brown hair tied back wearing a dark military uniform shooting a bow and arrow at a massive towering giant humanoid creature inside a wooden village",
+"footage_source": "official_or_press",
+"music_mood": "curious",
+"music_query": "vogel im kafig instrumental",
+"music_prompt": "dark lo-fi curiosity bed, 90 BPM, somber acoustic piano, subtle solo cello, soft ambient pad, quiet reflective tension building into a melancholic emotional swell, short-form video background, no lyrics, exclude: loud brass, fast drums",
+"voice_name": "animatoryoung",
+"spoken_word_count": 93,
+"script": "Sasha Braus was never meant to survive past season two. [surprised] Hajime Isayama drew her tragic death scene in chapter thirty six. She was supposed to die saving a girl from a titan using a bow and arrow. BUT! when the editor read the draft, he walked straight into the bathroom and started crying. [sighs] He was so heartbroken that he begged the author to spare her. Isayama actually gave in and rewrote the chapter. [laughs] SAVED! for now, but he only kept her alive to hurt us more later. Did you prefer her original ending? [curious]"
 }
 
 
@@ -197,22 +224,7 @@ def evaluate_music_with_genai(music_path, script_text):
     print(f"Uploaded music: {uploaded_file.name}")
 
     # Wait until ACTIVE
-    file_info = client.files.get(name=uploaded_file.name)
-    _poll_errors = 0
-    while file_info.state != "ACTIVE":
-        print(f"Music state: {file_info.state}, waiting...")
-        time.sleep(2)
-        try:
-            file_info = client.files.get(name=uploaded_file.name)
-            _poll_errors = 0
-        except Exception as e:
-            if "500" in str(e) or "INTERNAL" in str(e):
-                _poll_errors += 1
-                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
-                if _poll_errors >= 10:
-                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
-            else:
-                raise
+    _wait_for_active(client, uploaded_file.name, label="Music")
 
     print("Music file ACTIVE ✅")
 
@@ -310,23 +322,7 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
     uploaded_file = client.files.upload(file=music_path)
     print(f"Uploaded YouTube music: {uploaded_file.name}")
 
-    file_info = client.files.get(name=uploaded_file.name)
-    _poll_errors = 0
-    while file_info.state != "ACTIVE":
-        print(f"Music state: {file_info.state}, waiting...")
-        time.sleep(2)
-        try:
-            file_info = client.files.get(name=uploaded_file.name)
-            _poll_errors = 0
-        except Exception as e:
-            if "500" in str(e) or "INTERNAL" in str(e):
-                _poll_errors += 1
-                if _poll_errors >= 10:
-                    raise RuntimeError("Gemini file stuck in PROCESSING") from e
-            else:
-                raise
-
-    print("YouTube music file ACTIVE ✅")
+    _wait_for_active(client, uploaded_file.name, label="YouTube music")
 
     prompt = f"""
     You are evaluating background music sourced from YouTube for a short-form vertical video.
@@ -443,23 +439,7 @@ def evaluate_video_with_genai(video_path, script_text):
     print(f"Uploaded file: {uploaded_file.name}")
 
     # Wait until file is ACTIVE
-    file_info = client.files.get(name=uploaded_file.name)
-    _poll_errors = 0
-    while file_info.state != "ACTIVE":
-        print(f"File state: {file_info.state}, waiting...")
-        time.sleep(2)
-        try:
-            file_info = client.files.get(name=uploaded_file.name)
-            _poll_errors = 0
-        except Exception as e:
-            if "500" in str(e) or "INTERNAL" in str(e):
-                _poll_errors += 1
-                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
-                if _poll_errors >= 10:
-                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
-            else:
-                raise
-    print("File is ACTIVE ✅")
+    _wait_for_active(client, uploaded_file.name, label="Video")
 
     # Build prompt
     prompt = f"""
@@ -582,24 +562,7 @@ def find_scene_with_gemini(video_path, query, script):
     uploaded_file = client.files.upload(file=video_path)
     print(f"Uploaded file: {uploaded_file.name}")
 
-    file_info = client.files.get(name=uploaded_file.name)
-    _poll_errors = 0
-    while file_info.state != "ACTIVE":
-        print(f"File state: {file_info.state}, waiting...")
-        time.sleep(2)
-        try:
-            file_info = client.files.get(name=uploaded_file.name)
-            _poll_errors = 0
-        except Exception as e:
-            if "500" in str(e) or "INTERNAL" in str(e):
-                _poll_errors += 1
-                print(f"⚠️ Gemini 500 during file poll ({_poll_errors}/10), retrying...")
-                if _poll_errors >= 10:
-                    raise RuntimeError("Gemini file stuck in PROCESSING with repeated 500s — skipping") from e
-            else:
-                raise
-
-    print("File ACTIVE ✅")
+    _wait_for_active(client, uploaded_file.name, label="Video")
 
     prompt = f"""
     You are analyzing a video to find when a specific visual moment occurs.
@@ -802,6 +765,7 @@ def find_scenes_with_gemini(video_paths, script_segments):
 
     pending = list(range(len(uploaded_files)))
     _poll_error_counts = [0] * len(uploaded_files)
+    _poll_deadline = time.time() + 300
     while pending:
         time.sleep(2)
         still_pending = []
@@ -819,11 +783,16 @@ def find_scenes_with_gemini(video_paths, script_segments):
                     continue
                 else:
                     raise
-            if fi.state == "ACTIVE":
+            state = _state_name(fi)
+            if state == "ACTIVE":
                 print(f"Video {i} ACTIVE ✅")
+            elif state == "FAILED":
+                raise RuntimeError(f"Video {i} failed to process on Gemini (corrupt or truncated upload)")
             else:
                 still_pending.append(i)
         pending = still_pending
+        if pending and time.time() > _poll_deadline:
+            raise RuntimeError(f"Gemini videos {pending} still PROCESSING after 300s")
 
     n = len(script_segments)
     segments_json = json.dumps(
@@ -1159,6 +1128,7 @@ def run_manual_pipeline(data):
     """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
     approved_videos, clip_paths, audio_path, music_path = [], [], None, None
     thumb_frame_path = None
+    pipeline_ok = False
     try:
         TOPIC = data['topic']
         SUBJECT = data['specific_subject']
@@ -1355,6 +1325,7 @@ def run_manual_pipeline(data):
             finally:
                 os.remove(thumb_frame_path)
 
+        pipeline_ok = True
         return True
 
     except KeyError as e:
@@ -1363,7 +1334,9 @@ def run_manual_pipeline(data):
         print(f"❌ Pipeline Error: {e}")
         traceback.print_exc()
     finally:
-        if CLEANUP_FILES:
+        # Only on success: a crash leaves the clips, narration and music on disk
+        # so the render can be retried without re-downloading or re-paying for TTS.
+        if CLEANUP_FILES and pipeline_ok:
             to_delete = {audio_path, music_path, thumb_frame_path} | set(approved_videos) | set(clip_paths)
             for path in approved_videos:
                 if path:
