@@ -1,35 +1,32 @@
-do web search  and follow the prompt
-Series: jjk
-EDITORIAL & RESEARCH PROTOCOL
-1. TOPIC SELECTION (THE COIN FLIP RULE)
-Upon receiving the series/movie name, randomly select ONE of these two content tracks:
+NARRATION AND SCRIPT AND TOPIC PART:
+Find ONE great attack on titan idea.
 
-Track A: Franchise News: A recent or upcoming announcement (e.g., a new movie trailer dropping, an episode release date, official casting/studio news, or a director/creator interview).
+It must be either:
 
-Track B: Deep Lore / Interesting Fact: A highly specific, non-obvious piece of trivia regarding the film/series' lore, production, set design, or character background.
-Do not make scripts about an audio because i my automation can not use external audio only visuals from youtube.
-And do not make about video games.
+a surprising fact that makes people say “wait, what?” OR hot/viral news happening right now
 
-Quality Standard: The fact MUST be something the average fan does not 100% know. SO NO OBVIOUS FACT IT WILL BE BORING!
+Choose the single most interesting idea you can find.
 
-Kill-Test (The Toge Rule): Do not use universally known facts. Bad Example: "Toge Inumaki speaks in salmon and fish ingredients because he doesn't want to hurt people!" (Everyone knows this).
+The idea should be:
 
-ANTI-REPETITION RULE: Cross-reference your chosen idea against the Existing Videos list provided in the prompt. If your topic is already on that list, or highly similar to one of them, you MUST discard it and select a completely new, unique topic.
+surprising or genuinely interesting
+about a recognizable athlete, team, event, or moment
+easy to understand
+visually interesting
+based on real, verifiable information
+capable of becoming a funny, entertaining short video
 
-2. FACT-CHECKING & VERIFICATION
+Think like a viral  creator, not a wikipedia
 
-You must verify and fact-check your chosen news or lore before writing. Do not hallucinate lore, release dates, or creator quotes.
+One idea. One story. One payoff.
 
-If the fact relies on a specific manga panel, comic book issue, behind-the-scenes photograph, script page, side-by-side visual, or translated director's commentary, ensure it is 100% accurate and visually provable.
-
-3. NARRATIVE STYLE & B1 ENGLISH (BRAND BUILDING)
-
-Language Limit: Write the script strictly in B1 Simple English. Use everyday vocabulary, short sentences, and clear grammar. Avoid academic words or tangled sentence structures.
-
-Brand Voice: The narrative must be memorable and highly engaging—like a passionate friend sharing a mind-blowing cinematic secret. The storytelling must make the viewer feel like they are getting exclusive insider info, naturally making them want to follow the channel for more.
+IT HAS TO BE VERIFIED, NOT FAKE!
+Use in correct places jokes, sarcasm, etc. (no cringe)
+Use simple words, and explain everything simply so average non english native speaker can understand it.
+While writing the script dont use any "", \,\
+AND REMEMBER YOU ARE WRITING A NARRATION THAT WILL BE USED FOR TEXT TO SPEACH AI VOICE
 
 TECHNICAL SPECS — OUTPUT FORMATTING, DELIVERY & API CONSTRAINTS
-do not use \n,"",\,\ stuff in script
 TITLE RULE
 Output a "title" field: ONE declarative sentence that fully states the fact, plus the film/series name.
 
@@ -196,7 +193,20 @@ VERIFICATION BOX
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-1. the colossal titan was originally designed as a stone monster with teeth in attack on titan #aot
-2. the real sukuna is worshipped as a temple hero in jujutsu kaisen #jjk #sukuna
-3. levi was made short on purpose because a tall levi would not be cool in attack on titan #aot  #leviackerman
-4. the next big jujutsu kaisen season four reveal already has an exact date #jjkjjk #jujutsukaisen
+
+1. the true inspiration behind satoru gojo in jujutsu kaisen #anime #gojo #jjk
+2. the author of chainsaw man got banned on twitter #chainsawman #anime
+3. titans were inspired by a drunk internet cafe customer in attack on titan #aot
+4. satoru gojo is actually hated by his own creator in jujutsu kaisen #jjk  #gojo
+5. satoru gojo loses his cursed technique when he drinks alcohol in jujutsu kaisen #jjk  #gojo
+6. the armored titan was actually modeled after ufc legend brock lesnar in attack on titan #aot
+7. the cursed fingers taste like soap in jujutsu kaisen #jjk #jujutsukaisen  #sukuna
+8. the worker drones' colorful eyes secretly mark their freedom in murder drones
+9. kento nanami was originally a villain in jujutsu kaisen #jjk #jujutsukaisen #nanami
+10. the unreadable language is just upside-down japanese in attack on titan #aot
+11. the hilarious reason mei mei fled to malaysia in jujutsu kaisen #jjk
+12. the colossal titan was originally designed as a stone monster with teeth in attack on titan #aot
+13. the real sukuna is worshipped as a temple hero in jujutsu kaisen #jjk #sukuna
+14. levi was made short on purpose because a tall levi would not be cool in attack on titan #aot  #leviackerman
+15. the next big jujutsu kaisen season four reveal already has an exact date #jjkjjk #jujutsukaisen
+16.Toge Inumaki speaks a real secret dictionary of rice ball ingredients in Jujutsu Kaisen

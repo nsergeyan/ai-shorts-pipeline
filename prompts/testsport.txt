@@ -1,5 +1,7 @@
 NARRATION AND SCRIPT AND TOPIC PART:
 Find ONE great sports(soccer,ufc,f1) video idea.
+WORD COUNT RULE
+Spoken text must be ninety to one hundred words, tags excluded. After drafting, count the spoken words and output the total in the spoken_word_count field. If the count falls outside ninety to one hundred, rewrite and recount — never approximate, never round.
 
 It must be either:
 
@@ -32,9 +34,7 @@ While writing the script dont use any "", \,\
 AND REMEMBER YOU ARE WRITING A NARRATION THAT WILL BE USED FOR TEXT TO SPEACH AI VOICE
 
 TECHNICAL PARTS:
-═══════════════════════════════════
 FOOTAGE REALITY CHECK (MANDATORY — RUN BEFORE LOCKING A TOPIC)
-═══════════════════════════════════
 A great fact with no usable footage is a dead video. Before committing to the chosen candidate, confirm showable footage actually EXISTS — and given the copyright reality below, that it exists in a SAFE pool.
 
 Run one or two quick YouTube/web searches for the core visual moment of the candidate.
@@ -51,9 +51,7 @@ Footage status (GREEN / YELLOW / RED):
 Footage note (where safe footage exists, or "stills + b-roll only"):
 
 
-═══════════════════════════════════
-MUSIC SELECTION RULE
-═══════════════════════════════════
+MUSIC SELECTION RULE:
 Analyze the script's topic, tone, and emotional arc BEFORE writing it. Assign ONE music_mood: hype / dramatic / emotional / mysterious.
 
 Then write a CUSTOM music_prompt for THIS script specifically. Do NOT copy a generic preset — it must feel written for this exact script.
@@ -114,7 +112,7 @@ Rules:
 NUMBER RULE: Never use digit characters anywhere in the script. Write all numbers as words (one, not 1; nineteen ninety-nine, not 1999). This applies to every number including years, scores, counts, and percentages.
 
 
-⚠️ COPYRIGHT REALITY (READ FIRST):
+COPYRIGHT REALITY (READ FIRST):
 Sports rights-holders (FIFA, UEFA, Premier League, FOM/Formula One) run
 aggressive Content ID systems. Any broadcast match or race action
 will get your video blocked or struck — even 2-second clips, even
@@ -183,9 +181,7 @@ OUTPUT: Replace every bracket with real athlete/event/moment names before output
 
 
 
-═══════════════════════════════════
 JSON OUTPUT FORMAT
-═══════════════════════════════════
 {
   "sport": "",
   "topic": "",
@@ -203,3 +199,34 @@ JSON OUTPUT FORMAT
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
+
+The Swansea ballboy kicked by Eden Hazard who became a multimillionaire #football
+1.3K views
+
+
+Kimi Raikkonen goes to his yacht mid race at Monaco Formula 1
+3.2K views
+
+
+He missed 3 penalties in a big game???  #football
+1.2K views
+
+
+Fantastic Lewis run! #f1 #formula1
+1.4K views
+
+
+Gary Lineker never receiving a card  #football
+1.4K views
+
+
+Rodri and Fermín López's Barcelona shirt-number swap  #football #barca
+1.3K views
+
+
+The 2026 FA Community Shield was played not in England?  #football
+1.4K views
+
+
+Kimi Antonelli beating a go-kart track lap record  #formula1 #f1
+2.7K views
