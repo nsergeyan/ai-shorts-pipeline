@@ -4,9 +4,8 @@ WORD COUNT RULE
 Spoken text must be ninety to one hundred words, tags excluded. After drafting, count the spoken words and output the total in the spoken_word_count field. If the count falls outside ninety to one hundred, rewrite and recount — never approximate, never round.
 
 It must be either:
+hot/viral news happening right now OR a surprising fact that makes people say “wait, what?”
 
-a surprising fact that makes people say “wait, what?”
-hot/viral news happening right now
 
 Choose the single most interesting idea you can find.
 
@@ -64,12 +63,14 @@ The prompt must include:
 - End with: "sports short-form video background, no lyrics, exclude: [two things that would clash with this script's mood]"
 
 MUSIC QUERY RULE:
-Sports content rarely has a single iconic OST. Use this rule to decide:
-- IF the script is about an athlete or event with a famous, widely-known theme or cinematic instrumental tied to them (e.g. a league's official anthem instrumental, a Formula One broadcast theme, a well-known documentary score) → write music_query: a short YouTube search query to find that specific instrumental (e.g. "[league] official anthem no lyrics" / "F1 theme instrumental").
-- FOR ALL OTHER CASES → set music_query to null. Generic sports energy music is better generated via music_prompt than sourced from YouTube.
+Return music_queries: an ARRAY of up to 3 YouTube search queries, best candidate first. The pipeline tries them IN ORDER: it downloads query 1, Gemini checks it for lyrics and topic fit, and only moves to the next query if that one is rejected. Paid ElevenLabs generation runs ONLY after all queries fail, so fill all 3 slots whenever plausible tracks exist.
 
-The pipeline tries YouTube music FIRST and only falls back to ElevenLabs generation if the query fails or the music is rejected. Only provide a query when you are confident a specific, recognizable, lyrics-free track for this athlete or moment exists on YouTube.
+Sports content rarely has a single iconic OST, so build the list like this:
+1. A famous theme tied to this athlete/league/event (a league's official anthem instrumental, a Formula One broadcast theme, a well-known documentary score).
+2. A broader theme from the same sport or era (classic sports documentary score, montage theme from that sport's coverage).
+3. A generic instrumental matching the music_mood (e.g. "cinematic sports montage instrumental no copyright", "hard trap beat no vocals background").
 
+Every query must target an INSTRUMENTAL. Append "instrumental", "no lyrics", or "no copyright" wherever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a slot if you have nothing real for it, never pad with junk. If nothing plausible exists, music_queries: [].
 
 TAG PLACEMENT (do this, don't just sprinkle): anchor at least one tag to the HOOK (e.g. [curious] / [whispers] to pull the viewer in), at least one to the TURN (e.g. [surprised] / [excited] / on the reveal), and use the rest to shape the arc between them.
 
@@ -190,7 +191,7 @@ JSON OUTPUT FORMAT
   "scene_query": "",
   "footage_source": "official_or_press | stills_and_broll | single_rare_source",
   "music_mood": "",
-  "music_query": "<short YouTube search query for iconic instrumental, or null>",
+  "music_queries": ["<best instrumental search>", "<second choice>", "<third choice>"],
   "music_prompt": "",
   "voice_name": "animatoryoung",
   "script": ""

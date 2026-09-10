@@ -96,33 +96,37 @@ SLEEP_INTERVAL = 5
 MIN_CLIP_DURATION = 3.0
 MIN_SEGMENT_DURATION = 6.0
 MAX_CLIPS = 5
+MAX_MUSIC_QUERIES = 3              # how many free YouTube tracks to try before paying ElevenLabs
 EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
-THUMBNAIL_FRAME_POSITION = "start" # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
+THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
 THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA ={
 "topic": "Attack on Titan",
-"specific_subject": "Sasha Braus original death scene delayed by editor",
-"title": "Sasha was originally supposed to die in season two in Attack on Titan",
+"specific_subject": "Eren's Titan form is based on Yushin Okami",
+"title": "Eren's Attack Titan is based on a real UFC fighter in Attack on Titan",
 "youtube_queries": [
-"sasha vs titan season 2 bow and arrow",
-"sasha braus best moments attack on titan",
-"sasha braus edit",
-"attack on titan season 2 episode 2",
-"sasha saves kaya english dub",
-"attack on titan sasha saves girl clip"
+  "eren vs armored titan full fight",
+  "eren titan fighting stance scene",
+  "attack on titan eren MMA moves",
+  "eren uses triangle choke on reiner",
+  "eren titan go hard edit",
+  "attack on titan season two official clip"
 ],
-"scene_query": "a young girl with reddish brown hair tied back wearing a dark military uniform shooting a bow and arrow at a massive towering giant humanoid creature inside a wooden village",
-"footage_source": "official_or_press",
-"music_mood": "curious",
-"music_query": "vogel im kafig instrumental",
-"music_prompt": "dark lo-fi curiosity bed, 90 BPM, somber acoustic piano, subtle solo cello, soft ambient pad, quiet reflective tension building into a melancholic emotional swell, short-form video background, no lyrics, exclude: loud brass, fast drums",
+"scene_query": "Side-by-side comparison. On the left, real-life MMA fighter Yushin Okami in black UFC shorts with his hands up in a southpaw fighting stance. On the right, Eren's Attack Titan in the anime holding the exact same southpaw guard stance. Cuts of the Attack Titan throwing heavy punches, tackling the Armored Titan to the ground, and locking in a glowing triangle choke submission hold while roaring.",
+"footage_source": "stills_and_broll",
+"music_mood": "hype",
+"music_queries": [
+  "attack on titan eren vs reiner epic fight instrumental",
+  "heavy trap metal workout instrumental no copyright",
+  "aggressive mma walkout beat instrumental"
+],
+"music_prompt": "energetic trap metal beats, heavy distorted 808s, aggressive electric guitar riffs, driving tempo at one hundred thirty BPM, fighting game intensity building to a heavy drop, short-form video background, no lyrics, exclude: soft piano, acoustic instruments",
 "voice_name": "animatoryoung",
-"spoken_word_count": 93,
-"script": "Sasha Braus was never meant to survive past season two. [surprised] Hajime Isayama drew her tragic death scene in chapter thirty six. She was supposed to die saving a girl from a titan using a bow and arrow. BUT! when the editor read the draft, he walked straight into the bathroom and started crying. [sighs] He was so heartbroken that he begged the author to spare her. Isayama actually gave in and rewrote the chapter. [laughs] SAVED! for now, but he only kept her alive to hurt us more later. Did you prefer her original ending? [curious]"
+"spoken_word_count": 98,
+"script": "[excited] The Attack Titan is real. And he used to fight in the UFC.\n\n[curious] When designing Eren's iconic monster form creator Hajime Isayama didn't just use his imagination.\n\n[happy] He modeled it directly after Japanese mixed martial arts legend Yushin Okami.\n\n[thoughtful] Isayama explicitly stated he used Okami's middleweight physique as the exact blueprint for Eren.\n\n[surprised] *BUT!* It goes deeper than muscles.\n\n[excited] Eren's signature fighting stance brutal ground strikes and triangle chokes are pulled straight from the octagon.\n\n[laughs] You are literally watching a professional cage fighter animated as a giant meat mecha.\n\n[curious] Did you catch his stance on your first watch?"
 }
-
 
 
 def _strip_punch_markers(script: str):
@@ -405,28 +409,47 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
         return {"has_lyrics": True, "topic_score": 0, "voice_score": 0, "decision": "reject", "reason": "parse error"}
 
 
-def _resolve_music(music_query: str | None, music_prompt: str, topic: str, script_text: str) -> str | None:
-    """Try YouTube music first if a query is given; fall back to ElevenLabs generation."""
-    if music_query and str(music_query).strip().lower() not in ("null", "none", ""):
-        yt_path = fetch_music_from_youtube(music_query)
-        if yt_path:
-            print(f"🔍 Evaluating YouTube music with Gemini...")
-            try:
-                result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
-                decision = result.get("decision", "reject")
-                reason = result.get("reason", "")
-                if decision == "use":
-                    print(f"✅ YouTube music approved — {reason}")
-                    return yt_path
-                else:
-                    print(f"❌ YouTube music rejected ({reason}) — falling back to ElevenLabs")
-            except Exception as e:
-                print(f"⚠️ Gemini music eval error: {e} — falling back to ElevenLabs")
-            if os.path.exists(yt_path):
-                os.remove(yt_path)
-        else:
-            print("⚠️ YouTube music download failed — falling back to ElevenLabs")
+def _clean_music_queries(value) -> list:
+    """Normalise music_queries into a list of usable strings (accepts a bare string too)."""
+    if not value:
+        return []
+    if isinstance(value, str):
+        value = [value]
+    cleaned = []
+    for q in value:
+        q = str(q).strip()
+        if q and q.lower() not in ("null", "none"):
+            cleaned.append(q)
+    return cleaned
 
+
+def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: str) -> str | None:
+    """Try each YouTube music query in order; only pay for ElevenLabs if every one is rejected."""
+    queries = _clean_music_queries(music_queries)[:MAX_MUSIC_QUERIES]
+
+    for i, query in enumerate(queries, 1):
+        print(f"🎵 Music candidate {i}/{len(queries)}: '{query}'")
+        yt_path = fetch_music_from_youtube(query)
+        if not yt_path:
+            print("⚠️ Music download failed, trying next query")
+            continue
+
+        print(f"🔍 Evaluating YouTube music with Gemini...")
+        try:
+            result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
+            reason = result.get("reason", "")
+            if result.get("decision") == "use":
+                print(f"✅ YouTube music approved — {reason}")
+                return yt_path
+            print(f"❌ YouTube music rejected ({reason}), trying next query")
+        except Exception as e:
+            print(f"⚠️ Gemini music eval error: {e}, trying next query")
+
+        if os.path.exists(yt_path):
+            os.remove(yt_path)
+
+    if queries:
+        print("🎼 No YouTube music approved, falling back to ElevenLabs")
     return generate_music(music_prompt)
 
 
@@ -858,6 +881,13 @@ STEP 3 — PICK TIMESTAMPS (rules below)
 HOOK MANDATE — segment 0 only:
 The very first clip MUST be the single most visually striking shot across ALL your videos combined — the one shot that would stop someone mid-scroll. If you have multiple HIGH candidates, pick the one with the most intense visible action, expression, or motion. Do not settle for "pretty but calm."
 
+FIRST-FRAME TIMING (segment 0, hard rule):
+The striking action must ALREADY be on screen at `start`, not building toward it. Judge the shot by what the frame at `start` itself looks like, not by what happens later in the clip.
+- If the impact, reveal, or peak expression happens at time t, return start = t - 0.3, never t - 2 or earlier.
+- Reject any candidate whose first half second is wind-up: a character standing still before they move, a camera slowly pushing in, someone talking before the action.
+- Nothing may be mid-fade or mid-transition at `start`. The frame must be fully lit and fully readable from the very first frame.
+- If your best candidate cannot satisfy this, use your second-best shot that can. An instantly readable good shot beats a great shot that starts slow.
+
 ACTION PREFERENCE — all clips:
 Always prefer shots where the subject is actively doing something (fighting, moving, reacting expressively, an event unfolding) over shots where the subject is standing still, posing, or walking slowly. A frame with visible motion always beats a static frame.
 
@@ -1134,7 +1164,7 @@ def run_manual_pipeline(data):
         SUBJECT = data['specific_subject']
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
         MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
-        MUSIC_QUERY = data.get('music_query', None)
+        MUSIC_QUERIES = data.get('music_queries') or data.get('music_query')
         VOICE_NAME = data.get('voice_name', 'animatoryoung')
         SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
 
@@ -1211,7 +1241,7 @@ def run_manual_pipeline(data):
         # Kick off music resolution immediately — it has no dependencies on voice/scene
         print(f"🎵 Starting music in background...")
         executor = ThreadPoolExecutor(max_workers=1)
-        music_future = executor.submit(_resolve_music, MUSIC_QUERY, MUSIC_PROMPT, TOPIC, SCRIPT_TEXT)
+        music_future = executor.submit(_resolve_music, MUSIC_QUERIES, MUSIC_PROMPT, TOPIC, SCRIPT_TEXT)
 
         # Voice must come before scene finding so Whisper timestamps drive the cuts
         print(f"🗣️ Generating voice ({VOICE_NAME})...")
