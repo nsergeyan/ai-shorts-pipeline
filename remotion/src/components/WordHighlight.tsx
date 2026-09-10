@@ -16,11 +16,22 @@ export const WordHighlight: React.FC<{ wordsData: WordEntry[] }> = ({
   const { fps } = useVideoConfig();
   const currentTime = frame / fps;
 
-  const activeIdx = wordsData.findIndex(
-    (w) => currentTime >= w.start && currentTime < w.end
-  );
+  // Hold the current line through pauses. Whisper leaves gaps between words at
+  // punctuation and suspense beats, so requiring a strictly active word made the
+  // whole line blink off and back on. Track the last word that has started
+  // instead, which keeps the line on screen across those gaps.
+  let activeIdx = -1;
+  for (let i = 0; i < wordsData.length; i++) {
+    if (currentTime >= wordsData[i].start) activeIdx = i;
+    else break;
+  }
 
+  // Before the first word: nothing to show yet.
   if (activeIdx === -1) return null;
+
+  // After the last word: clear, so stale text does not sit under the CTA.
+  const lastIdx = wordsData.length - 1;
+  if (activeIdx === lastIdx && currentTime >= wordsData[lastIdx].end) return null;
 
   const lineIdx = Math.floor(activeIdx / WORDS_PER_LINE);
   const lineStart = lineIdx * WORDS_PER_LINE;

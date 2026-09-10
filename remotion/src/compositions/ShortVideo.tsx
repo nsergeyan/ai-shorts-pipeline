@@ -51,9 +51,9 @@ const ClipRenderer: React.FC<{
 }> = ({ clip, isFirst, isLast, clipFrames, clipIndex }) => {
   const frame = useCurrentFrame();
 
-  const opacity = isFirst
-    ? interpolate(frame, [0, 8], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
-    : 1;
+  // No fade on the first clip: frame 0 must land at full brightness so the hook
+  // shot is readable instantly instead of ramping up out of black.
+  const opacity = 1;
 
   // Even clips exit left, odd clips exit right — alternating whip direction
   const enterStartX = !isFirst ? ((clipIndex - 1) % 2 === 0 ? WHIP_DISTANCE : -WHIP_DISTANCE) : 0;
