@@ -25,8 +25,8 @@ VOICES = {
     "spanish_guy": "nR2KQXVwn2zMK8FALNCh",
 }
 
-# Set back to 1.3 to re-enable the speed boost. 1.0 = no change.
-SPEED_MULTIPLIER = 1.0
+# Speed boost applied after TTS. Set to 1.0 to disable.
+SPEED_MULTIPLIER = 1.15
 
 
 def clean_text_for_speech(text: str) -> str:
