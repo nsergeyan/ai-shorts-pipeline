@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE aot idea.
+Find ONE Dan Da Dan  idea.
 
 It must be either:
 
@@ -72,21 +72,39 @@ STEP C - GENRE FALLBACK: add one broad, non-copyrighted instrumental search matc
 Every query must target an INSTRUMENTAL. Append "instrumental" / "no lyrics" / "OST" whenever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a step that gives you nothing, never pad with junk. If all three come up empty, music_queries: [].
 
 ELEVENLABS V3 AUDIO TAGS RULE
-Insert MINIMUM four [bracketed] performance tags.
+Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the 90-100 word limit.
 
-Emotional states: [excited], [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy], [annoyed], [appalled], [thoughtful], [surprised]
+Placement (follow the story structure):
+- Hook (first sentence): one energy or curiosity tag.
+- Build: one pacing tag ([slows down], [drawn out], [hesitates], [rushed]).
+- Reveal / punch: one tag at the start of the sentence containing the *WORD!* marker.
+- Outro: one calming or closing tag.
 
-Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
+Emotional states: [excited], [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happily], [annoyed], [surprised], [worried], [upset], [awe], [amazed]
 
-Delivery: [whispers], [shouts]
+Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [giggles], [light chuckle], [sighs], [sigh of relief], [exhales], [gasps]
 
-Non-verbal: [clears throat], [gulps], [swallows], [snorts]
+Volume: [whispers], [shouts], [quietly], [softly], [loudly], [booming]
 
-Sound effects (sparingly): [gunshot], [applause], [clapping], [explosion]
+Pacing: [rushed], [slows down], [drawn out], [stammers], [hesitates], [rapid-fire]
 
-Experimental variants (allowed): [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly]
+Tone: [deadpan], [flatly], [understated], [suspicious tone]
 
-Tags can be layered: "[nervously] I... I'm not sure this works. [sighs] But let's try."
+Non-verbal (max 1 per script): [clears throat], [gulps], [swallows], [snorts]
+
+Compound variants (allowed): [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously]
+
+Sound effects (max 1 per script, only if the narration literally describes that sound): [gunshot], [explosion], [applause], [clapping]
+
+Rules:
+- A tag goes at the START of the sentence it applies to and stays active until the next tag.
+- Layer at most 2 tags in a row, and only compatible ones ([whispers][curious] is fine; never opposites like [whispers][shouts] or [calm][excited]).
+- Use ONLY tags from the lists above. Never invent tags. Never place tags inside *WORD!* markers.
+- Do not repeat the same tag twice in one script.
+- Use ellipses (...) for a beat before a reveal. You may CAPITALIZE at most one word per sentence for emphasis.
+
+Example of structure only (do NOT reuse its wording or tags):
+"[curious] Everyone thinks this fight ended in a draw... but the footage says otherwise. [slows down] There's one detail nobody noticed. [gasps] He was BLEEDING the whole time. [calm] Watch it again."
 
 PUNCTUATION FOR DELIVERY
 Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause. CAPITALIZATION → spoken emphasis on a word.
@@ -199,22 +217,27 @@ VERIFICATION BOX
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
 
-1. pomni's name contains a secret message to escape in the amazing digital circus #tadc
-2. sasha was originally supposed to die in season two in attack on titan #aot
-3. the fake memory technique in jujutsu kaisen #jjk
-4. the secret meaning behind toge inumaki's rice ball words in jujutsu kaisen #jjk #anime
-5. the true inspiration behind satoru gojo in jujutsu kaisen #anime #gojo #jjk
-6. the author of chainsaw man got banned on twitter #chainsawman #anime
-7. titans were inspired by a drunk internet cafe customer in attack on titan #aot
-8. satoru gojo is actually hated by his own creator in jujutsu kaisen #jjk  #gojo
-9. satoru gojo loses his cursed technique when he drinks alcohol in jujutsu kaisen #jjk  #gojo
-10. the armored titan was actually modeled after ufc legend brock lesnar in attack on titan #aot
-11. the cursed fingers taste like soap in jujutsu kaisen #jjk #jujutsukaisen  #sukuna
-12. the worker drones' colorful eyes secretly mark their freedom in murder drones
-13. kento nanami was originally a villain in jujutsu kaisen #jjk #jujutsukaisen #nanami
-14. the unreadable language is just upside-down japanese in attack on titan #aot
-15. the hilarious reason mei mei fled to malaysia in jujutsu kaisen #jjk
-16. the colossal titan was originally designed as a stone monster with teeth in attack on titan #aot
-17. the real sukuna is worshipped as a temple hero in jujutsu kaisen #jjk #sukuna
-18. levi was made short on purpose because a tall levi would not be cool in attack on titan #aot  #leviackerman
-19. the next big jujutsu kaisen season four reveal already has an exact date #jjkjjk #jujutsukaisen
+1. a real dam in japan was turned into wall maria in attack on titan #aot
+2. why did sukuna not kill uraume? #jjk #jujutsukaisen  #sukuna
+3. jennifer lawrence created the strongest friendship in jujutsu kaisen #jjk #jujutsukaisen
+4. the strange origin of levi's name in attack on titan #aot #levi
+5. ryomen sukuna's cursed technique is actually based on cooking in jujutsu kaisen #jjk  #sukuna
+6. pomni's name contains a secret message to escape in the amazing digital circus #tadc
+7. sasha was originally supposed to die in season two in attack on titan #aot
+8. the fake memory technique in jujutsu kaisen #jjk
+9. the secret meaning behind toge inumaki's rice ball words in jujutsu kaisen #jjk #anime
+10. the true inspiration behind satoru gojo in jujutsu kaisen #anime #gojo #jjk
+11. the author of chainsaw man got banned on twitter #chainsawman #anime
+12. titans were inspired by a drunk internet cafe customer in attack on titan #aot
+13. satoru gojo is actually hated by his own creator in jujutsu kaisen #jjk  #gojo
+14. satoru gojo loses his cursed technique when he drinks alcohol in jujutsu kaisen #jjk  #gojo
+15. the armored titan was actually modeled after ufc legend brock lesnar in attack on titan #aot
+16. the cursed fingers taste like soap in jujutsu kaisen #jjk #jujutsukaisen  #sukuna
+17. the worker drones' colorful eyes secretly mark their freedom in murder drones
+18. kento nanami was originally a villain in jujutsu kaisen #jjk #jujutsukaisen #nanami
+19. the unreadable language is just upside-down japanese in attack on titan #aot
+20. the hilarious reason mei mei fled to malaysia in jujutsu kaisen #jjk
+21. the colossal titan was originally designed as a stone monster with teeth in attack on titan #aot
+22. the real sukuna is worshipped as a temple hero in jujutsu kaisen #jjk #sukuna
+23. levi was made short on purpose because a tall levi would not be cool in attack on titan #aot  #leviackerman
+24. the next big jujutsu kaisen season four reveal already has an exact date #jjkjjk #jujutsukaisen

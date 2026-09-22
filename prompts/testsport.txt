@@ -1,10 +1,8 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE great sports(soccer,ufc,f1) video idea.
+Find ONE great sports(soccer,ufc,f1) video idea hot/viral news happening right now or past week/ a surprising fact that makes people say “wait, what?”
 WORD COUNT RULE
 Spoken text must be ninety to one hundred words, tags excluded. After drafting, count the spoken words and output the total in the spoken_word_count field. If the count falls outside ninety to one hundred, rewrite and recount — never approximate, never round.
 
-It must be either:
-hot/viral news happening right now OR a surprising fact that makes people say “wait, what?”
 
 
 Choose the single most interesting idea you can find.
@@ -72,29 +70,40 @@ Sports content rarely has a single iconic OST, so build the list like this:
 
 Every query must target an INSTRUMENTAL. Append "instrumental", "no lyrics", or "no copyright" wherever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a slot if you have nothing real for it, never pad with junk. If nothing plausible exists, music_queries: [].
 
-TAG PLACEMENT (do this, don't just sprinkle): anchor at least one tag to the HOOK (e.g. [curious] / [whispers] to pull the viewer in), at least one to the TURN (e.g. [surprised] / [excited] / on the reveal), and use the rest to shape the arc between them.
+ELEVENLABS V3 AUDIO TAGS RULE
+Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the 90-100 word limit.
 
-Tags are drawn from the official ElevenLabs v3 confirmed categories (non-exhaustive — invent descriptive variants freely, but anchor to these families):
+Placement (follow the story structure):
+- Hook (first sentence): one energy or curiosity tag.
+- Build: one pacing tag ([slows down], [drawn out], [hesitates], [rushed]).
+- Reveal / punch: one tag at the start of the sentence containing the *WORD!* marker.
+- Outro: one calming or closing tag.
 
-Emotional states (confirmed): [excited], [nervous], [frustrated], [sorrowful], [calm],
-  [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happy],
-  [annoyed], [appalled], [thoughtful], [surprised]
+Emotional states: [excited], [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happily], [annoyed], [surprised], [worried], [upset], [awe], [amazed]
 
-Laughter & breath reactions (confirmed): [laughs], [laughs harder], [starts laughing],
-  [wheezing], [chuckles], [sighs], [exhales], [inhales deeply], [exhales sharply]
+Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [giggles], [light chuckle], [sighs], [sigh of relief], [exhales], [gasps]
 
-Delivery direction (confirmed): [whispers], [shouts]
+Volume: [whispers], [shouts], [quietly], [softly], [loudly], [booming]
 
-Non-verbal reactions (confirmed): [clears throat], [gulps], [swallows], [snorts]
+Pacing: [rushed], [slows down], [drawn out], [stammers], [hesitates], [rapid-fire]
 
-Sound effects (use sparingly, confirmed): [gunshot], [applause], [clapping], [explosion]
+Tone: [deadpan], [flatly], [understated], [suspicious tone]
 
-Experimental / combinable (invent freely within reason): [frustrated sigh], [happy gasp],
-  [excitedly], [dramatically], [curiously], [nervously], [quietly], [loudly]
-  — these are NOT in the official list but ElevenLabs confirms the model accepts
-  descriptive variants. Mark them as experimental if noting to client.
+Non-verbal (max 1 per script): [clears throat], [gulps], [swallows], [snorts]
 
-Tags can be layered: "[nervously] He... he actually did it. [sighs] In the final SECOND."
+Compound variants (allowed): [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously]
+
+Sound effects (max 1 per script, only if the narration literally describes that sound): [gunshot], [explosion], [applause], [clapping]
+
+Rules:
+- A tag goes at the START of the sentence it applies to and stays active until the next tag.
+- Layer at most 2 tags in a row, and only compatible ones ([whispers][curious] is fine; never opposites like [whispers][shouts] or [calm][excited]).
+- Use ONLY tags from the lists above. Never invent tags. Never place tags inside *WORD!* markers.
+- Do not repeat the same tag twice in one script.
+- Use ellipses (...) for a beat before a reveal. You may CAPITALIZE at most one word per sentence for emphasis.
+
+Example of structure only (do NOT reuse its wording or tags):
+"[curious] Everyone thinks this fight ended in a draw... but the footage says otherwise. [slows down] There's one detail nobody noticed. [gasps] He was BLEEDING the whole time. [calm] Watch it again."
 
 PUNCTUATION FOR DELIVERY:
 Comma → short pause. Period → full stop. Question mark → questioning tone.
@@ -201,6 +210,30 @@ JSON OUTPUT FORMAT
 USED VIDEOS LIST (DO NOT REPEAT)
 ═══════════════════════════════════
 
+Santiago Cañizares missing 2002 World Cup due to dropped aftershave bottle #football
+1.1K views
+
+
+This player lost a wordl cup for  dropping an aftershave bottle on his foot in football #football
+1.6K views
+
+
+Lewis Hamilton 0.6 km/h Pit Lane Speeding Penalty #f1
+1.5K views
+
+
+The bizarre freak accident that changed Spanish football history forever. #football #spain
+1.6K views
+
+
+UFC world championship with only one eye  #ufc
+1.3K views
+
+
+Jose Mourinho hiding in a laundry basket to bypass UEFA ban #football
+991 views
+
+
 The Swansea ballboy kicked by Eden Hazard who became a multimillionaire #football
 1.3K views
 
@@ -231,3 +264,4 @@ The 2026 FA Community Shield was played not in England?  #football
 
 Kimi Antonelli beating a go-kart track lap record  #formula1 #f1
 2.7K views
+
