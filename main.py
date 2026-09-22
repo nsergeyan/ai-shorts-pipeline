@@ -88,7 +88,7 @@ except ImportError as e:
     sys.exit(1)
 # ---------------- CONFIG ---------------- #
 LANGUAGE = "en"
-MUSIC_VOLUME = 0.1
+MUSIC_LUFS = -34.0                 # music loudness target; voice sits near -17.5, lower = quieter music
 SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
 CLIP_DURATION = 60.0
@@ -102,32 +102,31 @@ THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); 
 THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
-MANUAL_DATA ={
-"topic": "Attack on Titan",
-"specific_subject": "Eren's Titan form is based on Yushin Okami",
-"title": "Eren's Attack Titan is based on a real UFC fighter in Attack on Titan",
+MANUAL_DATA = {
+"topic": "Dan Da Dan",
+"specific_subject": "Turbo Granny urban legend origin",
+"title": "Turbo Granny is actually based on a real modern myth in Dan Da Dan",
 "youtube_queries": [
-  "eren vs armored titan full fight",
-  "eren titan fighting stance scene",
-  "attack on titan eren MMA moves",
-  "eren uses triangle choke on reiner",
-  "eren titan go hard edit",
-  "attack on titan season two official clip"
+  "Turbo Granny full fight Dan Da Dan",
+  "Dan Da Dan Turbo Granny goes hard",
+  "Turbo Granny edit",
+  "Dan Da Dan episode 2 Turbo Granny",
+  "Dan Da Dan Turbo Granny english dub",
+  "Dan Da Dan Turbo Granny official clip"
 ],
-"scene_query": "Side-by-side comparison. On the left, real-life MMA fighter Yushin Okami in black UFC shorts with his hands up in a southpaw fighting stance. On the right, Eren's Attack Titan in the anime holding the exact same southpaw guard stance. Cuts of the Attack Titan throwing heavy punches, tackling the Armored Titan to the ground, and locking in a glowing triangle choke submission hold while roaring.",
-"footage_source": "stills_and_broll",
-"music_mood": "hype",
+"scene_query": "Turbo Granny running incredibly fast alongside Okarun, her white hair flying, with a wide creepy grin as she races through a dark tunnel, featuring intense anime kinetic speed lines.",
+"footage_source": "official_or_press",
+"music_mood": "mysterious",
 "music_queries": [
-  "attack on titan eren vs reiner epic fight instrumental",
-  "heavy trap metal workout instrumental no copyright",
-  "aggressive mma walkout beat instrumental"
+  "Turbo Granny Dan Da Dan official OST instrumental",
+  "Dan Da Dan creepy tension background music instrumental",
+  "high speed trap tension instrumental no copyright"
 ],
-"music_prompt": "energetic trap metal beats, heavy distorted 808s, aggressive electric guitar riffs, driving tempo at one hundred thirty BPM, fighting game intensity building to a heavy drop, short-form video background, no lyrics, exclude: soft piano, acoustic instruments",
+"music_prompt": "fast paced dark phonk, 130 BPM, heavy synth bass, ticking hi hats, creepy koto pluck, high energy tension building to a fast drop, short-form video background, no lyrics, exclude: happy melodies, slow acoustic guitars",
 "voice_name": "animatoryoung",
-"spoken_word_count": 98,
-"script": "[excited] The Attack Titan is real. And he used to fight in the UFC.\n\n[curious] When designing Eren's iconic monster form creator Hajime Isayama didn't just use his imagination.\n\n[happy] He modeled it directly after Japanese mixed martial arts legend Yushin Okami.\n\n[thoughtful] Isayama explicitly stated he used Okami's middleweight physique as the exact blueprint for Eren.\n\n[surprised] *BUT!* It goes deeper than muscles.\n\n[excited] Eren's signature fighting stance brutal ground strikes and triangle chokes are pulled straight from the octagon.\n\n[laughs] You are literally watching a professional cage fighter animated as a giant meat mecha.\n\n[curious] Did you catch his stance on your first watch?"
+"spoken_word_count": 94,
+"script": "[curious] The terrifying Turbo Granny from Dan Da Dan is not just an anime character. [slows down] She is actually based on an urban legend that terrified Japan in the nineteen nineties. [drawn out] According to the myth, drivers would look out their window late at night and see an old woman sprinting next to their car at over one hundred kilometers per hour. [gasps] *AND!* If you looked directly at her, she would curse you and cause a fatal crash. The creator perfectly copied her terrifying speed from these original rumors. [calm] Did you realize this creepy spirit was real?"
 }
-
 
 def _strip_punch_markers(script: str):
     """Strip *word* markers from script. Returns (clean_script, [word, ...]).
@@ -1336,7 +1335,7 @@ def run_manual_pipeline(data):
             vertical=True,
             shorts_cap=True,
             music_path=music_path,
-            music_volume=MUSIC_VOLUME,
+            music_lufs=MUSIC_LUFS,
             words_data=words_data,
             subtitles_position=SUBTITLES_POSITION,
             punch_times=punch_times,

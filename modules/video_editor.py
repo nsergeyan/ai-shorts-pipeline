@@ -99,14 +99,35 @@ def _prepare_cta_transparent(cta_path: str) -> Optional[str]:
         return cta_path
 
 
-def _prepare_music(music_path: str, target_dur: float) -> Optional[str]:
-    """Trim or loop music to exactly target_dur seconds."""
+def _measure_lufs(path: str) -> Optional[float]:
+    """Measure integrated loudness (LUFS) of an audio file."""
+    try:
+        proc = subprocess.run([
+            "ffmpeg", "-hide_banner", "-nostats", "-i", path,
+            "-af", "loudnorm=print_format=summary", "-f", "null", "-",
+        ], capture_output=True, text=True)
+        for line in proc.stderr.splitlines():
+            if "Input Integrated:" in line:
+                return float(line.split(":")[1].strip().split()[0])
+    except Exception:
+        pass
+    return None
+
+
+def _prepare_music(music_path: str, target_dur: float,
+                   target_lufs: float = -34.0) -> Optional[str]:
+    """Trim or loop music to target_dur seconds and normalize it to target_lufs."""
     if not music_path or not os.path.exists(music_path):
         return None
     try:
         music_dur = _probe_duration(music_path)
     except Exception:
         return None
+
+    measured = _measure_lufs(music_path)
+    gain_db = max(-40.0, min(20.0, target_lufs - measured)) if measured is not None else 0.0
+    encode = ["-af", f"volume={gain_db:.1f}dB", "-c:a", "libmp3lame", "-b:a", "192k"]
+    print(f"\U0001F39A\uFE0F  Music {measured} LUFS -> {target_lufs} LUFS ({gain_db:+.1f} dB)")
 
     out_path = music_path + "_final.mp3"
     try:
@@ -116,7 +137,7 @@ def _prepare_music(music_path: str, target_dur: float) -> Optional[str]:
                 "ffmpeg", "-y",
                 "-ss", str(start), "-t", str(target_dur),
                 "-i", music_path,
-                "-c", "copy",
+                *encode,
                 out_path
             ], check=True, capture_output=True)
         else:
@@ -126,7 +147,7 @@ def _prepare_music(music_path: str, target_dur: float) -> Optional[str]:
                 "-stream_loop", str(loops),
                 "-i", music_path,
                 "-t", str(target_dur),
-                "-c", "copy",
+                *encode,
                 out_path
             ], check=True, capture_output=True)
         return out_path
@@ -227,7 +248,7 @@ def merge_audio_video(
     shorts_cap: bool = True,
     cap_seconds: float = 82,
     music_path: Optional[str] = None,
-    music_volume: float = 0.07,
+    music_lufs: float = -34.0,
     subtitles_data: Optional[list] = None,
     subtitles_position: str = "top",
     words_data: Optional[list] = None,
@@ -258,7 +279,7 @@ def merge_audio_video(
         cta_start = max(0.0, voice_dur - CTA_DURATION)
 
         clips = _build_clips(video_paths, total_dur, base_url)
-        prepared_music = _prepare_music(music_path, total_dur) if music_path else None
+        prepared_music = _prepare_music(music_path, total_dur, music_lufs) if music_path else None
 
         words_dicts: List[dict] = []
         if words_data:
@@ -271,7 +292,7 @@ def merge_audio_video(
             "clips": clips,
             "audioPath": _asset_url(audio_path, base_url),
             "musicPath": _asset_url(prepared_music, base_url) if prepared_music else None,
-            "musicVolume": music_volume,
+            "musicVolume": 1.0,
             "wordsData": words_dicts,
             "punchTimes": punch_times or [],
             "sfxEvents": _build_sfx_events(clips, base_url, punch_times),
