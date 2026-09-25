@@ -26,7 +26,56 @@ VOICES = {
 }
 
 # Speed boost applied after TTS. Set to 1.0 to disable.
-SPEED_MULTIPLIER = 1.15
+SPEED_MULTIPLIER = 1.1
+
+OUTPUT_FORMAT = "mp3_44100_192"
+
+
+def _output_bitrate_k() -> int:
+    """
+    Bitrate for the atempo re-encode, read off the requested output format.
+
+    Without an explicit -b:a, ffmpeg re-encodes at its own default, measured at
+    64kbps, silently discarding most of the quality we paid ElevenLabs for.
+    """
+    tail = OUTPUT_FORMAT.rsplit("_", 1)[-1]
+    return int(tail) if tail.isdigit() else 192
+
+
+def _measured_bitrate_k(path: str) -> int:
+    """Actual bitrate of a finished file, in kbps, via ffprobe."""
+    out = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=bit_rate",
+         "-of", "default=noprint_wrappers=1:nokey=1", path],
+        capture_output=True, text=True, check=True,
+    )
+    return round(int(out.stdout.strip()) / 1000)
+
+
+def _verify_bitrate(path: str) -> None:
+    """
+    Refuse to hand back narration that lost quality on the way out.
+
+    The atempo re-encode silently produced 64kbps for months because ffmpeg
+    falls back to its own default when -b:a is missing. Nothing downstream
+    notices: the render still succeeds and the final mp4 still reports ~192k,
+    because AAC happily re-encodes ruined audio. So the check has to live here,
+    on the mp3, right after the last step that can damage it.
+    """
+    expected = _output_bitrate_k()
+    actual = _measured_bitrate_k(path)
+
+    # 20% of slack: mp3 bitrate is an average over frames and lands a little
+    # under target on quiet passages. A real regression is a third of target,
+    # not a few percent.
+    if actual < expected * 0.8:
+        raise RuntimeError(
+            f"Narration came out at {actual}kbps but should be {expected}kbps "
+            f"({path}). Something re-encoded it without -b:a. Refusing to "
+            f"continue rather than render a video with degraded audio."
+        )
+
+    print(f"🔊 Audio quality OK: {actual}kbps")
 
 
 def clean_text_for_speech(text: str) -> str:
@@ -57,14 +106,14 @@ def _try_generate_with_key(
                 text=cleaned_text,
                 voice_id=voice_id,
                 model_id="eleven_multilingual_v2",
-                output_format="mp3_44100_192",
+                output_format=OUTPUT_FORMAT,
             )
         else:
             audio_stream = client.text_to_dialogue.convert(
                 inputs=[DialogueInput(text=cleaned_text, voice_id=voice_id)],
                 model_id="eleven_v3",
                 settings=ModelSettingsResponseModel(stability=0.5),
-                output_format="mp3_44100_192",
+                output_format=OUTPUT_FORMAT,
             )
 
         with open(tmp_path, "wb") as f:
@@ -77,7 +126,8 @@ def _try_generate_with_key(
             sped_path = output_path + ".fast.mp3"
             subprocess.run(
                 ["ffmpeg", "-y", "-i", output_path, "-filter:a",
-                 f"atempo={SPEED_MULTIPLIER}", sped_path],
+                 f"atempo={SPEED_MULTIPLIER}",
+                 "-b:a", f"{_output_bitrate_k()}k", sped_path],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
             )
             os.replace(sped_path, output_path)
@@ -113,6 +163,10 @@ def generate_voice(
             voice_id=voice_id,
             lang=lang
         ):
+            # Deliberately outside _try_generate_with_key: a quality failure is
+            # not a key failure, so it must not roll over to the next key or be
+            # reported as one. It should stop the run and say why.
+            _verify_bitrate(output_path)
             return output_path
 
         print("⏭️ Switching key...")
@@ -121,18 +175,42 @@ def generate_voice(
 
 
 if __name__ == "__main__":
-    print("🧪 Starting High-Speed V3 Test...\n")
+    # Speed boost off for the test, so you hear exactly what ElevenLabs sent.
+    # Each take also gets a sped-up copy next to it, so you can A/B whether
+    # atempo itself is what makes the voice sound bad.
+    PIPELINE_SPEED = SPEED_MULTIPLIER    # read it before overriding below
+    SPEED_MULTIPLIER = 1.0
 
-    test_script ="Have you ever wondered what Sukuna's cursed fingers actually taste like? "
+    TEST_TAKES = 1
+
+    # Tagged, so the test exercises v3 emotion handling and not just clarity.
+    test_script = (
+        "[excited] A referee just gave a player a red card... by ACCIDENT. [curious] This is François Letexier, the man who refereed the Euro twenty twenty four final. Last Sunday, Marseille played PSG. In the first half, Marseille captain Timothy Weah made a late tackle. The referee reached into his pocket and pulled out... red. [slows down] Weah looked completely shocked. Then the referee smiled, put it away, showed yellow, and said sorry for the scare. [sarcastic] Funny story, right? [gasps] *BUT!* In the second half, Weah fouled again. Second yellow. This time the red was REAL. [deadpan] The referee was just forty five minutes early."
+    )
+
     try:
-        for i in range(1, 3):
-            path = generate_voice(
+        for i in range(1, TEST_TAKES + 1):
+            raw = generate_voice(
                 script_text=test_script,
-                filename=f"test_option_{i}.mp3",
+                filename=f"test_take{i}_raw.mp3",
                 voice="animatoryoung",
                 lang="en"
             )
-            print(f"🎧 Option {i} ready: {path}")
+
+            sped = raw.replace("_raw.mp3", "_sped.mp3")
+            subprocess.run(
+                ["ffmpeg", "-y", "-i", raw, "-filter:a",
+                 f"atempo={PIPELINE_SPEED}",
+                 "-b:a", f"{_output_bitrate_k()}k", sped],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+            )
+
+            print(f"🎧 take {i}: {raw}")
+            print(f"           {sped}  ({PIPELINE_SPEED}x)")
+
+        print(f"\nListen to raw vs sped. If raw is good and sped is bad, "
+              f"atempo is the problem.")
+        print(f"Open {AUDIO_DIR}")
 
     except Exception as e:
         print(f"❌ Test Failed: {e}")
