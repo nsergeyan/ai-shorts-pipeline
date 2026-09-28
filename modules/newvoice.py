@@ -2,13 +2,13 @@ import os
 import re
 import subprocess
 from elevenlabs.client import ElevenLabs
-from elevenlabs.types import DialogueInput, ModelSettingsResponseModel
+from elevenlabs.types import DialogueInput, ToDialogueSettingsResponseModel
 from config import DATA_DIR, ELEVENLABS_API_KEY
 
 AUDIO_DIR = os.path.join(DATA_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
-# The US regional endpoint serves the good eleven_v3 render. The global default
+# The US regional endpoint serves the good render. The global default
 # (api.elevenlabs.io) returns a flat/robotic voice for this account, matching the
 # website only when we hit this host. Confirmed by capturing the web app's request.
 ELEVENLABS_BASE_URL = "https://api.us.elevenlabs.io"
@@ -29,6 +29,20 @@ VOICES = {
 SPEED_MULTIPLIER = 1.1
 
 OUTPUT_FORMAT = "mp3_44100_192"
+
+# Eleven v4. Same credit cost as v3, 10k chars instead of 5k, and the first
+# model that accepts `similarity` on the dialogue endpoint (v3 returns a 400).
+MODEL_ID = "eleven_v4"
+
+# Both 0.0-1.0, and note the dialogue endpoint calls it `similarity`, not
+# `similarity_boost` like the plain text-to-speech one. The wrong name returns
+# 200 and is silently ignored, so it has to match exactly.
+#   stability  - how much the read varies between takes. Lower = more emotion
+#                and more risk of a weird take. Higher = flatter, safer.
+#   similarity - how tightly the model is held to the source voice. Higher =
+#                closer clone, less room to act.
+STABILITY = 0.5
+SIMILARITY = 0.7
 
 
 def _output_bitrate_k() -> int:
@@ -111,8 +125,11 @@ def _try_generate_with_key(
         else:
             audio_stream = client.text_to_dialogue.convert(
                 inputs=[DialogueInput(text=cleaned_text, voice_id=voice_id)],
-                model_id="eleven_v3",
-                settings=ModelSettingsResponseModel(stability=0.5),
+                model_id=MODEL_ID,
+                settings=ToDialogueSettingsResponseModel(
+                    stability=STABILITY,
+                    similarity=SIMILARITY,
+                ),
                 output_format=OUTPUT_FORMAT,
             )
 
@@ -183,7 +200,7 @@ if __name__ == "__main__":
 
     TEST_TAKES = 1
 
-    # Tagged, so the test exercises v3 emotion handling and not just clarity.
+    # Tagged, so the test exercises v4 emotion handling and not just clarity.
     test_script = (
         "[excited] A referee just gave a player a red card... by ACCIDENT. [curious] This is François Letexier, the man who refereed the Euro twenty twenty four final. Last Sunday, Marseille played PSG. In the first half, Marseille captain Timothy Weah made a late tackle. The referee reached into his pocket and pulled out... red. [slows down] Weah looked completely shocked. Then the referee smiled, put it away, showed yellow, and said sorry for the scare. [sarcastic] Funny story, right? [gasps] *BUT!* In the second half, Weah fouled again. Second yellow. This time the red was REAL. [deadpan] The referee was just forty five minutes early."
     )
