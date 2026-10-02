@@ -103,29 +103,29 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Dan Da Dan",
-"specific_subject": "Turbo Granny urban legend origin",
-"title": "Turbo Granny is actually based on a real modern myth in Dan Da Dan",
+"topic": "Attack on Titan",
+"specific_subject": "Gabi Braun's character design",
+"title": "Gabi Braun is actually a female Eren in Attack on Titan",
 "youtube_queries": [
-  "Turbo Granny full fight Dan Da Dan",
-  "Dan Da Dan Turbo Granny goes hard",
-  "Turbo Granny edit",
-  "Dan Da Dan episode 2 Turbo Granny",
-  "Dan Da Dan Turbo Granny english dub",
-  "Dan Da Dan Turbo Granny official clip"
+  "gabi braun eren jaeger parallel scene",
+  "gabi braun goes hard",
+  "gabi braun edit",
+  "attack on titan final season gabi",
+  "gabi braun english dub",
+  "attack on titan season four official clip"
 ],
-"scene_query": "Turbo Granny running incredibly fast alongside Okarun, her white hair flying, with a wide creepy grin as she races through a dark tunnel, featuring intense anime kinetic speed lines.",
-"footage_source": "official_or_press",
-"music_mood": "mysterious",
+"scene_query": "A black and white creator sketch of a young girl with messy hair and intense angry eyes, shown side by side next to an official anime shot of a young female soldier in a brown uniform looking completely identical.",
+"footage_source": "stills_and_broll",
+"music_mood": "curious",
 "music_queries": [
-  "Turbo Granny Dan Da Dan official OST instrumental",
-  "Dan Da Dan creepy tension background music instrumental",
-  "high speed trap tension instrumental no copyright"
+  "attack on titan memory lane instrumental",
+  "attack on titan ashes on the fire instrumental",
+  "lofi mysterious tension background music no copyright"
 ],
-"music_prompt": "fast paced dark phonk, 130 BPM, heavy synth bass, ticking hi hats, creepy koto pluck, high energy tension building to a fast drop, short-form video background, no lyrics, exclude: happy melodies, slow acoustic guitars",
+"music_prompt": "lo-fi curiosity bed, 85 BPM, light marimba and mysterious synth pads, a quiet tension building to a surprising reveal, short-form video background, no lyrics, exclude: heavy metal, goofy comedy",
 "voice_name": "animatoryoung",
-"spoken_word_count": 94,
-"script": "[curious] The terrifying Turbo Granny from Dan Da Dan is not just an anime character. [slows down] She is actually based on an urban legend that terrified Japan in the nineteen nineties. [drawn out] According to the myth, drivers would look out their window late at night and see an old woman sprinting next to their car at over one hundred kilometers per hour. [gasps] *AND!* If you looked directly at her, she would curse you and cause a fatal crash. The creator perfectly copied her terrifying speed from these original rumors. [calm] Did you realize this creepy spirit was real?"
+"spoken_word_count": 95,
+"script": "[excited] Gabi Braun is actually a female version of Eren Jaeger, and the creator proved it. [slows down] Fans always noticed that these two characters act very similar. They are angry and want to destroy their enemies. [loudly] But the connection is *LITERALLY!* drawn into her design. [curious] Years before Gabi appeared, the author drew a sketch showing what Eren would look like as a girl. When he finally created Gabi, he just reused that exact sketch. Put them side by side, and you will see they are the *EXACT!* same person. [calm] Did you notice this mirror trick while watching?"
 }
 
 def _strip_punch_markers(script: str):
@@ -296,7 +296,8 @@ def evaluate_music_with_genai(music_path, script_text):
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=[uploaded_file, prompt]
+        contents=[uploaded_file, prompt],
+        config={"response_mime_type": "application/json"},
     )
 
     raw_text = response.text if hasattr(response, "text") else str(response)
@@ -376,7 +377,8 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=[uploaded_file, prompt]
+                contents=[uploaded_file, prompt],
+                config={"response_mime_type": "application/json"},
             )
             break
         except Exception as e:
@@ -535,7 +537,7 @@ def evaluate_video_with_genai(video_path, script_text):
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=[uploaded_file, prompt],
-                config={"thinking_config": {"thinking_budget": 8000}},
+                config={"thinking_config": {"thinking_budget": 8000}, "response_mime_type": "application/json"},
             )
             break
         except Exception as e:
@@ -656,7 +658,8 @@ def find_scene_with_gemini(video_path, query, script):
         try:
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
-                contents=[uploaded_file, prompt]
+                contents=[uploaded_file, prompt],
+                config={"response_mime_type": "application/json"},
             )
             break
         except Exception as e:
@@ -967,7 +970,10 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=contents,
-                config={"thinking_config": {"thinking_budget": 24576}},
+                config={
+                    "thinking_config": {"thinking_budget": 24576},
+                    "response_mime_type": "application/json",
+                },
             )
             break
         except Exception as e:
@@ -1015,7 +1021,13 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         return validated, video_paths, uploaded_files, client
     except Exception as e:
         print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
-        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(n)], video_paths, uploaded_files, client
+        fallback = []
+        for i in range(n):
+            vi = i % len(video_paths)
+            dur = video_durations[vi]
+            start = 10.0 + 15.0 * (i // len(video_paths))
+            fallback.append({"index": i, "video_index": vi, "start": round(min(start, max(dur - 12.0, 0.0)), 2)})
+        return fallback, video_paths, uploaded_files, client
 
 
 def find_thumbnail_with_gemini(client, uploaded_files, video_paths, topic, subject):
@@ -1087,6 +1099,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=contents,
+                config={"response_mime_type": "application/json"},
             )
             break
         except Exception as e:
