@@ -1,9 +1,10 @@
 """
-Clip maker: cut the single most interesting moment out of a video you already
-have, to use as a promo/teaser clip for it.
+Clip maker: cut a teaser out of a video you already have, so people go looking
+for the full version of it.
 
-You drag a video in, set its path below, and Gemini watches the whole thing
-and picks the best continuous highlight. That moment gets trimmed, transcribed,
+You drag a video in, set its path below, and Gemini watches the whole thing and
+picks the moment that leaves a viewer with an unanswered question: the hook is
+inside the clip, the answer is not. That moment gets trimmed, transcribed,
 and rendered through the same Remotion pipeline as main.py, so the output has
 the same blurred/contained 9:16 layout, the same word-highlighted subtitles,
 and the same follow-button CTA. The subtitles are transcribed from the video's
@@ -35,7 +36,7 @@ from modules.video_editor import merge_audio_video
 
 CLIP_MAKER_DATA = {
     # Drag your video in (anywhere on disk) and paste its path here.
-    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/how_money_laundering_works/final.mp4",
+    "source_video_path": "/Users/nareksergeyan/PycharmProjects/animationer/output/is_ai_really_dangerous/final.mp4",
     # Target length in seconds for the promo clip. Gemini can shift a few
     # seconds either way to land on a clean start/end.
     "clip_duration": 30,
@@ -54,24 +55,79 @@ def _parse_ts(value) -> float:
     return float(text)
 
 
-def _enforce_duration(start: float, end: float, target: float, video_duration: float):
+def _enforce_duration(start: float, end: float, target: float, video_duration: float,
+                      payoff: float | None = None):
     """Gemini often returns a span far shorter than asked for, and nothing used to
     check it, so a 30s request could render as 8s. Anchor on the start it picked
     (that is where the hook begins) and force the clip to run `target` long,
     sliding it back only if it would overrun the video."""
     span = end - start
-    if abs(span - target) <= target * 0.2:
-        return start, end
-    target = min(target, video_duration)
-    new_start = max(0.0, min(start, video_duration - target))
-    new_end = new_start + target
-    print(f"📏 Gemini returned {span:.1f}s, forcing to {new_end - new_start:.1f}s")
-    return new_start, new_end
+    if abs(span - target) > target * 0.2:
+        target = min(target, video_duration)
+        start = max(0.0, min(start, video_duration - target))
+        end = start + target
+        print(f"📏 Gemini returned {span:.1f}s, forcing to {end - start:.1f}s")
+
+    if payoff is not None and 0 < payoff < end:
+        # Stretching the clip must never swallow the answer, that is the entire
+        # point of a teaser. Slide the whole window back instead of shortening it.
+        shift = min(end - payoff, start)
+        if shift > 0:
+            start -= shift
+            end -= shift
+            print(f"🔒 Pulled back {shift:.1f}s to end before the payoff at {payoff:.1f}s")
+    return start, end
+
+
+def _validate_candidate(cand: dict, video_duration: float):
+    """Normalize one candidate into usable numbers, or None if it is unusable."""
+    try:
+        start = max(0.0, _parse_ts(cand.get("start", 0.0)))
+        end = _parse_ts(cand["end"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if end <= start or start >= video_duration:
+        return None
+    try:
+        payoff = _parse_ts(cand["payoff_at"])
+    except (KeyError, TypeError, ValueError):
+        payoff = None
+    return {"cand": cand, "start": start, "end": min(end, video_duration), "payoff": payoff}
+
+
+def _pick_candidate(candidates: list, target: float, video_duration: float):
+    """Gemini ranks three candidates and the code used to always take the first
+    one, so a bad top pick sank the whole clip. Walk the ranking instead and take
+    the highest one that is actually a teaser: right length, and ending before
+    the video hands over the answer (`payoff_at` after `end`). Loosen the bar
+    only if nothing clears it."""
+    parsed = [v for v in (_validate_candidate(c, video_duration) for c in candidates) if v]
+    if not parsed:
+        return None
+
+    def open_loop(c):
+        return c["payoff"] is not None and c["payoff"] > c["end"]
+
+    def right_length(c):
+        return abs((c["end"] - c["start"]) - target) <= target * 0.15
+
+    checks = [
+        (lambda c: open_loop(c) and right_length(c), "open loop, right length"),
+        (open_loop, "open loop"),
+        (right_length, "right length"),
+    ]
+    for test, label in checks:
+        for rank, c in enumerate(parsed, 1):
+            if test(c):
+                print(f"✅ Using candidate #{rank} ({label})")
+                return c
+    print("⚠️ No candidate cleared the checks, falling back to the top pick")
+    return parsed[0]
 
 
 def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
-    """Ask Gemini to find the single most interesting continuous moment in the
-    video, for use as a promo/teaser clip. Returns (start, end) in seconds."""
+    """Ask Gemini for the moment that leaves a cold viewer needing the rest of
+    the video, and cut before the answer. Returns (start, end) in seconds."""
     client = _gemini_client()
 
     info = ffmpeg.probe(video_path)
@@ -81,44 +137,54 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
     uploaded_file = _upload_and_wait(client, video_path, label="source video")
 
     prompt = f"""
-    You are cutting a promo clip out of this video to post as a standalone short on
-    social media, a teaser/trailer cut. Watch and listen to the whole video first.
+    You are cutting a TEASER out of this video. It gets posted as a standalone
+    short, and it has exactly one job: the viewer must finish it still needing the
+    answer, so they go and look for the full video. A clip that satisfies them has
+    failed. Watch and listen to the whole video first.
 
     VIDEO DURATION: {video_duration:.1f} seconds
     TARGET CLIP LENGTH: {target_duration:.0f} seconds (hard requirement, not a suggestion)
 
-    TASK:
-    Find the single most interesting, exciting, or intriguing continuous moment in
-    this video, the kind of moment that would make someone stop scrolling and want
-    to watch the full video. It must be ONE continuous segment, no cuts.
-    Judge it on both what is on screen and what is being said.
+    THE SHAPE YOU ARE LOOKING FOR (ONE continuous segment, no cuts):
+    1. Second 0 to 2: a cold open that works with zero context. A question, a
+       number, a contrarian claim, a threat, a name plus stakes. No "so", "and
+       then", "as I said", no pronoun referring to something earlier. The first
+       words carry the hook.
+    2. Middle: the stakes get bigger or the situation gets stranger. New
+       information every few seconds, no restating what was already said.
+    3. The last line: the question is still open. Cut on the setup, on the "but
+       here is the problem", on the claim before the evidence. The moment the
+       video starts answering, you are already past your end point.
 
-    WHAT MAKES A GOOD PICK:
-    - It opens on a line that works cold, with zero setup: a question, a bold claim,
-      a reveal, a surprising fact. Someone hearing it with no context wants the answer.
-    - The payoff happens INSIDE the clip. Do not end right before the reveal.
-    - It is a complete thought: starts at the top of a sentence, ends at the end of one,
-      not mid-sentence or mid-motion.
-
-    WHAT MAKES A BAD PICK:
-    - Intro, outro, channel plugs, "in this video I'll show you", "subscribe".
-    - Setup with no payoff, list filler, a calm or static transitional passage.
+    DISQUALIFIED:
+    - Anything that resolves itself. If the clip contains both the question and
+      the answer, the viewer has no reason to search for the video.
+    - Intro, outro, channel plugs, "in this video I'll show you", "subscribe",
+      sponsor reads.
+    - Slow setup, list filler, recap, a calm or static transitional passage.
+    - A hook that only makes sense if you already watched the earlier part.
     - Anything in the last 5 seconds of the video.
 
     HARD RULES:
     - end - start MUST be between {target_duration * 0.85:.0f} and {target_duration * 1.15:.0f} seconds.
       A shorter span is a failed answer.
+    - `start` sits on the first word of a sentence, `end` on the last word of a
+      sentence. Never mid-sentence or mid-motion.
+    - `payoff_at` is where the video actually answers the open question, and it
+      MUST be greater than `end`. If you cannot name a payoff that comes later,
+      the pick is wrong: choose a different moment.
     - Timestamps may be MM:SS or plain seconds, whichever you are confident in.
     - Ensure: 0 <= start, end <= {video_duration:.1f}, end > start.
 
-    Give THREE candidates ranked best first, so you actually compare options
-    instead of returning the first thing you notice.
+    Give THREE candidates ranked best first, judged on one thing only: how badly
+    someone who saw just the clip needs to know what happens next.
 
     OUTPUT: Return ONLY valid JSON, no markdown, no explanation.
     {{"candidates": [
-      {{"start": <timestamp>, "end": <timestamp>,
+      {{"start": <timestamp>, "end": <timestamp>, "payoff_at": <timestamp>,
         "hook": "<the opening line, quoted from the video>",
-        "reason": "<one short sentence on why this stops the scroll>"}}
+        "open_question": "<the question the viewer is left with, in their words>",
+        "reason": "<one short sentence on why they need the full video>"}}
     ]}}
     """
 
@@ -129,7 +195,7 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=[uploaded_file, prompt],
-                config={"thinking_config": {"thinking_budget": 8000}},
+                config={"thinking_config": {"thinking_budget": 8000}, "response_mime_type": "application/json"},
             )
             break
         except Exception as e:
@@ -162,20 +228,22 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
             c_start, c_end = _parse_ts(c.get("start", 0)), _parse_ts(c.get("end", 0))
         except Exception:
             continue
-        print(f"   {i}. {c_start:.1f}s → {c_end:.1f}s ({c_end - c_start:.1f}s)  {str(c.get('hook', ''))[:70]}")
+        payoff = c.get("payoff_at", "?")
+        print(f"   {i}. {c_start:.1f}s → {c_end:.1f}s ({c_end - c_start:.1f}s, "
+              f"payoff at {payoff})  {str(c.get('hook', ''))[:70]}")
 
-    best = candidates[0]
-    start = max(0.0, _parse_ts(best.get("start", 0.0)))
-    try:
-        end = min(video_duration, _parse_ts(best["end"]))
-    except (KeyError, TypeError, ValueError):
-        end = min(video_duration, start + target_duration)
-    if end <= start:
-        end = min(video_duration, start + target_duration)
+    pick = _pick_candidate(candidates, target_duration, video_duration)
+    if pick is None:
+        raise RuntimeError(f"No usable clip candidate in Gemini's answer: {text[:300]}")
 
-    start, end = _enforce_duration(start, end, target_duration, video_duration)
+    best = pick["cand"]
+    start, end = _enforce_duration(
+        pick["start"], pick["end"], target_duration, video_duration, pick["payoff"]
+    )
 
     print(f"✂️ Picked {start:.1f}s → {end:.1f}s ({end - start:.1f}s): {best.get('reason', '')}")
+    if best.get("open_question"):
+        print(f"❓ Leaves them asking: {best['open_question']}")
     return start, end
 
 

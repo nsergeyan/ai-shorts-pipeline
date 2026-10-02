@@ -196,7 +196,7 @@ Markers are stripped before voice generation; after Whisper transcription the wo
 
 ### Promo Clip Maker
 
-`clipmaker.py` is a second entrypoint for a different job: cutting a short promo clip out of a video you already have, instead of sourcing footage from YouTube. Set `source_video_path` in `CLIP_MAKER_DATA`, then run:
+`modules/clipmaker.py` is a second entrypoint for a different job: cutting a short promo clip out of a video you already have, instead of sourcing footage from YouTube. Set `source_video_path` in `CLIP_MAKER_DATA`, then run:
 
 ```bash
 python clipmaker.py
