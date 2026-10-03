@@ -16,7 +16,7 @@ from it (the client rotation + file upload/poll logic).
 
 Usage:
     source .venv/bin/activate
-    python clipmaker.py
+    python -m modules.clipmaker
 """
 import json
 import os
