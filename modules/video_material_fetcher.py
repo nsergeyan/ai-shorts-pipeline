@@ -32,6 +32,32 @@ MAX_HEIGHT = 1080
 # How many search results to look at before picking which one to download.
 SEARCH_RESULTS = 15
 
+# How many of those ranked results to actually try downloading per query. When
+# YouTube is blocking requests every attempt fails, and hammering it with all 15
+# (4 methods each) only makes the block last longer.
+MAX_DOWNLOAD_TRIES = 3
+
+# Settings every download method shares to look less like a bot:
+# - IPv4 only: YouTube judges IPv6 users per /64 block, so neighbours' traffic can flag you
+# - pauses between requests and between videos, and a download speed cap, because
+#   fast bursts are what trigger "Sign in to confirm you're not a bot"
+POLITE_OPTS = {
+    "source_address": "0.0.0.0",
+    "sleep_interval_requests": 1.5,
+    "sleep_interval": 3,
+    "max_sleep_interval": 8,
+    "ratelimit": 3 * 1024 * 1024,  # 3 MB/s
+}
+
+# Player clients for cookie requests. yt-dlp's defaults answer a flagged IP with
+# "not a bot" before the token check even runs; these clients accept cookies
+# and go through it.
+COOKIE_PLAYER_CLIENTS = ["tv", "web_safari", "mweb"]
+
+# Set once YouTube answers a cookie-less request with "confirm you're not a bot";
+# from then on this run only uses the methods that send browser cookies.
+_no_cookie_blocked = False
+
 # Title words that usually mean a third party's commentary sits on top of the footage.
 # Penalised rather than dropped, and ignored when the query itself contains the word.
 PENALTY_WORDS = (
@@ -97,8 +123,8 @@ def _make_opts_hd(skip_download: bool, use_cookies: bool = False):
     """yt-dlp options for separate video + audio streams up to MAX_HEIGHT.
 
     YouTube only serves 360p (format 18) as a single progressive file, so anything
-    sharper needs DASH streams merged by ffmpeg. Player clients are left to
-    yt-dlp's defaults, which it keeps updated as YouTube changes.
+    sharper needs DASH streams merged by ffmpeg. Without cookies the player
+    clients are left to yt-dlp's defaults; with cookies COOKIE_PLAYER_CLIENTS is used.
     The whole video is downloaded and trimmed afterwards: a partial download
     (download_ranges) goes through ffmpeg, which YouTube throttles to ~100 KB/s,
     about 12x slower than downloading the full file.
@@ -123,16 +149,11 @@ def _make_opts_hd(skip_download: bool, use_cookies: bool = False):
         ),
         "merge_output_format": "mp4",
         "js_runtimes": {"node": {}},
-
-        "sleep_interval": 2,
-        "max_sleep_interval": 5,
+        **POLITE_OPTS,
     }
 
     if use_cookies:
-        if COOKIEFILE and os.path.exists(COOKIEFILE):
-            opts["cookiefile"] = COOKIEFILE
-        else:
-            opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
+        opts.update(youtube_cookie_opts())
 
     return opts
 
@@ -186,38 +207,6 @@ def _write_source_meta(filepath: str, title: str, source_duration) -> None:
         json.dump({"source_duration": source_duration}, mf)
 
 
-def _make_opts_android(skip_download: bool):
-    """yt-dlp options using the Android client — often bypasses YouTube restrictions."""
-    opts = {
-        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
-        "quiet": False,
-        "skip_download": skip_download,
-        "playlistend": 1,
-        "restrictfilenames": True,
-        "ignoreerrors": True,
-        "overwrites": True,
-        "nopart": True,
-
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android"],
-            }
-        },
-        "format": "18/best",
-        "js_runtimes": {"node": {}},
-
-        "sleep_interval": 2,
-        "max_sleep_interval": 5,
-    }
-
-    if COOKIEFILE and os.path.exists(COOKIEFILE):
-        opts["cookiefile"] = COOKIEFILE
-    else:
-        opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
-
-    return opts
-
-
 def _make_opts_no_cookies(skip_download: bool):
     """yt-dlp options without browser cookies — used as a fallback when cookie-based download fails."""
     return {
@@ -236,8 +225,7 @@ def _make_opts_no_cookies(skip_download: bool):
                 "skip": ["hls", "dash"],
             }
         },
-        "sleep_interval": 3,
-        "max_sleep_interval": 6,
+        **POLITE_OPTS,
     }
 
 
@@ -415,6 +403,110 @@ def _find_latest_video() -> Optional[str]:
     return None
 
 
+def youtube_cookie_opts() -> dict:
+    """yt-dlp options for sending browser cookies the way that currently gets past
+    the bot check. Shared with music_generator so both downloaders stay in sync."""
+    opts = {
+        "js_runtimes": {"node": {}},
+        "extractor_args": {"youtube": {"player_client": COOKIE_PLAYER_CLIENTS}},
+    }
+    if COOKIEFILE and os.path.exists(COOKIEFILE):
+        opts["cookiefile"] = COOKIEFILE
+    else:
+        opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
+    return opts
+
+
+def no_cookie_blocked() -> bool:
+    """True once this run has seen YouTube's bot check on a cookie-less request."""
+    return _no_cookie_blocked
+
+
+class _ErrorCollector:
+    """yt-dlp logger that stays silent and keeps the error messages, so a failed
+    method can be summarised in one line instead of a wall of warnings."""
+
+    def __init__(self):
+        self.errors = []
+
+    def debug(self, msg):
+        pass
+
+    def info(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        self.errors.append(msg)
+
+
+def _short_error(msg: str) -> str:
+    """'ERROR: [youtube] abc123: Sign in to confirm you're not a bot. Use ...' -> 'Sign in to confirm you're not a bot'"""
+    msg = re.sub(r"^ERROR:\s*(\[[^\]]+\]\s*)?[\w-]+:\s*", "", msg.strip())
+    return msg.split(". ")[0][:90]
+
+
+def _note_bot_check(errors, uses_cookies: bool) -> None:
+    """Once YouTube answers a cookie-less request with its bot check, every other
+    cookie-less request this run will get the same answer, so stop sending them."""
+    global _no_cookie_blocked
+    if not uses_cookies and not _no_cookie_blocked and any("not a bot" in e for e in errors):
+        _no_cookie_blocked = True
+        print("   🚫 YouTube bot check: skipping no-cookie methods for the rest of this run")
+
+
+def _try_download(label: str, opts: dict, url: str, uses_cookies: bool) -> Optional[str]:
+    """Run one yt-dlp download method quietly. Returns the file path, or None after printing why it failed."""
+    log = _ErrorCollector()
+    opts = {**opts, "logger": log, "quiet": True, "no_warnings": True}
+    path = None
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            if info:
+                path = _final_filepath(ydl, info)
+    except Exception as e:
+        log.errors.append(str(e))
+
+    if path and _download_is_healthy(path):
+        print(f"   ✅ {label}")
+        return path
+    reason = _short_error(log.errors[-1]) if log.errors else "no usable file"
+    print(f"   ⚠️ {label} failed: {reason}")
+    _note_bot_check(log.errors, uses_cookies)
+    return None
+
+
+def _try_cli_download(vid_id: str, url: str) -> Optional[str]:
+    """Last resort: the yt-dlp command-line tool with the Android client (no cookies)."""
+    output_path = os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}.mp4")
+    time.sleep(3)
+    try:
+        result = subprocess.run([
+            "yt-dlp", "--no-warnings", "-4",
+            "--sleep-requests", "1.5", "--limit-rate", "3M",
+            "--format", "18/best[ext=mp4]/best",
+            "--output", output_path,
+            "--no-playlist",
+            "--extractor-args", "youtube:player_client=android",
+            url,
+        ], capture_output=True, text=True, timeout=300)
+    except Exception as e:
+        print(f"   ⚠️ Method 3: CLI failed: {str(e)[:90]}")
+        return None
+
+    if _download_is_healthy(output_path):
+        print("   ✅ Method 3: CLI")
+        return output_path
+    errors = [line for line in result.stderr.splitlines() if line.startswith("ERROR")]
+    reason = _short_error(errors[-1]) if errors else "no usable file"
+    print(f"   ⚠️ Method 3: CLI failed: {reason}")
+    _note_bot_check(errors, uses_cookies=False)
+    return None
+
+
 def fetch_video_material_by_search(
         search_queries,
         max_videos: int = 1,
@@ -451,6 +543,7 @@ def fetch_video_material_by_search(
                 "playlistend": max(SEARCH_RESULTS, max_videos * 5),
                 "ignoreerrors": True,
                 "extractor_args": {"youtube": {"search_filter": YT_FILTER}},
+                "source_address": "0.0.0.0",
             }
 
             with yt_dlp.YoutubeDL(search_opts) as ydl:
@@ -516,9 +609,14 @@ def fetch_video_material_by_search(
 
     paths = []
 
+    tries = 0
     for e in filtered_entries:
         if len(paths) >= max_videos:
             break
+        if tries >= MAX_DOWNLOAD_TRIES:
+            print(f"   ⏭️ Tried {tries} results for this query, moving on")
+            break
+        tries += 1
         vid_id = e.get("id")
         title = _safe_title(e.get("title", "untitled"))
         webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
@@ -527,91 +625,27 @@ def fetch_video_material_by_search(
         print(f"\n⬇️  Downloading: {title}")
         print(f"   URL: {webpage_url}")
 
-        download_success = False
         filepath = None
 
         # Cookie-less first; cookies only help with age-restricted videos.
         for use_cookies in (False, True):
-            if download_success:
-                break
-            try:
-                label = "with cookies" if use_cookies else "no cookies"
-                print(f"   🎞️ Method 1: HD streams up to {MAX_HEIGHT}p ({label})...")
-                opts = _make_opts_hd(skip_download=False, use_cookies=use_cookies)
+            if filepath or (not use_cookies and _no_cookie_blocked):
+                continue
+            label = "with cookies" if use_cookies else "no cookies"
+            filepath = _try_download(f"Method 1: HD up to {MAX_HEIGHT}p ({label})",
+                                     _make_opts_hd(skip_download=False, use_cookies=use_cookies),
+                                     webpage_url, uses_cookies=use_cookies)
 
-                with yt_dlp.YoutubeDL(opts) as ydl:
-                    info = ydl.extract_info(webpage_url, download=True)
-                    if not info:
-                        raise RuntimeError("no downloadable formats")
-                    filepath = _final_filepath(ydl, info)
+        if not filepath and not _no_cookie_blocked:
+            time.sleep(3)
+            filepath = _try_download("Method 2: no cookies (720p)",
+                                     _make_opts_no_cookies(skip_download=False),
+                                     webpage_url, uses_cookies=False)
 
-                    if _download_is_healthy(filepath):
-                        download_success = True
-                        print(f"   ✅ Method 1 succeeded!")
+        if not filepath and not _no_cookie_blocked:
+            filepath = _try_cli_download(vid_id, webpage_url)
 
-            except Exception as e0:
-                print(f"   ⚠️ Method 1 failed: {str(e0)[:100]}")
-
-        if not download_success:
-            try:
-                print("   📱 Method 2: Android client (360p)...")
-                opts = _make_opts_android(skip_download=False)
-
-                with yt_dlp.YoutubeDL(opts) as ydl:
-                    info = ydl.extract_info(webpage_url, download=True)
-                    filepath = _final_filepath(ydl, info)
-
-                    if _download_is_healthy(filepath):
-                        download_success = True
-                        print(f"   ✅ Method 2 succeeded!")
-
-            except Exception as e1:
-                print(f"   ⚠️ Method 2 failed: {str(e1)[:100]}")
-
-        if not download_success:
-            try:
-                print("   🔓 Method 3: No cookies...")
-                time.sleep(3)
-                opts = _make_opts_no_cookies(skip_download=False)
-
-                with yt_dlp.YoutubeDL(opts) as ydl:
-                    info = ydl.extract_info(webpage_url, download=True)
-                    filepath = _final_filepath(ydl, info)
-
-                    if _download_is_healthy(filepath):
-                        download_success = True
-                        print(f"   ✅ Method 3 succeeded!")
-
-            except Exception as e2:
-                print(f"   ⚠️ Method 3 failed: {str(e2)[:100]}")
-
-        if not download_success:
-            try:
-                print("   🖥️ Method 4: CLI fallback...")
-                time.sleep(3)
-                output_path = os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}.mp4")
-
-                result = subprocess.run([
-                    "yt-dlp",
-                    "--no-warnings",
-                    "--format", "18/best[ext=mp4]/best",
-                    "--output", output_path,
-                    "--no-playlist",
-                    "--extractor-args", "youtube:player_client=android",
-                    webpage_url
-                ], capture_output=True, text=True, timeout=300)
-
-                if _download_is_healthy(output_path):
-                    filepath = output_path
-                    download_success = True
-                    print(f"   ✅ Method 4 succeeded!")
-                else:
-                    print(f"   ⚠️ Method 4: File not created or too small")
-                    if result.returncode != 0 and result.stderr:
-                        print(f"   yt-dlp error: {result.stderr[:200]}")
-
-            except Exception as e3:
-                print(f"   ⚠️ Method 4 failed: {str(e3)[:100]}")
+        download_success = filepath is not None
 
         # Check result
         if download_success and filepath and os.path.exists(filepath):

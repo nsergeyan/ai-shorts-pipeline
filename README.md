@@ -23,7 +23,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
 - **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
-- **Smart music sourcing** — The prompt system generates both a `music_query` (YouTube search for an official OST/instrumental) and a `music_prompt` (ElevenLabs generation spec). The pipeline tries YouTube first; if Gemini approves the track (no lyrics, topic-relevant, voice-compatible) it uses it for free. If the track is rejected or no query is provided, ElevenLabs composes a custom 90-second instrumental instead
+- **Smart music sourcing** - The prompt system generates `music_queries` (up to 3 YouTube searches for an official OST/instrumental, best first; a single `music_query` also works) and a `music_prompt` (ElevenLabs generation spec). The pipeline tries the YouTube searches in order; the first track Gemini approves (no lyrics, topic-relevant, voice-compatible) is used for free. Only if every query fails does ElevenLabs compose a custom 90-second instrumental
 - **Remotion rendering** — Video is composed and rendered in React/TypeScript via Remotion (Chrome Headless Shell). Each frame is pixel-accurate, fully programmable, and GPU-accelerated
 - **Smart per-shot layout** - Gemini tags every shot it picks as `full` or `framed`. Steady close-ups of one subject are cropped to fill the whole 9:16 screen around the subject (`focus_x`); wide shots stay framed (full picture in the middle, blurred copy above and below) so nobody gets cut off. ffmpeg checks each clip for hard cuts and keeps full screen only until the first one, then switches to framed. Anything unclear falls back to framed, so the worst case is the classic look. Subtitles drop lower during full-screen shots so they never cover faces
 - **Narration graphic cards** - Remotion draws cards in the lower part of the screen that show what the voice is saying: `stat` (a number counting up), `versus` (two values with bars), `list` (items popping in) and `quote` (revealed word by word). Gemini places them on exact words across the narration; the code drops any card whose number isn't actually spoken, keeps the first 3 seconds clean, spaces cards at least 6 seconds apart and ends them before the follow button
@@ -37,7 +37,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 - **Audio-driven punch SFX** — Script authors mark 1–3 high-impact pivot words with `*WORD!*` markers (e.g. `*BUT!*`, `*WAIT!*`). Markers are stripped before TTS so ElevenLabs receives clean text; after Whisper transcription the marked words are matched to their timestamps. At render time a random impact SFX fires at each matched moment via Remotion `<Sequence><Audio>`
 - **Controlled pacing** - Narration sentences are merged into groups of at least 6 seconds (`MIN_SEGMENT_DURATION`) before scene detection, with a hard cap of 5 clips per video (`MAX_CLIPS`), so a 30-second video gets about 4 to 5 cuts. Individual clips have a 3-second floor so no clip is shorter than a single cut
 - **FFmpeg chroma key CTA** - Green screen call-to-action video is keyed out via FFmpeg `chromakey` filter and composited over the final 4.6 seconds of the video (the 8-second clip with its static middle removed, so the full animation still plays)
-- **Ranked 1080p YouTube download** - 15 search results are scored by title (query match, commentary/reaction words penalised, "official"/"4K" boosted) and views before anything is downloaded. Downloads try HD streams up to 1080p first, then three fallbacks (Android client, no-cookies, CLI)
+- **Ranked 1080p YouTube download** - 15 search results are scored by title (query match, commentary/reaction words penalised, "official"/"4K" boosted) and views before anything is downloaded. Downloads try HD streams up to 1080p first (without cookies, then with cookies via the `tv`/`web_safari`/`mweb` clients), then a no-cookie 720p method and the CLI. All requests go over IPv4 with pauses and a 3 MB/s cap, at most 3 results are tried per query, and the no-cookie methods are switched off for the rest of the run once YouTube shows its bot check
 - **Automatic thumbnail generation** — Alongside the video, the pipeline produces a matching 1080×1920 thumbnail image. Gemini reuses the footage it already uploaded for scene detection to pick the single most scroll-stopping frame (with crop-safety and intro/outro/watermark bans), then writes a short comic-style hook split into 1–3 lines, each colored white, yellow, or red for emphasis. FFmpeg extracts the chosen frame and Remotion renders the final PNG with a bold display font. This is a deterministic composite (real frame + styled text), not a generative image model — so it costs nothing extra and never hallucinates the subject. Output lands in `data/thumbnails/`, named to match the final video
 - **Multi-language support** — English, Russian, and Spanish voice generation with language-specific ElevenLabs model settings
 
@@ -48,10 +48,10 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 | Layer | Tool |
 |---|---|
 | Script generation | Structured prompt → Google Gemini / Claude |
-| Video sourcing | `yt-dlp` with Android client + fallbacks |
+| Video sourcing | `yt-dlp` (HD streams, browser cookies via the `tv`/`web_safari`/`mweb` clients, JS challenge solver) + fallbacks |
 | Video evaluation & scene detection | Google Gemini 2.5 Flash (multimodal) |
 | Voice synthesis | ElevenLabs `eleven_v3` (`text_to_dialogue`) for English; `eleven_multilingual_v2` for RU/ES |
-| Music | YouTube (yt-dlp audio-only) evaluated by Gemini, with ElevenLabs Generative Music as fallback |
+| Music | YouTube (yt-dlp audio-only, same cookie setup as video) evaluated by Gemini, with ElevenLabs Generative Music as fallback |
 | Audio transcription | OpenAI Whisper `large-v3` |
 | Video rendering | Remotion 4.0 (React/TypeScript, Chrome Headless Shell) |
 | CTA compositing | FFmpeg `chromakey` + `overlay` filter |
@@ -65,7 +65,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit exactly 90–100 words. The output is a JSON object consumed directly by the pipeline.
 
 ### 2. Video Sourcing & Evaluation
-`fetch_video_material_by_search` queries YouTube with up to six queries and filters out livestreams, Shorts, and videos outside the 1 to 120 minute window. The remaining results are ranked by title and views (reaction, review and podcast uploads sink to the bottom) and downloaded best-first: HD streams up to 1080p, then three fallback methods. Each download is trimmed to 5 minutes and gets a `.meta.json` sidecar with the original length, so the "skip the outro" rule is only applied to videos that really end on one. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
+`fetch_video_material_by_search` queries YouTube with up to six queries and filters out livestreams, Shorts, and videos outside the 1 to 120 minute window. The remaining results are ranked by title and views (reaction, review and podcast uploads sink to the bottom) and downloaded best-first: HD streams up to 1080p, then two fallback methods (at most 3 results per query). Each download is trimmed to 5 minutes and gets a `.meta.json` sidecar with the original length, so the "skip the outro" rule is only applied to videos that really end on one. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
 
 Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. The evaluator checks for the character or show by name regardless of their specific state (e.g. normal form, abstracted form, different costume all count). Only a `post` decision passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
 
@@ -82,7 +82,7 @@ In the same call Gemini also returns:
 Before trimming, `_snap_to_shot_cut()` moves each start onto a nearby hard cut, and `_detect_crop()` removes baked-in black bars.
 
 ### 5. Music
-The pipeline resolves music in two stages. First it checks for a `music_query` field in the script JSON. If present, yt-dlp searches YouTube and downloads the first result as audio-only MP3. That track is uploaded to Gemini, which scores it on three criteria: no vocals/lyrics, topic relevance (≥7/10), and voice compatibility (≥6/10). If all three pass, the track is used as-is — free. If the track is rejected, the download fails, or no query was provided, ElevenLabs Generative Music composes a custom 90-second instrumental from the `music_prompt` field, which is written per script by the prompt system specifying genre, tempo, instruments, and emotional arc.
+The pipeline resolves music in two stages. First it goes through the `music_queries` list from the script JSON (up to 3, or a single `music_query`). For each one, yt-dlp searches YouTube and downloads the first result as audio-only MP3, using the same anti-bot setup as the video downloader (no cookies first, then browser cookies; straight to cookies once the run has hit YouTube's bot check). That track is uploaded to Gemini, which scores it on three criteria: no vocals/lyrics, topic relevance (≥7/10), and voice compatibility (≥6/10). If all three pass, the track is used as-is, for free. If every query is rejected or fails to download, or none was provided, ElevenLabs Generative Music composes a custom 90-second instrumental from the `music_prompt` field, which is written per script by the prompt system specifying genre, tempo, instruments, and emotional arc.
 
 ### 6. Video Rendering (Remotion)
 `merge_audio_video` in `modules/video_editor.py` orchestrates the render:
@@ -178,6 +178,9 @@ YOutuber/
 # Python dependencies
 pip install -r requirements.txt
 
+# Latest yt-dlp with its JS challenge solver (yt-dlp-ejs); YouTube breaks older builds
+pip install -U "yt-dlp[default]"
+
 # Remotion
 cd remotion && npm install
 ```
@@ -189,11 +192,13 @@ ELEVENLABS_API_KEY=
 GEMINI_API_KEYS=key1,key2
 ```
 
+**YouTube cookies:** when YouTube shows its "confirm you're not a bot" check, downloads fall back to the cookies of a Chrome profile signed into YouTube (`BROWSER` / `PROFILE` in `modules/video_material_fetcher.py`). Use a profile with a spare Google account, not the one that owns your channel, so automated downloads can never put the channel account at risk.
+
 ---
 
 ## Usage
 
-Paste a completed JSON script object into `MANUAL_DATA` in `main.py`, add `"channel": "sports"` (or `"anime"`) to pick the channel look, then run:
+Paste a completed JSON script object into `MANUAL_DATA` in `main.py` and run it. The prompt templates already output a `"channel"` field (`"sports"` from `sportsPrompt`, `"anime"` from the others), which picks the channel look; add or change it by hand if needed:
 
 ```bash
 python main.py
