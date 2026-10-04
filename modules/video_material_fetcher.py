@@ -1,3 +1,5 @@
+import json
+import math
 import os
 import random
 import re
@@ -19,6 +21,29 @@ YT_FILTER = "EgIYAw%3D%3D"
 # land near 0.5 KB/s, so 10 KB/s separates them with a wide margin on both sides.
 MIN_BYTES_PER_SEC = 10_000
 MIN_DOWNLOAD_BYTES = 100_000
+
+# Only this much of each source is kept after download.
+MAX_SOURCE_SECONDS = 300
+
+# 720p is enough: the foreground spans 1080px wide, and 1280x720 already covers that.
+# 1080p would roughly double download and Gemini upload size for no visible gain.
+MAX_HEIGHT = 720
+
+# How many search results to look at before picking which one to download.
+SEARCH_RESULTS = 15
+
+# Title words that usually mean a third party's commentary sits on top of the footage.
+# Penalised rather than dropped, and ignored when the query itself contains the word.
+PENALTY_WORDS = (
+    "reaction", "reacts", "react", "reacting", "podcast", "review", "tier list",
+    "ranking", "explained", "explaining", "breakdown", "analysis", "theory",
+    "theories", "commentary", "first time", "top 10", "top 5", "iceberg", "lore",
+)
+# Title words that usually mean clean, original footage.
+BONUS_WORDS = (
+    "official", "4k", "1080p", "hd", "remastered", "creditless", "no commentary",
+    "full scene", "highlights", "trailer", "cutscene", "gameplay", "footage", "raw",
+)
 
 
 def _get_yt_dlp_version():
@@ -66,6 +91,99 @@ def _make_opts(skip_download: bool, use_range: bool = False):
         opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
 
     return opts
+
+
+def _make_opts_hd(skip_download: bool, use_cookies: bool = False):
+    """yt-dlp options for separate video + audio streams up to MAX_HEIGHT.
+
+    YouTube only serves 360p (format 18) as a single progressive file, so anything
+    sharper needs DASH streams merged by ffmpeg. Player clients are left to
+    yt-dlp's defaults, which it keeps updated as YouTube changes.
+    The whole video is downloaded and trimmed afterwards: a partial download
+    (download_ranges) goes through ffmpeg, which YouTube throttles to ~100 KB/s,
+    about 12x slower than downloading the full file.
+    Cookies are off by default: with browser cookies YouTube currently serves only
+    storyboard images, while the cookie-less default clients get every resolution.
+    """
+    opts = {
+        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
+        "quiet": False,
+        "skip_download": skip_download,
+        "playlistend": 1,
+        "restrictfilenames": True,
+        "ignoreerrors": True,
+        "overwrites": True,
+        "nopart": True,
+
+        # Prefer H.264 (plays everywhere), then any codec, then a single file.
+        "format": (
+            f"bestvideo[height<={MAX_HEIGHT}][vcodec^=avc1]+bestaudio[ext=m4a]"
+            f"/bestvideo[height<={MAX_HEIGHT}]+bestaudio"
+            f"/best[height<={MAX_HEIGHT}]"
+        ),
+        "merge_output_format": "mp4",
+        "js_runtimes": {"node": {}},
+
+        "sleep_interval": 2,
+        "max_sleep_interval": 5,
+    }
+
+    if use_cookies:
+        if COOKIEFILE and os.path.exists(COOKIEFILE):
+            opts["cookiefile"] = COOKIEFILE
+        else:
+            opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
+
+    return opts
+
+
+def _has_word(text: str, word: str) -> bool:
+    return re.search(rf"\b{re.escape(word)}\b", text) is not None
+
+
+def _score_entry(entry: dict, query: str, position: int) -> float:
+    """Score a search result from its title and views, before anything is downloaded.
+
+    Downloading and Gemini-checking a video is slow and costs quota, so obvious
+    commentary/reaction uploads are pushed down here instead of being rejected later.
+    """
+    title = (entry.get("title") or "").lower()
+    query = query.lower()
+
+    query_tokens = [t for t in re.findall(r"\w+", query) if len(t) > 2]
+    overlap = sum(_has_word(title, t) for t in query_tokens) / max(len(query_tokens), 1)
+    score = overlap * 4
+
+    score -= 5 * sum(_has_word(title, w) for w in PENALTY_WORDS if not _has_word(query, w))
+    score += min(sum(_has_word(title, w) for w in BONUS_WORDS), 2)
+
+    views = entry.get("view_count") or 0
+    score += math.log10(views + 1) * 0.3
+
+    # YouTube's own relevance order still counts as a tiebreaker.
+    score -= 0.15 * position
+    return score
+
+
+def _rank_entries(entries: list, query: str) -> list:
+    scored = sorted(
+        ((_score_entry(e, query, i), e) for i, e in enumerate(entries)),
+        key=lambda pair: pair[0], reverse=True,
+    )
+    print("   📊 Ranked candidates:")
+    for score, e in scored[:5]:
+        print(f"      {score:5.1f}  {e.get('title', 'Unknown')[:70]}")
+    return [e for _, e in scored]
+
+
+def _write_source_meta(filepath: str, title: str, source_duration) -> None:
+    """Save sidecars next to the download: the title, and the full length of the
+    original upload so later steps know whether the file was cut short."""
+    base = os.path.splitext(filepath)[0]
+    with open(base + ".title.txt", "w") as tf:
+        tf.write(title)
+    with open(base + ".meta.json", "w") as mf:
+        json.dump({"source_duration": source_duration}, mf)
 
 
 def _make_opts_android(skip_download: bool):
@@ -330,13 +448,13 @@ def fetch_video_material_by_search(
                 "quiet": False,
                 "skip_download": True,
                 "extract_flat": "in_playlist",
-                "playlistend": max_videos * 5,
+                "playlistend": max(SEARCH_RESULTS, max_videos * 5),
                 "ignoreerrors": True,
                 "extractor_args": {"youtube": {"search_filter": YT_FILTER}},
             }
 
             with yt_dlp.YoutubeDL(search_opts) as ydl:
-                info = ydl.extract_info(f"ytsearch{max_videos * 5}:{query}", download=False)
+                info = ydl.extract_info(f"ytsearch{max(SEARCH_RESULTS, max_videos * 5)}:{query}", download=False)
         except Exception as e:
             print(f"❌ Search failed: {e}")
             time.sleep(3)
@@ -377,7 +495,9 @@ def fetch_video_material_by_search(
             valid_entries.append(entry)
             print(f"✓ Found: {entry.get('title', 'Unknown')[:60]}... ({duration}s)")
 
-        filtered_entries = valid_entries[:max_videos]
+        # Keep every valid result in ranked order: if the best one fails to
+        # download, the next one is tried instead of giving up on the query.
+        filtered_entries = _rank_entries(valid_entries, query) if valid_entries else []
 
         if filtered_entries:
             print(f"✅ Found {len(filtered_entries)} suitable video(s).")
@@ -397,6 +517,8 @@ def fetch_video_material_by_search(
     paths = []
 
     for e in filtered_entries:
+        if len(paths) >= max_videos:
+            break
         vid_id = e.get("id")
         title = _safe_title(e.get("title", "untitled"))
         webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
@@ -408,27 +530,32 @@ def fetch_video_material_by_search(
         download_success = False
         filepath = None
 
-        if not download_success:
+        # Cookie-less first; cookies only help with age-restricted videos.
+        for use_cookies in (False, True):
+            if download_success:
+                break
             try:
-                print("   📱 Method 1: Android client...")
-                opts = _make_opts_android(skip_download=False)
+                label = "with cookies" if use_cookies else "no cookies"
+                print(f"   🎞️ Method 1: HD streams up to {MAX_HEIGHT}p ({label})...")
+                opts = _make_opts_hd(skip_download=False, use_cookies=use_cookies)
 
                 with yt_dlp.YoutubeDL(opts) as ydl:
                     info = ydl.extract_info(webpage_url, download=True)
+                    if not info:
+                        raise RuntimeError("no downloadable formats")
                     filepath = _final_filepath(ydl, info)
 
                     if _download_is_healthy(filepath):
                         download_success = True
                         print(f"   ✅ Method 1 succeeded!")
 
-            except Exception as e1:
-                print(f"   ⚠️ Method 1 failed: {str(e1)[:100]}")
+            except Exception as e0:
+                print(f"   ⚠️ Method 1 failed: {str(e0)[:100]}")
 
         if not download_success:
             try:
-                print("   🔓 Method 2: No cookies...")
-                time.sleep(3)
-                opts = _make_opts_no_cookies(skip_download=False)
+                print("   📱 Method 2: Android client (360p)...")
+                opts = _make_opts_android(skip_download=False)
 
                 with yt_dlp.YoutubeDL(opts) as ydl:
                     info = ydl.extract_info(webpage_url, download=True)
@@ -438,12 +565,29 @@ def fetch_video_material_by_search(
                         download_success = True
                         print(f"   ✅ Method 2 succeeded!")
 
-            except Exception as e2:
-                print(f"   ⚠️ Method 2 failed: {str(e2)[:100]}")
+            except Exception as e1:
+                print(f"   ⚠️ Method 2 failed: {str(e1)[:100]}")
 
         if not download_success:
             try:
-                print("   🖥️ Method 3: CLI fallback...")
+                print("   🔓 Method 3: No cookies...")
+                time.sleep(3)
+                opts = _make_opts_no_cookies(skip_download=False)
+
+                with yt_dlp.YoutubeDL(opts) as ydl:
+                    info = ydl.extract_info(webpage_url, download=True)
+                    filepath = _final_filepath(ydl, info)
+
+                    if _download_is_healthy(filepath):
+                        download_success = True
+                        print(f"   ✅ Method 3 succeeded!")
+
+            except Exception as e2:
+                print(f"   ⚠️ Method 3 failed: {str(e2)[:100]}")
+
+        if not download_success:
+            try:
+                print("   🖥️ Method 4: CLI fallback...")
                 time.sleep(3)
                 output_path = os.path.join(VIDEO_MATERIAL_DIR, f"{vid_id}.mp4")
 
@@ -460,25 +604,23 @@ def fetch_video_material_by_search(
                 if _download_is_healthy(output_path):
                     filepath = output_path
                     download_success = True
-                    print(f"   ✅ Method 3 succeeded!")
+                    print(f"   ✅ Method 4 succeeded!")
                 else:
-                    print(f"   ⚠️ Method 3: File not created or too small")
+                    print(f"   ⚠️ Method 4: File not created or too small")
                     if result.returncode != 0 and result.stderr:
                         print(f"   yt-dlp error: {result.stderr[:200]}")
 
             except Exception as e3:
-                print(f"   ⚠️ Method 3 failed: {str(e3)[:100]}")
+                print(f"   ⚠️ Method 4 failed: {str(e3)[:100]}")
 
         # Check result
         if download_success and filepath and os.path.exists(filepath):
             file_size = os.path.getsize(filepath) / (1024 * 1024)
             print(f"   📁 Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
 
-            filepath = _trim_video_after_download(filepath, max_duration=300)
+            filepath = _trim_video_after_download(filepath, max_duration=MAX_SOURCE_SECONDS)
             paths.append(filepath)
-            title_file = os.path.splitext(filepath)[0] + ".title.txt"
-            with open(title_file, "w") as tf:
-                tf.write(title)
+            _write_source_meta(filepath, title, e.get("duration"))
         else:
             print(f"   ❌ All methods failed for: {vid_id}")
 

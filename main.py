@@ -103,29 +103,29 @@ THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Attack on Titan",
-"specific_subject": "Gabi Braun's character design",
-"title": "Gabi Braun is actually a female Eren in Attack on Titan",
+"topic": "SCP Foundation",
+"specific_subject": "SCP-096 Four Pixels",
+"title": "The disturbing lore behind four pixels in SCP Foundation",
 "youtube_queries": [
-  "gabi braun eren jaeger parallel scene",
-  "gabi braun goes hard",
-  "gabi braun edit",
-  "attack on titan final season gabi",
-  "gabi braun english dub",
-  "attack on titan season four official clip"
+"SCP 096 four pixels scene",
+"SCP 096 incident goes hard",
+"SCP 096 shy guy edit",
+"SCP 096 short film scene",
+"SCP 096 four pixels reaction",
+"SCP containment breach 096 clip"
 ],
-"scene_query": "A black and white creator sketch of a young girl with messy hair and intense angry eyes, shown side by side next to an official anime shot of a young female soldier in a brown uniform looking completely identical.",
+"scene_query": "A snow-covered mountain landscape photograph with a tiny, faint, off-color dot circled in red in the distant background, followed by a pale, extremely tall and emaciated hairless humanoid monster screaming and running fast.",
 "footage_source": "stills_and_broll",
 "music_mood": "curious",
 "music_queries": [
-  "attack on titan memory lane instrumental",
-  "attack on titan ashes on the fire instrumental",
-  "lofi mysterious tension background music no copyright"
+"SCP 096 theme instrumental",
+"SCP Containment Breach OST",
+"dark ambient tension background music no lyrics"
 ],
-"music_prompt": "lo-fi curiosity bed, 85 BPM, light marimba and mysterious synth pads, a quiet tension building to a surprising reveal, short-form video background, no lyrics, exclude: heavy metal, goofy comedy",
+"music_prompt": "dark atmospheric cinematic, 90 BPM, deep synth bass and subtle ticking clock, quiet tension building to a sudden surprising reveal, short-form video background, no lyrics, exclude: upbeat drums, bright melodies",
 "voice_name": "animatoryoung",
-"spoken_word_count": 95,
-"script": "[excited] Gabi Braun is actually a female version of Eren Jaeger, and the creator proved it. [slows down] Fans always noticed that these two characters act very similar. They are angry and want to destroy their enemies. [loudly] But the connection is *LITERALLY!* drawn into her design. [curious] Years before Gabi appeared, the author drew a sketch showing what Eren would look like as a girl. When he finally created Gabi, he just reused that exact sketch. Put them side by side, and you will see they are the *EXACT!* same person. [calm] Did you notice this mirror trick while watching?"
+"spoken_word_count": 94,
+"script": "[curious] Everyone knows SCP zero nine six will hunt you down if you see its face... but did you know its deadliest rampage started over just four *PIXELS!* [calm] A mountaineer took a simple photograph of a snowy landscape, having no idea the Shy Guy was miles away in the background. For years, the picture sat harmlessly on his wall. [hesitates] Then, he noticed a tiny discoloration and looked closer. [gasps] It was exactly four pixels of the monster's *FACE!* [rapid-fire] Those microscopic dots were enough to trigger an unstoppable containment breach. [suspicious tone] Would you have noticed those four pixels?"
 }
 
 def _strip_punch_markers(script: str):
@@ -168,12 +168,14 @@ def trim_video_to_end(
     output_file,
     ai_start,
     prepad=0.02,
-    max_duration=61.0
+    max_duration=61.0,
+    crop=None,
 ):
     """
     Trims video starting a bit before AI-found timestamp and goes up to max_duration seconds,
     but not beyond the actual video length.
     Prevents freezing or looping.
+    `crop` is an ffmpeg crop string from _detect_crop() that removes baked-in black bars.
     """
 
     # get video duration
@@ -209,14 +211,134 @@ def trim_video_to_end(
         "-ss", str(clip_start),
         "-i", input_file,
         "-t", str(clip_duration),
+        *(["-vf", f"crop={crop}"] if crop else []),
         "-c:v", "libx264",
         "-preset", "veryfast",
+        # Remotion re-encodes this clip again, so keep this pass close to lossless.
+        "-crf", "18",
         "-c:a", "aac",
         "-movflags", "+faststart",
         output_file
     ], check=True)
 
     print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
+
+
+def _read_source_meta(video_path):
+    """Load the .meta.json sidecar the fetcher writes next to each download ({} if missing)."""
+    try:
+        with open(os.path.splitext(video_path)[0] + ".meta.json") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _remove_sidecars(video_path):
+    base = os.path.splitext(video_path)[0]
+    for ext in (".title.txt", ".meta.json"):
+        if os.path.exists(base + ext):
+            try:
+                os.remove(base + ext)
+            except Exception:
+                pass
+
+
+SCENE_CUT_THRESHOLD = 0.3   # ffmpeg scene-change score (0-1) that counts as a hard cut
+
+
+def _find_shot_cuts(video_path, start, end):
+    """Return timestamps of hard cuts between start and end using ffmpeg's scene-change score."""
+    start = max(start, 0.0)
+    result = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-ss", f"{start:.3f}", "-i", video_path, "-t", f"{end - start:.3f}",
+         "-an", "-vf", f"scale=320:-2,select='gt(scene,{SCENE_CUT_THRESHOLD})',showinfo",
+         "-f", "null", "-"],
+        capture_output=True, text=True, timeout=60,
+    )
+    # With -ss before -i, showinfo times are relative to the seek point.
+    return [start + float(t) for t in re.findall(r"pts_time:([\d.]+)", result.stderr)]
+
+
+def _snap_to_shot_cut(video_path, start, max_back=1.5, max_forward=0.7):
+    """Move a clip start onto a nearby hard cut so the clip opens on a clean shot.
+
+    Gemini sees video at about 1 frame per second, so its timestamps can land a few
+    frames before a cut, which shows up as a flash of the previous shot.
+    - A cut just AFTER start means we are in the tail of the previous shot: jump forward to it.
+    - Otherwise a cut just BEFORE start is where this shot begins: back up to it.
+    """
+    try:
+        cuts = _find_shot_cuts(video_path, start - max_back, start + max_forward)
+    except Exception as e:
+        print(f"⚠️ Shot-cut detection failed, keeping {start:.2f}s: {e}")
+        return start
+
+    after = [c for c in cuts if start < c <= start + max_forward]
+    before = [c for c in cuts if c <= start]
+    if after:
+        snapped = after[0]
+    elif before:
+        snapped = before[-1]
+    else:
+        return start
+
+    snapped = round(snapped + 0.02, 2)   # just past the cut so frame one is the new shot
+    print(f"🎯 Snapped clip start {start:.2f}s → {snapped:.2f}s (shot cut)")
+    return snapped
+
+
+def _detect_crop(video_path):
+    """Find baked-in black bars (letterbox / pillarbox) and return an ffmpeg crop string, or None.
+
+    Samples several points and keeps the union of what cropdetect reports, so one
+    dark scene can't trick it into cutting into the real picture. A side is only
+    cropped when the bars are roughly symmetric, which real bars always are.
+    """
+    try:
+        info = ffmpeg.probe(video_path)
+        vs = next(s for s in info["streams"] if s["codec_type"] == "video")
+        width, height = int(vs["width"]), int(vs["height"])
+        duration = float(info["format"]["duration"])
+    except Exception:
+        return None
+
+    boxes = []
+    for frac in (0.2, 0.4, 0.6, 0.8):
+        try:
+            result = subprocess.run(
+                ["ffmpeg", "-hide_banner", "-ss", f"{duration * frac:.2f}", "-i", video_path, "-t", "2",
+                 "-an", "-vf", "cropdetect=limit=24:round=2:reset=0", "-f", "null", "-"],
+                capture_output=True, text=True, timeout=60,
+            )
+        except Exception:
+            continue
+        found = re.findall(r"crop=(\d+):(\d+):(\d+):(\d+)", result.stderr)
+        if not found:
+            continue
+        w, h, x, y = map(int, found[-1])
+        if w * h >= 0.3 * width * height:   # a nearly black sample (fade) says nothing
+            boxes.append((x, y, x + w, y + h))
+
+    if not boxes:
+        return None
+
+    x1, y1 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    x2, y2 = max(b[2] for b in boxes), max(b[3] for b in boxes)
+
+    left, right, top, bottom = x1, width - x2, y1, height - y2
+    if abs(left - right) > 0.04 * width or left + right < 0.03 * width:
+        x1, x2 = 0, width
+    if abs(top - bottom) > 0.04 * height or top + bottom < 0.03 * height:
+        y1, y2 = 0, height
+
+    if (x1, y1, x2, y2) == (0, 0, width, height):
+        return None
+
+    # H.264 needs even dimensions.
+    cw, ch = (x2 - x1) // 2 * 2, (y2 - y1) // 2 * 2
+    crop = f"{cw}:{ch}:{x1}:{y1}"
+    print(f"✂️ Black bars found in {os.path.basename(video_path)}: cropping {width}x{height} → {cw}x{ch}")
+    return crop
 
 def evaluate_music_with_genai(music_path, script_text):
     """Upload generated music to Gemini and score it for mood, energy, and voice compatibility."""
@@ -834,8 +956,15 @@ def find_scenes_with_gemini(video_paths, script_segments):
         else:
             video_titles.append(os.path.basename(vp))
 
+    # A file the fetcher cut short (MAX_SOURCE_SECONDS) ends mid-video, not on an outro,
+    # so its final 30 seconds are real footage and should stay usable.
+    has_outro = []
+    for vp, dur in zip(video_paths, video_durations):
+        source_duration = _read_source_meta(vp).get("source_duration")
+        has_outro.append(not (source_duration and source_duration > dur + 5))
+
     videos_info = "\n".join(
-        f"  Video {i} — \"{video_titles[i]}\" (duration: {dur:.1f}s)"
+        f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, ends with outro: {'yes' if has_outro[i] else 'no, cut from a longer video'})"
         for i, dur in enumerate(video_durations)
     )
 
@@ -918,7 +1047,7 @@ HARD BANS — never pick a timestamp that shows any of:
 - Static text screens, title cards, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
 - The first 10 seconds of any video (channel intros, animated logos, title cards)
-- The last 30 seconds of any video (outros, end screens, subscribe buttons, "thanks for watching" text)
+- The last 30 seconds of any video marked "ends with outro: yes" (outros, end screens, subscribe buttons, "thanks for watching" text). Videos marked "no" can be used right up to their end.
 - Score overlays, countdown timers, or match clocks visible in frame
 - Replay indicators ("REPLAY" / "INSTANT REPLAY" text on screen)
 - Fan-art or AMV frames with heavy lens flares, desaturated overlays, or color-burn effects that obscure the subject
@@ -1010,7 +1139,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             dur = video_durations[vi]
 
             lo = INTRO_BAN_SEC
-            hi = dur - OUTRO_BAN_SEC - 2.0
+            hi = dur - (OUTRO_BAN_SEC if has_outro[vi] else 0.0) - 2.0
             if hi < lo:
                 # Video too short to honor both bans — fall back to the old, looser bound.
                 lo, hi = 0.0, max(dur - 2.0, 0.0)
@@ -1237,12 +1366,7 @@ def run_manual_pipeline(data):
                     os.remove(path)
                 except Exception:
                     pass
-            title_file = os.path.splitext(path)[0] + ".title.txt"
-            if os.path.exists(title_file):
-                try:
-                    os.remove(title_file)
-                except Exception:
-                    pass
+            _remove_sidecars(path)
 
         if not approved_videos:
             print("❌ All queries failed. No suitable video found.")
@@ -1283,16 +1407,21 @@ def run_manual_pipeline(data):
 
             if len(scenes) < len(script_segments):
                 print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
+            crops = {v: _detect_crop(v) for v in valid_videos}
             for scene, segment in zip(scenes, script_segments):
                 vi = min(scene.get("video_index", 0), len(valid_videos) - 1)
                 source_video = valid_videos[vi]
+                # The hook must open on the action, so it may only back up a little.
+                start = _snap_to_shot_cut(source_video, scene["start"],
+                                          max_back=0.5 if scene["index"] == 0 else 1.5)
                 clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
                 success = trim_video_to_end(
                     input_file=source_video,
                     output_file=clip_path,
-                    ai_start=scene["start"],
+                    ai_start=start,
                     prepad=0.0,
                     max_duration=max(segment["duration"], MIN_CLIP_DURATION),
+                    crop=crops[source_video],
                 )
                 if success is not False and os.path.exists(clip_path):
                     clip_paths.append(clip_path)
@@ -1301,10 +1430,13 @@ def run_manual_pipeline(data):
             thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT)
             if thumb:
                 frame_path = os.path.join(DATA_DIR, f"thumb_frame_{uuid.uuid4().hex[:6]}.jpg")
+                thumb_video = valid_videos[thumb["video_index"]]
+                thumb_crop = crops.get(thumb_video)
                 try:
                     subprocess.run(
                         ["ffmpeg", "-y", "-ss", str(thumb["start"]),
-                         "-i", valid_videos[thumb["video_index"]],
+                         "-i", thumb_video,
+                         *(["-vf", f"crop={thumb_crop}"] if thumb_crop else []),
                          "-frames:v", "1", "-update", "1", "-q:v", "2", frame_path],
                         check=True, capture_output=True,
                     )
@@ -1323,7 +1455,9 @@ def run_manual_pipeline(data):
             scene = find_scene_with_gemini(fallback_video, data.get("scene_query"), SCRIPT_TEXT)
             if scene and not (scene["start"] == 0 and scene["end"] == 0):
                 clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
-                trim_video_to_end(fallback_video, clip_path, scene["start"], prepad=0.02, max_duration=61.0)
+                start = _snap_to_shot_cut(fallback_video, scene["start"], max_back=0.5)
+                trim_video_to_end(fallback_video, clip_path, start, prepad=0.02, max_duration=61.0,
+                                  crop=_detect_crop(fallback_video))
                 clip_paths = [clip_path]
             else:
                 clip_paths = [fallback_video]
@@ -1382,7 +1516,7 @@ def run_manual_pipeline(data):
             to_delete = {audio_path, music_path, thumb_frame_path} | set(approved_videos) | set(clip_paths)
             for path in approved_videos:
                 if path:
-                    to_delete.add(os.path.splitext(path)[0] + ".title.txt")
+                    _remove_sidecars(path)
             for path in to_delete:
                 if path and os.path.exists(path):
                     try:
