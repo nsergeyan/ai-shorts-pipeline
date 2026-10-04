@@ -25,9 +25,9 @@ MIN_DOWNLOAD_BYTES = 100_000
 # Only this much of each source is kept after download.
 MAX_SOURCE_SECONDS = 300
 
-# 720p is enough: the foreground spans 1080px wide, and 1280x720 already covers that.
-# 1080p would roughly double download and Gemini upload size for no visible gain.
-MAX_HEIGHT = 720
+# 1080p because close-ups can be cropped to fill the whole 9:16 screen (main.py
+# "full" layout), which scales the picture up about 2.7x. 720p looks soft there.
+MAX_HEIGHT = 1080
 
 # How many search results to look at before picking which one to download.
 SEARCH_RESULTS = 15

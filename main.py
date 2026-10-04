@@ -15,7 +15,7 @@ from sympy.parsing.sympy_parser import null
 
 subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
 
-from config import GEMINI_API_KEYS, DATA_DIR
+from config import GEMINI_API_KEYS, DATA_DIR, CHANNELS_DIR
 
 if not GEMINI_API_KEYS:
     raise RuntimeError("GEMINI_API_KEYS is not set. Add it to your .env file.")
@@ -100,33 +100,61 @@ MAX_MUSIC_QUERIES = 3              # how many free YouTube tracks to try before 
 EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
 THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
 THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
+GRAPHIC_TYPES = ("stat", "versus", "list", "quote")
+
+# Used when MANUAL_DATA has no "channel", and as the base each channels/<name>.json overrides.
+DEFAULT_CHANNEL = {
+    "voice_name": "animatoryoung",
+    "theme": {"accent": "#FFE000", "panel": "rgba(10, 10, 14, 0.82)", "text": "#FFFFFF"},
+    "frame_background": "blur",        # "blur" = blurred copy of the clip, "dark" = plain dark backdrop
+    "allow_full_layout": True,         # let Gemini crop close-ups to fill the whole screen
+    "graphic_types": list(GRAPHIC_TYPES),
+}
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "SCP Foundation",
-"specific_subject": "SCP-096 Four Pixels",
-"title": "The disturbing lore behind four pixels in SCP Foundation",
+"topic": "Jujutsu Kaisen",
+"specific_subject": "Maki Zenin grade four rank Zenin clan sabotage",
+"title": "Maki Zenin is stuck at the lowest sorcerer rank because her family sabotages her promotions in Jujutsu Kaisen",
 "youtube_queries": [
-"SCP 096 four pixels scene",
-"SCP 096 incident goes hard",
-"SCP 096 shy guy edit",
-"SCP 096 short film scene",
-"SCP 096 four pixels reaction",
-"SCP containment breach 096 clip"
+"Maki Zenin fighting scene",
+"Maki Zenin being a badass",
+"Maki Zenin edit",
+"Jujutsu Kaisen season 1 Maki fight",
+"Maki Zenin english dub",
+"Jujutsu Kaisen official trailer"
 ],
-"scene_query": "A snow-covered mountain landscape photograph with a tiny, faint, off-color dot circled in red in the distant background, followed by a pale, extremely tall and emaciated hairless humanoid monster screaming and running fast.",
-"footage_source": "stills_and_broll",
+"scene_query": "a high school girl with dark green hair in a ponytail, round glasses, and dark school uniform wielding a long red wooden spear against grotesque shadowy monsters in an urban alleyway, with dark traditional Japanese manor rooms showing elderly men in formal robes looking condescending",
+"footage_source": "official_or_press",
 "music_mood": "curious",
 "music_queries": [
-"SCP 096 theme instrumental",
-"SCP Containment Breach OST",
-"dark ambient tension background music no lyrics"
+"jujutsu kaisen maki theme instrumental",
+"jujutsu kaisen ost instrumental no lyrics",
+"curious dark hip hop instrumental background music"
 ],
-"music_prompt": "dark atmospheric cinematic, 90 BPM, deep synth bass and subtle ticking clock, quiet tension building to a sudden surprising reveal, short-form video background, no lyrics, exclude: upbeat drums, bright melodies",
+"music_prompt": "dark lo-fi beat, mysterious curiosity, eighty five BPM, heavy bassline, soft koto melody, snappy vinyl drum kit, subtle tension building towards a clever revelation, short-form video background, no lyrics, exclude: aggressive vocals, heavy distortion",
 "voice_name": "animatoryoung",
 "spoken_word_count": 94,
-"script": "[curious] Everyone knows SCP zero nine six will hunt you down if you see its face... but did you know its deadliest rampage started over just four *PIXELS!* [calm] A mountaineer took a simple photograph of a snowy landscape, having no idea the Shy Guy was miles away in the background. For years, the picture sat harmlessly on his wall. [hesitates] Then, he noticed a tiny discoloration and looked closer. [gasps] It was exactly four pixels of the monster's *FACE!* [rapid-fire] Those microscopic dots were enough to trigger an unstoppable containment breach. [suspicious tone] Would you have noticed those four pixels?"
+"script": "[curious] Maki Zenin stays at the lowest sorcerer rank because her own family sabo   tages her promotions in Jujutsu Kaisen. [hesitates] Officially she is stuck at grade four... BUT! her real combat power is easily grade two level. [annoyed] She slices through terrifying curses using cursed weapons... so why is her official rank so low? [sarcastic] The leaders of the Zenin clan intentionally reject every single promotion recommendation submitted for her. [deadpan] They hate her for having almost zero cursed energy... so they use political influence purely out of petty spite. [calm] Did you catch this detail on your first watch?"
 }
+
+def load_channel(name):
+    """Return DEFAULT_CHANNEL with channels/<name>.json layered on top (theme merged key by key)."""
+    channel = {**DEFAULT_CHANNEL, "theme": dict(DEFAULT_CHANNEL["theme"])}
+    if not name:
+        return channel
+    path = os.path.join(CHANNELS_DIR, f"{name}.json")
+    try:
+        with open(path) as f:
+            overrides = json.load(f)
+    except FileNotFoundError:
+        print(f"⚠️ No channel config at {path}, using defaults")
+        return channel
+    channel["theme"].update(overrides.pop("theme", {}))
+    channel.update(overrides)
+    print(f"📺 Channel: {name}")
+    return channel
+
 
 def _strip_punch_markers(script: str):
     """Strip *word* markers from script. Returns (clean_script, [word, ...]).
@@ -880,7 +908,148 @@ def merge_short_segments(segments, min_duration):
     return merged
 
 
-def find_scenes_with_gemini(video_paths, script_segments):
+def _graphic_prompt_rules(allowed):
+    """Prompt section describing the on-screen graphic cards Gemini may place across the narration."""
+    if not allowed:
+        return "GRAPHICS: always return \"graphics\": []."
+    shapes = {
+        "stat": '{"type": "stat", "segment_index": <n>, "anchor_word": "<word>", "value": "<number as digits, e.g. 52 or $1.2M or 40%>", "label": "<3-6 words saying what the number is>"}',
+        "versus": '{"type": "versus", "segment_index": <n>, "anchor_word": "<word>", "left": {"name": "<short>", "value": "<digits>"}, "right": {"name": "<short>", "value": "<digits>"}}',
+        "list": '{"type": "list", "segment_index": <n>, "anchor_word": "<word>", "items": ["<2-5 words>", "<2-5 words>", "... 2 to 4 items"]}',
+        "quote": '{"type": "quote", "segment_index": <n>, "anchor_word": "<word>", "text": "<the exact quoted words>", "author": "<who said it>"}',
+    }
+    lines = "\n".join(f"- {shapes[t]}" for t in allowed)
+    return f"""════════════════════════════════════
+STEP 6: ON-SCREEN GRAPHIC CARDS
+════════════════════════════════════
+A graphic card appears in the lower part of the screen for about 4 seconds, starting on the word that triggers it. Cards make the video feel produced, not reposted.
+Cards are NOT tied to clips: a segment can have zero, one or several cards. Go through the narration word by word and add a card wherever the text contains something worth showing:
+- a number or record → "stat"
+- two things compared with numbers → "versus"
+- several items, steps or reasons named in a row → "list"
+- someone's actual quoted words → "quote"
+Allowed shapes (use exactly these keys):
+{lines}
+RULES:
+- Every value, name, item and quote MUST come from THAT segment's text. Never add facts, never round or convert numbers into new ones. Write numbers as digits even if the text spells them out ("fifty-two" → "52").
+- `segment_index` = the segment whose text contains the anchor word. `anchor_word` = that exact word, where the card should appear (usually the number or the first item).
+- Spacing: aim for one card roughly every 6 seconds of narration (use the segment `start` times). None in the first 3 seconds, so the hook stays clean. Skip a spot rather than force a weak card.
+- Keep text short: labels up to 6 words, list items up to 5 words."""
+
+
+_NUMBER_WORDS = {
+    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8,
+    "nine": 9, "ten": 10, "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20, "thirty": 30,
+    "forty": 40, "fifty": 50, "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+}
+_SCALE_WORDS = {"hundred": 100, "thousand": 1_000, "million": 1_000_000, "billion": 1_000_000_000}
+
+
+def _numbers_in_text(text):
+    """All numbers mentioned in narration, whether written as digits or spelled out.
+
+    Scripts spell numbers out for TTS ("fifty-two", "three hundred"), so a digit
+    on screen has to be checked against the words. Returns a set of floats.
+    """
+    found = {float(d.replace(",", "")) for d in re.findall(r"\d[\d,]*(?:\.\d+)?", text)}
+    total, current, in_number = 0, 0, False
+    decimal_place = 0   # >0 after "point": each following digit word is the next decimal
+    for word in re.findall(r"[a-z]+", text.lower().replace("-", " ")):
+        if word == "point" and in_number:
+            decimal_place = 1
+        elif decimal_place and word in _NUMBER_WORDS and _NUMBER_WORDS[word] < 10:
+            current += _NUMBER_WORDS[word] / 10 ** decimal_place
+            decimal_place += 1
+        elif word in _NUMBER_WORDS:
+            current += _NUMBER_WORDS[word]
+            in_number = True
+        elif word in _SCALE_WORDS and in_number:
+            decimal_place = 0
+            scale = _SCALE_WORDS[word]
+            if scale == 100:
+                current *= 100
+            else:
+                total += current * scale
+                current = 0
+        elif word == "and" and in_number:
+            continue
+        else:
+            if in_number:
+                found.add(round(float(total + current), 6))
+            total, current, in_number, decimal_place = 0, 0, False, 0
+    if in_number:
+        found.add(round(float(total + current), 6))
+    return found
+
+
+def _graphic_numbers_ok(values, segment_text):
+    """True if every number shown on a graphic is a number the narration actually says."""
+    spoken = _numbers_in_text(segment_text)
+    for v in values:
+        m = re.search(r"\d[\d,]*(?:\.\d+)?", str(v))
+        if not m:
+            continue
+        num = float(m.group(0).replace(",", ""))
+        # "1.2M" on screen vs "one point two million" spoken: also accept the scaled value
+        scaled = {num * f for f in (1, 1_000, 1_000_000, 1_000_000_000)}
+        if not (scaled & spoken):
+            return False
+    return True
+
+
+def _validate_layout(scene, full_allowed):
+    """Force layout/focus_x into safe values; anything odd becomes the framed layout."""
+    layout = scene.get("layout")
+    if layout not in ("full", "framed") or not full_allowed:
+        layout = "framed"
+    try:
+        focus_x = float(scene.get("focus_x", 0.5))
+    except (TypeError, ValueError):
+        focus_x = 0.5
+    scene["layout"] = layout
+    scene["focus_x"] = round(min(max(focus_x, 0.15), 0.85), 3)
+
+
+def _validate_graphic(graphic, segment, allowed, index):
+    """Return a cleaned graphic dict, or None if it is malformed, not allowed, or invents numbers."""
+    if not graphic or not isinstance(graphic, dict) or segment is None:
+        return None
+    gtype = graphic.get("type")
+    if gtype not in allowed:
+        return None
+    text = segment["text"]
+    anchor = str(graphic.get("anchor_word", ""))
+    try:
+        if gtype == "stat":
+            value, label = str(graphic["value"]).strip(), str(graphic["label"]).strip()
+            if not value or not label or not _graphic_numbers_ok([value], text):
+                raise ValueError("stat number not in narration")
+            clean = {"type": "stat", "value": value, "label": label}
+        elif gtype == "versus":
+            left, right = graphic["left"], graphic["right"]
+            sides = [{"name": str(x["name"]).strip(), "value": str(x["value"]).strip()} for x in (left, right)]
+            if not all(x["name"] and x["value"] for x in sides) or not _graphic_numbers_ok([x["value"] for x in sides], text):
+                raise ValueError("versus number not in narration")
+            clean = {"type": "versus", "left": sides[0], "right": sides[1]}
+        elif gtype == "list":
+            items = [str(i).strip() for i in graphic["items"] if str(i).strip()][:4]
+            if len(items) < 2:
+                raise ValueError("list needs 2+ items")
+            clean = {"type": "list", "items": items}
+        else:  # quote
+            quote = str(graphic["text"]).strip().strip('"')
+            if not quote:
+                raise ValueError("empty quote")
+            clean = {"type": "quote", "text": quote, "author": str(graphic.get("author", "")).strip()}
+    except (KeyError, TypeError, ValueError) as e:
+        print(f"⚠️ Dropped graphic on segment {index} ({gtype}): {e}")
+        return None
+    clean["anchor_word"] = anchor
+    return clean
+
+
+def find_scenes_with_gemini(video_paths, script_segments, channel=None):
     """
     Upload all approved source videos to Gemini in one call.
     Returns a flat list of scenes: [{index, video_index, start}, ...]
@@ -902,7 +1071,7 @@ def find_scenes_with_gemini(video_paths, script_segments):
 
     if not video_paths:
         print("⚠️ All source videos failed ffprobe — using fallback scene plan.")
-        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], [], [], client
+        return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], [], [], [], client
 
     uploaded_files = []
     for i, vp in enumerate(video_paths):
@@ -943,7 +1112,7 @@ def find_scenes_with_gemini(video_paths, script_segments):
 
     n = len(script_segments)
     segments_json = json.dumps(
-        [{"index": i, "text": s["text"], "duration": round(s["duration"], 2)}
+        [{"index": i, "text": s["text"], "start": round(s["start"], 2), "duration": round(s["duration"], 2)}
          for i, s in enumerate(script_segments)],
         indent=2
     )
@@ -955,6 +1124,11 @@ def find_scenes_with_gemini(video_paths, script_segments):
                 video_titles.append(tf.read().strip())
         else:
             video_titles.append(os.path.basename(vp))
+
+    channel = channel or DEFAULT_CHANNEL
+    allowed_graphics = [t for t in channel.get("graphic_types", []) if t in GRAPHIC_TYPES]
+    full_allowed = channel.get("allow_full_layout", True)
+    graphic_rules = _graphic_prompt_rules(allowed_graphics)
 
     # A file the fetcher cut short (MAX_SOURCE_SECONDS) ends mid-video, not on an outro,
     # so its final 30 seconds are real footage and should stay usable.
@@ -1072,6 +1246,23 @@ Before writing JSON, verify:
 ☐ Every available source video is used at least once
 ☐ No single video is used more than 2 times in a row
 
+════════════════════════════════════
+STEP 5: LAYOUT PER SCENE
+════════════════════════════════════
+The final video is vertical 9:16. Each clip is shown one of two ways:
+- "full": the clip is cropped to fill the whole vertical screen, keeping only the middle third of the width around `focus_x`.
+- "framed": the whole landscape picture is shown in the middle with a backdrop above and below. Nothing is cut off.
+
+Pick "full" ONLY when ALL of these are true for the frame at `start` and the following seconds:
+- ONE subject (person, character, object) is the clear focus and fills a large part of the frame (close-up or medium shot)
+- that subject stays roughly in place (no fast sideways running, no camera whip-pans)
+- no important text, score, second person, or action sits near the left or right edges
+Anything else (wide shots, two or more people interacting, landscapes, action spread across the frame) → "framed".
+When unsure, ALWAYS choose "framed". A wrong "full" chops people in half; a wrong "framed" just looks normal.
+`focus_x` = horizontal centre of the subject, 0.0 = left edge, 0.5 = centre, 1.0 = right edge. Required for "full".
+
+{graphic_rules}
+
 TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
 
 VISUAL CHECK — required per scene:
@@ -1084,8 +1275,12 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 {{
   "scenes": [
-    {{"index": 0, "video_index": 0, "start": 12.5, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'pulls out a sharp V-shaped guitar' — frame shows him mid-draw pulling the guitar from its case"}},
-    {{"index": 1, "video_index": 1, "start": 8.0, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'strict old man who hates anything modern' — frame shows him in a stern, traditional pose"}},
+    {{"index": 0, "video_index": 0, "start": 12.5, "layout": "full", "focus_x": 0.42, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'pulls out a sharp V-shaped guitar', frame shows him mid-draw pulling the guitar from its case"}},
+    {{"index": 1, "video_index": 1, "start": 8.0, "layout": "framed", "focus_x": 0.5, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'strict old man who hates anything modern', frame shows him in a stern, traditional pose"}},
+    ...
+  ],
+  "graphics": [
+    {{"type": "stat", "segment_index": 1, "anchor_word": "seventy", "value": "70", "label": "years playing the same song"}},
     ...
   ]
 }}
@@ -1145,9 +1340,22 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                 lo, hi = 0.0, max(dur - 2.0, 0.0)
 
             scene["start"] = round(min(max(scene.get("start", 0.0), lo), hi), 2)
+            _validate_layout(scene, full_allowed)
             validated.append(scene)
-        print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s)")
-        return validated, video_paths, uploaded_files, client
+
+        graphics = []
+        for g in result.get("graphics") or []:
+            try:
+                si = int(g.get("segment_index", -1))
+            except (TypeError, ValueError, AttributeError):
+                continue
+            seg = script_segments[si] if 0 <= si < n else None
+            clean = _validate_graphic(g, seg, allowed_graphics, si)
+            if clean:
+                clean["segment_index"] = si
+                graphics.append(clean)
+        print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s), {len(graphics)} graphic card(s) proposed")
+        return validated, graphics, video_paths, uploaded_files, client
     except Exception as e:
         print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
         fallback = []
@@ -1156,7 +1364,88 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             dur = video_durations[vi]
             start = 10.0 + 15.0 * (i // len(video_paths))
             fallback.append({"index": i, "video_index": vi, "start": round(min(start, max(dur - 12.0, 0.0)), 2)})
-        return fallback, video_paths, uploaded_files, client
+        return fallback, [], video_paths, uploaded_files, client
+
+
+MIN_FULL_SHOT = 1.0       # a full-screen crop shorter than this before the first cut isn't worth it
+CARD_SECONDS = 4.0        # how long a graphic card stays up (shorter if the next one comes sooner)
+HOOK_CLEAR_SECONDS = 3.0  # no cards over the opening hook
+MIN_CARD_GAP = 6.0        # minimum seconds between two cards starting
+
+
+def _clip_layout(scene, clip_path, source_video, crop):
+    """Layout info for one trimmed clip, with the full-screen guardrail applied.
+
+    Gemini judged the shot at `start`, but the clip can cut to a different
+    (often wider) shot a few seconds later. Full screen therefore only lasts
+    until the first hard cut inside the clip, then Remotion switches to framed.
+    """
+    meta = {"layout": "framed", "focusX": 0.5}
+    if scene.get("layout") != "full":
+        return meta
+    try:
+        clip_dur = float(ffmpeg.probe(clip_path)["format"]["duration"])
+        cuts = [c for c in _find_shot_cuts(clip_path, 0.0, clip_dur) if c > 0.1]
+    except Exception as e:
+        print(f"⚠️ Cut check failed for {clip_path}, keeping it framed: {e}")
+        return meta
+    full_until = cuts[0] if cuts else clip_dur
+    if full_until < MIN_FULL_SHOT:
+        print(f"↩️ Clip {scene.get('index')}: full shot only lasts {full_until:.1f}s, using framed")
+        return meta
+
+    focus_x = scene.get("focus_x", 0.5)
+    if crop:
+        # Gemini saw the uncropped frame; re-express focus_x inside the cropped picture.
+        try:
+            src_w = next(st["width"] for st in ffmpeg.probe(source_video)["streams"] if st["codec_type"] == "video")
+            cw, _, x, _ = map(int, crop.split(":"))
+            focus_x = min(max((focus_x * src_w - x) / cw, 0.15), 0.85)
+        except Exception:
+            pass
+    print(f"🖥️ Clip {scene.get('index')}: full screen for {full_until:.1f}s (focus {focus_x:.2f})")
+    return {"layout": "full", "focusX": round(focus_x, 3), "fullUntil": round(full_until, 2)}
+
+
+def _same_word(spoken, anchor):
+    a = spoken.strip(".,!?\"'…:;").lower()
+    b = anchor.strip(".,!?\"'…:;").lower()
+    if a == b:
+        return True
+    # "52" from Whisper vs "fifty-two" from Gemini (or the other way round)
+    na, nb = _numbers_in_text(a), _numbers_in_text(b)
+    return bool(na and na == nb)
+
+
+def _time_graphic(graphic, segment, words_data):
+    """Give a graphic absolute start/end times: it appears on its anchor word and stays CARD_SECONDS."""
+    start = segment["start"] + 0.3
+    anchor = graphic.get("anchor_word", "")
+    for word, w_start, _ in words_data:
+        if segment["start"] - 0.05 <= w_start <= segment["end"] and anchor and _same_word(word, anchor):
+            start = w_start
+            break
+    timed = {k: v for k, v in graphic.items() if k not in ("anchor_word", "segment_index")}
+    timed["start"] = round(start, 3)
+    timed["end"] = round(start + CARD_SECONDS, 3)
+    return timed
+
+
+def _fit_graphic_windows(graphics):
+    """Enforce card spacing: none over the hook, at least MIN_CARD_GAP between starts
+    (earlier card wins), and each card ends before the next one starts."""
+    spaced = []
+    for g in sorted(graphics, key=lambda g: g["start"]):
+        if g["start"] < HOOK_CLEAR_SECONDS:
+            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (over the hook)")
+        elif spaced and g["start"] - spaced[-1]["start"] < MIN_CARD_GAP:
+            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (too close to the previous card)")
+        else:
+            spaced.append(g)
+    graphics = spaced
+    for cur, nxt in zip(graphics, graphics[1:]):
+        cur["end"] = round(min(cur["end"], nxt["start"] - 0.1), 3)
+    return [g for g in graphics if g["end"] - g["start"] >= 1.0]
 
 
 def find_thumbnail_with_gemini(client, uploaded_files, video_paths, topic, subject):
@@ -1306,7 +1595,8 @@ def run_manual_pipeline(data):
         YOUTUBE_QUERIES = data.get('youtube_queries', [])
         MUSIC_PROMPT = data.get('music_prompt', 'calm ambient cinematic instrumental music')
         MUSIC_QUERIES = data.get('music_queries') or data.get('music_query')
-        VOICE_NAME = data.get('voice_name', 'animatoryoung')
+        CHANNEL = load_channel(data.get('channel'))
+        VOICE_NAME = data.get('voice_name') or CHANNEL['voice_name']
         SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
 
         print(f"📋 PROCESSING MANUAL ORDER: {SUBJECT}")
@@ -1392,6 +1682,8 @@ def run_manual_pipeline(data):
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
         clip_paths = []
+        clip_meta = []      # per clip: layout, focusX, fullUntil (aligned with clip_paths)
+        graphics = []       # narration graphics with absolute start/end times
         thumb_hook_lines = None
         if words_data is not None and len(words_data) > 0:
             script_segments = segment_by_sentences(words_data)
@@ -1403,7 +1695,7 @@ def run_manual_pipeline(data):
                 script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
                 script_segments.pop(m + 1)
             print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
-            scenes, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments)
+            scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL)
 
             if len(scenes) < len(script_segments):
                 print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
@@ -1425,6 +1717,12 @@ def run_manual_pipeline(data):
                 )
                 if success is not False and os.path.exists(clip_path):
                     clip_paths.append(clip_path)
+                    clip_meta.append(_clip_layout(scene, clip_path, source_video, crops[source_video]))
+
+            if words_data:
+                graphics = [_time_graphic(g, script_segments[g["segment_index"]], words_data) for g in graphic_plan]
+            graphics = _fit_graphic_windows(graphics)
+            print(f"🎨 Graphics: {[(g['type'], g['start']) for g in graphics] or 'none'}")
 
             print(f"🖼️ Picking thumbnail frame...")
             thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT)
@@ -1486,6 +1784,10 @@ def run_manual_pipeline(data):
             words_data=words_data,
             subtitles_position=SUBTITLES_POSITION,
             punch_times=punch_times,
+            clip_meta=clip_meta,
+            graphics=graphics,
+            theme=CHANNEL["theme"],
+            frame_background=CHANNEL["frame_background"],
         )
 
         print(f"\n✅ DONE! Saved to: {final_path}")

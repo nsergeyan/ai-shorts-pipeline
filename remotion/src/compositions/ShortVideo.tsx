@@ -10,11 +10,21 @@ import {
 } from "remotion";
 import { WordHighlight } from "../components/WordHighlight";
 import { ProgressBar } from "../components/ProgressBar";
+import { GraphicLayer } from "../components/graphics/GraphicLayer";
+import { DEFAULT_THEME, GraphicData, Theme } from "../components/graphics/types";
 
 export interface ClipProps {
   path: string;
   duration: number;
+  // "full" crops the clip to fill 9:16 around focusX, but only until fullUntil
+  // (seconds into the clip, the first hard cut). After that, and for "framed",
+  // the whole picture is shown with a backdrop above and below.
+  layout?: "full" | "framed";
+  focusX?: number;
+  fullUntil?: number;
 }
+
+export type FrameBackground = "blur" | "dark";
 
 export interface WordEntry {
   word: string;
@@ -35,6 +45,9 @@ export interface ShortVideoProps {
   musicVolume?: number;
   wordsData?: WordEntry[];
   sfxEvents?: SfxEvent[];
+  graphics?: GraphicData[];
+  theme?: Partial<Theme>;
+  frameBackground?: FrameBackground;
   totalDurationSec: number;
 }
 
@@ -48,8 +61,13 @@ const ClipRenderer: React.FC<{
   isLast: boolean;
   clipFrames: number;
   clipIndex: number;
-}> = ({ clip, isFirst, isLast, clipFrames, clipIndex }) => {
+  frameBackground: FrameBackground;
+}> = ({ clip, isFirst, isLast, clipFrames, clipIndex, frameBackground }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const fullFrames = Math.round((clip.fullUntil ?? clip.duration) * fps);
+  const isFull = clip.layout === "full" && frame < fullFrames;
+  const focusPct = Math.round((clip.focusX ?? 0.5) * 100);
 
   // No fade on the first clip: frame 0 must land at full brightness so the hook
   // shot is readable instantly instead of ramping up out of black.
@@ -93,26 +111,49 @@ const ClipRenderer: React.FC<{
         filter: motionBlur > 0.1 ? `blur(${motionBlur}px)` : undefined,
       }}
     >
-      <AbsoluteFill style={{ overflow: "hidden" }}>
-        <OffthreadVideo
-          src={clip.path}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            filter: "blur(28px) brightness(0.45)",
-            transform: "scale(1.1)",
-          }}
-          muted
-        />
-      </AbsoluteFill>
-      <AbsoluteFill>
-        <OffthreadVideo
-          src={clip.path}
-          style={{ width: "100%", height: "100%", objectFit: "contain" }}
-          muted
-        />
-      </AbsoluteFill>
+      {isFull ? (
+        <AbsoluteFill>
+          <OffthreadVideo
+            src={clip.path}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: `${focusPct}% 50%`,
+            }}
+            muted
+          />
+        </AbsoluteFill>
+      ) : (
+        <>
+          <AbsoluteFill style={{ overflow: "hidden" }}>
+            {frameBackground === "dark" ? (
+              <AbsoluteFill
+                style={{ background: "radial-gradient(ellipse at center, #1c1c24 0%, #050507 75%)" }}
+              />
+            ) : (
+              <OffthreadVideo
+                src={clip.path}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  filter: "blur(28px) brightness(0.45)",
+                  transform: "scale(1.1)",
+                }}
+                muted
+              />
+            )}
+          </AbsoluteFill>
+          <AbsoluteFill>
+            <OffthreadVideo
+              src={clip.path}
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              muted
+            />
+          </AbsoluteFill>
+        </>
+      )}
     </AbsoluteFill>
   );
 };
@@ -201,7 +242,11 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   musicVolume = 0.07,
   wordsData = [],
   sfxEvents = [],
+  graphics = [],
+  theme: themeOverrides = {},
+  frameBackground = "blur",
 }) => {
+  const theme: Theme = { ...DEFAULT_THEME, ...themeOverrides };
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -223,10 +268,25 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
           isLast={i === clips.length - 1}
           clipFrames={clipFrames}
           clipIndex={i}
+          frameBackground={frameBackground}
         />
       </Sequence>
     );
   });
+
+  // Frame ranges where a full-screen crop is showing. Faces sit in the upper
+  // half of a close-up, so subtitles drop lower during those ranges.
+  const fullRanges: [number, number][] = [];
+  let rangeStart = 0;
+  for (const clip of clips) {
+    const clipFrames = Math.round(clip.duration * fps);
+    if (clip.layout === "full") {
+      const fullFrames = Math.round((clip.fullUntil ?? clip.duration) * fps);
+      fullRanges.push([rangeStart, rangeStart + Math.min(fullFrames, clipFrames)]);
+    }
+    rangeStart += clipFrames;
+  }
+  const inFullShot = fullRanges.some(([a, b]) => frame >= a && frame < b);
 
   // Every 3rd cut (starting at index 1) gets a flash — evenly spread, ~1 in 3
   const flashFrames = cutFrames.filter((_, i) => i % 3 === 1);
@@ -248,8 +308,9 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
           <Audio src={event.file} volume={event.volume ?? 0.35} />
         </Sequence>
       ))}
-      {wordsData.length > 0 && <WordHighlight wordsData={wordsData} />}
-      <ProgressBar />
+      <GraphicLayer graphics={graphics} theme={theme} />
+      {wordsData.length > 0 && <WordHighlight wordsData={wordsData} accent={theme.accent} topPct={inFullShot ? 58 : 27} />}
+      <ProgressBar accent={theme.accent} />
     </AbsoluteFill>
   );
 };

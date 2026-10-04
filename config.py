@@ -19,6 +19,9 @@ THUMBNAIL_DIR = os.path.join(DATA_DIR, "thumbnails")
 for d in [VIDEO_MATERIAL_DIR, MUSIC_DIR, FINAL_DIR, AUDIO_DIR, THUMBNAIL_DIR]:
     os.makedirs(d, exist_ok=True)
 
+# Per-channel look and voice (channels/<name>.json), picked by MANUAL_DATA["channel"]
+CHANNELS_DIR = os.path.join(BASE_DIR, "channels")
+
 CTA_PATH = os.path.join(BASE_DIR, "Green_Screen_Footage_for_Follow_Button_Boost_Your_Video_Engagement_1080P.mp4")
 
 # API Keys — set these in a .env file (see .env.example)

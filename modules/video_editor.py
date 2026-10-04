@@ -156,15 +156,18 @@ def _prepare_music(music_path: str, target_dur: float,
         return music_path
 
 
-def _build_clips(video_paths: List[str], target_dur: float, base_url: str) -> List[dict]:
+def _build_clips(video_paths: List[str], target_dur: float, base_url: str,
+                 clip_meta: Optional[List[dict]] = None) -> List[dict]:
     """
-    Build {path (http URL), duration} dicts summing to target_dur.
-    Paths are served via the local asset HTTP server.
+    Build {path (http URL), duration, layout...} dicts summing to target_dur.
+    Paths are served via the local asset HTTP server. clip_meta (aligned with
+    video_paths) carries each clip's layout; looped filler clips are always framed.
     """
     clips = []
     remaining = target_dur
+    clip_meta = clip_meta or []
 
-    for vp in video_paths:
+    for i, vp in enumerate(video_paths):
         if remaining <= 0:
             break
         try:
@@ -173,7 +176,8 @@ def _build_clips(video_paths: List[str], target_dur: float, base_url: str) -> Li
             dur = target_dur
         take = min(dur, remaining)
         rel = os.path.relpath(os.path.abspath(vp), PROJECT_ROOT)
-        clips.append({"path": f"{base_url}/{rel}", "duration": round(take, 3)})
+        meta = clip_meta[i] if i < len(clip_meta) else {}
+        clips.append({"path": f"{base_url}/{rel}", "duration": round(take, 3), **meta})
         remaining -= take
 
     if remaining > 0.05 and clips:
@@ -183,7 +187,7 @@ def _build_clips(video_paths: List[str], target_dur: float, base_url: str) -> Li
         while remaining > 0.05:
             dur = _probe_duration(abs_path)
             take = min(dur, remaining)
-            clips.append({"path": last["path"], "duration": round(take, 3)})
+            clips.append({"path": last["path"], "duration": round(take, 3), "layout": "framed"})
             remaining -= take
 
     return clips
@@ -194,14 +198,25 @@ def _asset_url(abs_path: str, base_url: str) -> str:
     return f"{base_url}/{rel}"
 
 
-def _composite_cta(base_video: str, cta_path: str, cta_start: float, cta_duration: float, out_path: str):
-    """Overlay green-screen CTA onto base_video starting at cta_start using FFmpeg chromakey."""
+# The CTA clip is 8s, but 3.2s-6.6s is just "FOLLOWING" held still. Keeping the
+# intro + click and the exit animation gives the same effect in 4.6s, which
+# leaves more of the video free for narration graphic cards.
+CTA_KEEP = [(0.0, 3.2), (6.6, 8.0)]
+CTA_DURATION = sum(b - a for a, b in CTA_KEEP)
+
+
+def _composite_cta(base_video: str, cta_path: str, cta_start: float, out_path: str):
+    """Overlay green-screen CTA (shortened to CTA_KEEP) onto base_video from cta_start using FFmpeg chromakey."""
+    (a0, a1), (b0, b1) = CTA_KEEP
     subprocess.run([
         "ffmpeg", "-y",
         "-i", base_video,
         "-i", cta_path,
         "-filter_complex",
-        f"[1:v]trim=duration={cta_duration},setpts=PTS-STARTPTS+{cta_start}/TB,"
+        f"[1:v]split[ca][cb];"
+        f"[ca]trim={a0}:{a1},setpts=PTS-STARTPTS[c1];"
+        f"[cb]trim={b0}:{b1},setpts=PTS-STARTPTS[c2];"
+        f"[c1][c2]concat=n=2:v=1:a=0,setpts=PTS-STARTPTS+{cta_start}/TB,"
         f"chromakey=color=0x00FF00:similarity=0.35:blend=0.1[ck];"
         f"[0:v][ck]overlay=0:500[v]",
         "-map", "[v]", "-map", "0:a",
@@ -209,6 +224,20 @@ def _composite_cta(base_video: str, cta_path: str, cta_start: float, cta_duratio
         "-c:a", "copy",
         out_path,
     ], check=True, capture_output=True)
+
+
+def _graphics_before_cta(graphics: List[dict], cutoff: float) -> List[dict]:
+    """Keep graphic cards out of the follow-button window: the CTA is composited
+    over the same lower zone, so a card still on screen there gets covered.
+    Cards are cut to end before `cutoff`; ones left with under 1s are dropped."""
+    kept = []
+    for g in graphics:
+        end = min(g["end"], cutoff - 0.2)
+        if end - g["start"] >= 1.0:
+            kept.append({**g, "end": round(end, 3)})
+        else:
+            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (overlaps follow button)")
+    return kept
 
 
 def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float] = None) -> List[dict]:
@@ -256,6 +285,10 @@ def merge_audio_video(
     subtitles_text: Optional[str] = None,
     hook_text: Optional[str] = None,
     punch_times: Optional[List[float]] = None,
+    clip_meta: Optional[List[dict]] = None,
+    graphics: Optional[List[dict]] = None,
+    theme: Optional[dict] = None,
+    frame_background: str = "blur",
 ) -> str:
     """Render final Short via Remotion (background + audio + subtitles), then composite CTA via FFmpeg."""
     print("\n🎬  Starting Remotion render...")
@@ -273,12 +306,12 @@ def merge_audio_video(
     try:
         audio_dur = _probe_duration(audio_path)
 
-        CTA_DURATION = 8.0
         voice_dur = min(audio_dur, cap_seconds) if shorts_cap else audio_dur
         total_dur = voice_dur
         cta_start = max(0.0, voice_dur - CTA_DURATION)
+        has_cta = cta_path and os.path.exists(cta_path)
 
-        clips = _build_clips(video_paths, total_dur, base_url)
+        clips = _build_clips(video_paths, total_dur, base_url, clip_meta)
         prepared_music = _prepare_music(music_path, total_dur, music_lufs) if music_path else None
 
         words_dicts: List[dict] = []
@@ -296,6 +329,9 @@ def merge_audio_video(
             "wordsData": words_dicts,
             "punchTimes": punch_times or [],
             "sfxEvents": _build_sfx_events(clips, base_url, punch_times),
+            "graphics": _graphics_before_cta(graphics or [], cta_start if has_cta else total_dur),
+            "theme": theme or {},
+            "frameBackground": frame_background,
             "totalDurationSec": round(total_dur, 3),
         }
 
@@ -303,7 +339,6 @@ def merge_audio_video(
         with open(props_path, "w") as f:
             json.dump(props, f, indent=2)
 
-        has_cta = cta_path and os.path.exists(cta_path)
         remotion_out = out_path + "_base.mp4" if has_cta else out_path
 
         print(f"🎞️  Rendering {total_dur:.1f}s @ 1080×1920 via Remotion...")
@@ -334,7 +369,7 @@ def merge_audio_video(
     if has_cta:
         print(f"🎭  Compositing CTA (starts at {cta_start:.1f}s)...")
         try:
-            _composite_cta(remotion_out, cta_path, cta_start, CTA_DURATION, out_path)
+            _composite_cta(remotion_out, cta_path, cta_start, out_path)
             os.remove(remotion_out)
         except subprocess.CalledProcessError as e:
             print(f"⚠️  CTA composite failed, using base render: {e.stderr.decode()[-300:]}")

@@ -31,8 +31,10 @@ const measureWords = (words: string[]): number => {
   return words.reduce((sum, w) => sum + measureCtx!.measureText(w).width, 0);
 };
 
-export const WordHighlight: React.FC<{ wordsData: WordEntry[] }> = ({
+export const WordHighlight: React.FC<{ wordsData: WordEntry[]; accent?: string; topPct?: number }> = ({
   wordsData,
+  accent = "#FFE000",
+  topPct = 27,
 }) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
@@ -71,7 +73,7 @@ export const WordHighlight: React.FC<{ wordsData: WordEntry[] }> = ({
     <div
       style={{
         position: "absolute",
-        top: "27%",
+        top: `${topPct}%`,
         left: 0,
         right: 0,
         display: "flex",
@@ -114,10 +116,10 @@ export const WordHighlight: React.FC<{ wordsData: WordEntry[] }> = ({
                 fontFamily: FONT_FAMILY,
                 fontWeight: 800,
                 letterSpacing: -1,
-                color: isActive ? "#FFE000" : "white",
+                color: isActive ? accent : "white",
                 opacity: opacity * (isPast ? 0.5 : 1),
                 textShadow: isActive
-                  ? "0 0 20px rgba(255,224,0,0.4), 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 4px 4px 0 #000"
+                  ? `0 0 20px ${accent}66, 3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 4px 4px 0 #000`
                   : "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 4px 4px 0 #000",
                 display: "inline-block",
                 transform: `scale(${scale})`,

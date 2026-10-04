@@ -1,0 +1,11 @@
+{
+  "voice_name": "animatoryoung",
+  "theme": {
+    "accent": "#FFE000",
+    "panel": "rgba(10, 10, 14, 0.82)",
+    "text": "#FFFFFF"
+  },
+  "frame_background": "blur",
+  "allow_full_layout": true,
+  "graphic_types": ["stat", "versus", "list", "quote"]
+}

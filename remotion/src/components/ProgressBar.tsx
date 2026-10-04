@@ -6,7 +6,7 @@ import { useCurrentFrame, useVideoConfig } from "remotion";
 const VIDEO_BOTTOM_PCT = 66;
 const BAR_HEIGHT = 6;
 
-export const ProgressBar: React.FC = () => {
+export const ProgressBar: React.FC<{ accent?: string }> = ({ accent = "#FFE000" }) => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
 
@@ -27,7 +27,7 @@ export const ProgressBar: React.FC = () => {
         style={{
           height: "100%",
           width: `${progress * 100}%`,
-          backgroundColor: "#FFE000",
+          backgroundColor: accent,
           borderRadius: "0 3px 3px 0",
         }}
       />
