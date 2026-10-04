@@ -182,6 +182,7 @@ OUTPUT
 Output ONLY this JSON, no text before or after:
 
 {
+  "channel": "sports",
   "sport": "",
   "angle": "hidden_why | debate_settler | rare_look | wait_what_fact",
   "topic": "",

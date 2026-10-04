@@ -411,6 +411,7 @@ EXAMPLE OF A GOOD VIDEO SCRIPT:
 JSON OUTPUT FORMAT
 ═══════════════════════════════════
 {
+  "channel": "sports",
   "sport": "",
   "topic": "",
   "specific_subject": "",

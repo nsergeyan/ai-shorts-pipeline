@@ -179,6 +179,7 @@ JSON OUTPUT FORMAT
 
 JSON
 {
+"channel": "anime",
 "topic": "",
 "specific_subject": "",
 "title": "",
