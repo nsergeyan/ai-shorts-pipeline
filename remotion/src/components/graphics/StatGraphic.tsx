@@ -15,7 +15,7 @@ export const StatGraphic: React.FC<{ data: StatGraphicData; theme: Theme }> = ({
     // Ease-out so the count slows down as it lands on the real value.
     const t = interpolate(frame, [0, COUNT_FRAMES], [0, 1], { extrapolateRight: "clamp" });
     const eased = 1 - Math.pow(1 - t, 3);
-    shown = parsed.prefix + formatNumber(parsed.num * eased, parsed.decimals) + parsed.suffix;
+    shown = parsed.prefix + formatNumber(parsed.num * eased, parsed.decimals, parsed.grouped) + parsed.suffix;
   }
 
   const land = spring({ fps, frame: frame - COUNT_FRAMES, config: { damping: 10, stiffness: 260 } });

@@ -55,18 +55,20 @@ export type GraphicData =
 // part can count up while the rest stays put. Returns null for non-numbers.
 export const parseNumber = (
   value: string
-): { prefix: string; num: number; decimals: number; suffix: string } | null => {
+): { prefix: string; num: number; decimals: number; suffix: string; grouped: boolean } | null => {
   const m = value.match(/^([^\d]*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
   if (!m) return null;
   const digits = m[2].replace(/,/g, "");
   const num = parseFloat(digits);
   if (Number.isNaN(num)) return null;
   const decimals = digits.includes(".") ? digits.split(".")[1].length : 0;
-  return { prefix: m[1], num, decimals, suffix: m[3] };
+  return { prefix: m[1], num, decimals, suffix: m[3], grouped: m[2].includes(",") };
 };
 
-export const formatNumber = (n: number, decimals: number): string =>
+// grouped = false keeps values like years ("2010") from turning into "2,010"
+export const formatNumber = (n: number, decimals: number, grouped = true): string =>
   n.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
+    useGrouping: grouped,
   });
