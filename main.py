@@ -113,29 +113,46 @@ DEFAULT_CHANNEL = {
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"topic": "Jujutsu Kaisen",
-"specific_subject": "Maki Zenin grade four rank Zenin clan sabotage",
-"title": "Maki Zenin is stuck at the lowest sorcerer rank because her family sabotages her promotions in Jujutsu Kaisen",
+"channel": "sports",
+"sport": "f1",
+"angle": "banned_or_loophole",
+"topic": "McLaren F-duct loophole",
+"specific_subject": "Lewis Hamilton and McLaren MP4-25",
+"title": "Why Hamilton drove one-handed at 200mph 🏎️ #f1",
+"verification": {
+"event_date": "2010-03-14",
+"sources": [
+"https://www.autosport.com",
+"https://www.motorsport.com/f1/news/these-10-outlawed-tech-innovations-rocked-f1/10721262/"
+],
+"claims_checked": [
+"McLaren introduced the F-duct system in the 2010 F1 season using cockpit air channels",
+"Drivers covered an internal hole with their knee or hand to stall the rear wing and add 6 mph top speed",
+"The FIA banned driver-controlled fluidic ducts in 2011, which directly led to the development of DRS"
+],
+"footage_status": "GREEN",
+"footage_note": "Safe footage available in McLaren press releases, driver press conferences, paddock interviews, pit lane b-roll, and high-res photos."
+},
 "youtube_queries": [
-"Maki Zenin fighting scene",
-"Maki Zenin being a badass",
-"Maki Zenin edit",
-"Jujutsu Kaisen season 1 Maki fight",
-"Maki Zenin english dub",
-"Jujutsu Kaisen official trailer"
+"McLaren F duct 2010 F1",
+"Lewis Hamilton press conference 2010",
+"McLaren garage F1 2010",
+"McLaren MP4 25 rear wing photo",
+"F1 2010 season highlights McLaren",
+"F1 pit lane stock footage"
 ],
-"scene_query": "a high school girl with dark green hair in a ponytail, round glasses, and dark school uniform wielding a long red wooden spear against grotesque shadowy monsters in an urban alleyway, with dark traditional Japanese manor rooms showing elderly men in formal robes looking condescending",
+"scene_query": "A silver McLaren Formula One car speeding down a long straightaway, transitioning to a driver in silver racing suit inside the cockpit covering a duct hole with his knee.",
 "footage_source": "official_or_press",
-"music_mood": "curious",
+"music_mood": "mysterious",
 "music_queries": [
-"jujutsu kaisen maki theme instrumental",
-"jujutsu kaisen ost instrumental no lyrics",
-"curious dark hip hop instrumental background music"
+"Formula 1 official theme instrumental",
+"cinematic sports documentary suspense instrumental no copyright",
+"tense synthwave racing instrumental no copyright"
 ],
-"music_prompt": "dark lo-fi beat, mysterious curiosity, eighty five BPM, heavy bassline, soft koto melody, snappy vinyl drum kit, subtle tension building towards a clever revelation, short-form video background, no lyrics, exclude: aggressive vocals, heavy distortion",
+"music_prompt": "Tense synthwave track with pulsating bassline, 120 BPM, heavy engine roar swell, brass hits, subtle string tremolo, building mystery under the hook and mechanism, dropping into high tension around twenty-five seconds, landing on a clean electronic hit at the end, sports short-form video background, no lyrics, exclude: aggressive metal, upbeat pop",
 "voice_name": "animatoryoung",
-"spoken_word_count": 94,
-"script": "[curious] Maki Zenin stays at the lowest sorcerer rank because her own family sabo   tages her promotions in Jujutsu Kaisen. [hesitates] Officially she is stuck at grade four... BUT! her real combat power is easily grade two level. [annoyed] She slices through terrifying curses using cursed weapons... so why is her official rank so low? [sarcastic] The leaders of the Zenin clan intentionally reject every single promotion recommendation submitted for her. [deadpan] They hate her for having almost zero cursed energy... so they use political influence purely out of petty spite. [calm] Did you catch this detail on your first watch?"
+"script": "[curious] Why did Lewis Hamilton drive one-handed at two hundred miles per hour in twenty-ten? [flatly] Rivals thought McLaren was illegally flexing their wings, but inspectors found zero rule violations on the car. [slows down] McLaren secretly routed an air pipe straight through the cockpit to the rear wing. On straights, Hamilton covered a tiny hole inside the cabin with his knee, redirecting air like blocking a whistle hole. This stalled wing downforce and added six miles per hour. [drawn out] Other teams lacked room for knee vents, forcing drivers to cover the hole using their hands. BUT! steering ONE-HANDED at high speed was insanely dangerous. [deadpan] The FIA banned fluidic ducts, but banning them inspired Formula One to invent DRS. Should driver loopholes like this be allowed?",
+"spoken_word_count": 121
 }
 
 def load_channel(name):
@@ -1049,6 +1066,19 @@ def _validate_graphic(graphic, segment, allowed, index):
     return clean
 
 
+def _fix_timestamps(text):
+    """Gemini sometimes writes "start": 1:50 (mm:ss) instead of seconds, which breaks json.loads.
+    Rewrite mm:ss and h:mm:ss values (quoted or bare) into plain seconds."""
+    def to_seconds(m):
+        parts = [float(p) for p in m[2].split(":")]
+        seconds = 0.0
+        for p in parts:
+            seconds = seconds * 60 + p
+        print(f"🔧 Fixed Gemini timestamp {m[2]} -> {seconds}s")
+        return f"{m[1]}{seconds}"
+    return re.sub(r'("start"\s*:\s*)"?(\d+(?::\d{1,2}(?:\.\d+)?){1,2})"?', to_seconds, text)
+
+
 def find_scenes_with_gemini(video_paths, script_segments, channel=None):
     """
     Upload all approved source videos to Gemini in one call.
@@ -1318,7 +1348,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         if attempt == max_attempts:
             raise RuntimeError("Gemini scene detection failed after max retries.")
 
-    text = re.sub(r"```json|```", "", response.text).strip()
+    text = _fix_timestamps(re.sub(r"```json|```", "", response.text).strip())
     print(f"🤖 Gemini multi-source edit plan:\n{text}\n")
 
     try:
@@ -1541,7 +1571,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         print("⚠️ Thumbnail selection failed after max retries.")
         return None
 
-    text = re.sub(r"```json|```", "", response.text).strip()
+    text = _fix_timestamps(re.sub(r"```json|```", "", response.text).strip())
     try:
         result = json.loads(text)
         vi = min(max(result.get("video_index", 0), 0), len(video_paths) - 1)
