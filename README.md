@@ -19,7 +19,8 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 
 ## Features
 
-- **Structured prompt system** — Three prompt templates: `prompts/manualprompt.txt` (auto-picks a trending anime/cartoon), `specifixprompt` (targets a specific pre-chosen series), and `sportsPrompt` (sports). All enforce a hype-check step, mandatory live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, fact-checking tiers, duplicate avoidance, and the punch marker rule
+- **Structured prompt system** - Two tracked prompt templates: `prompts/specifixprompt` (targets a specific pre-chosen series or movie) and `prompts/testsport.txt` (F1, UFC and soccer, half hot viral news and half timeless stories). Both enforce live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, duplicate avoidance, and the punch marker rule. Their story rules (curiosity-gap titles spoken as the first line, a wrong-answer beat, kicker endings instead of open loops, concrete numbers, bans and loopholes as topics) come from analyzing top competitor Shorts
+- **Competitor research** - `modules/competitor_analyzer.py` pulls the captions of a channel's most and least viewed Shorts and saves them with an analysis prompt to `data/research/`, so you can see what the winners do differently before changing a prompt
 - **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
 - **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
 - **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
@@ -62,7 +63,7 @@ Each stage passes structured data to the next. If the AI rejects a video (bad qu
 ## Pipeline Stages
 
 ### 1. Script (Prompt Engineering)
-The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit exactly 90–100 words. The output is a JSON object consumed directly by the pipeline.
+The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit an exact word range: 90-100 words for the anime prompt (110-130 for its three-item countdown format) and 110-130 for the sports prompt. The output is a JSON object consumed directly by the pipeline.
 
 ### 2. Video Sourcing & Evaluation
 `fetch_video_material_by_search` queries YouTube with up to six queries and filters out livestreams, Shorts, and videos outside the 1 to 120 minute window. The remaining results are ranked by title and views (reaction, review and podcast uploads sink to the bottom) and downloaded best-first: HD streams up to 1080p, then two fallback methods (at most 3 results per query). Each download is trimmed to 5 minutes and gets a `.meta.json` sidecar with the original length, so the "skip the outro" rule is only applied to videos that really end on one. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
@@ -125,11 +126,12 @@ YOutuber/
 ├── channels/
 │   ├── sports.json            # Per-channel look: accent colour, voice, layout + card settings
 │   └── anime.json
-├── manualprompt.txt           # Structured script prompt template (auto anime/cartoon)
-├── specifixprompt             # Structured script prompt template (specific series)
-├── sportsPrompt               # Structured script prompt template (sports)
+├── prompts/
+│   ├── specifixprompt         # Script prompt template (specific series or movie)
+│   └── testsport.txt          # Script prompt template (F1, UFC, soccer)
 ├── modules/
 │   ├── clipmaker.py               # Promo clip entrypoint (cuts a teaser out of a video you already have)
+│   ├── competitor_analyzer.py     # Saves top/bottom Shorts transcripts of a channel for analysis
 │   ├── video_editor.py            # Remotion render orchestration + FFmpeg CTA composite
 │   ├── video_material_fetcher.py  # YouTube search and download
 │   ├── newvoice.py                # ElevenLabs TTS (v3 dialogue + multilingual)
@@ -198,7 +200,7 @@ GEMINI_API_KEYS=key1,key2
 
 ## Usage
 
-Paste a completed JSON script object into `MANUAL_DATA` in `main.py` and run it. The prompt templates already output a `"channel"` field (`"sports"` from `sportsPrompt`, `"anime"` from the others), which picks the channel look; add or change it by hand if needed:
+Paste a completed JSON script object into `MANUAL_DATA` in `main.py` and run it. The prompt templates already output a `"channel"` field (`"sports"` from `testsport.txt`, `"anime"` from `specifixprompt`), which picks the channel look; add or change it by hand if needed:
 
 ```bash
 python main.py
@@ -223,6 +225,16 @@ python -m modules.clipmaker
 ```
 
 Gemini watches the full video and returns three ranked teaser candidates: continuous moments that open on a cold hook and end before the video gives the answer (`payoff_at`). The code takes the highest-ranked one that both stops before its payoff and matches the target length (`clip_duration`, default 30s), and if it has to stretch the clip it slides the window back so it never swallows the answer. FFmpeg trims to that moment, keeping the video's own original audio, no script, no AI narration, no music. That audio is transcribed by Whisper and the clip is rendered through the same Remotion pipeline as `main.py`, so it gets the same blurred/contained 9:16 layout, the same word-highlighted subtitles, and the same follow-button CTA. Output lands in `data/final/` as `Promo_<filename>_XX.mp4`; the original source video is never deleted.
+
+### Competitor Research
+
+`modules/competitor_analyzer.py` studies a competitor channel before you change a prompt:
+
+```bash
+python modules/competitor_analyzer.py <channel_handle>
+```
+
+yt-dlp lists the channel's Shorts (metadata only, no downloads), takes the 15 most viewed and the 5 least viewed, and pulls their English captions. Everything is saved to `data/research/<handle>_transcripts.txt` with an analysis prompt on top, ready to paste into any AI. Compare TOP vs BOTTOM only within the same channel, since view counts are not comparable across channels. Run channels one at a time: many caption requests in a row trigger YouTube's rate limit (HTTP 429).
 
 ---
 
