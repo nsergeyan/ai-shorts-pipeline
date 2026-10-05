@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE maki zenin idea.
+Find ONE jujutsu kaisen idea.
 
 It must be either:
 
@@ -10,7 +10,7 @@ Choose the single most interesting idea you can find.
 The idea should be:
 
 surprising or genuinely interesting
-about a recognizable athlete, team, event, or moment
+about a main character or a famous scene fans already remember
 easy to understand
 visually interesting
 based on real, verifiable information
@@ -18,23 +18,47 @@ capable of becoming a funny, entertaining short video
 
 Think like a viral  creator, not a wikipedia
 
-One idea. One story. One payoff.
+One idea. One question. One answer.
+
+TOPIC FILTER (from top competitor channels)
+Ideas that win ANSWER A QUESTION FANS ALREADY HAVE about a famous moment or main character:
+- "Why did [character] [do famous thing]?" (why did Eren laugh when Sasha died, why did Zeke let Levi kill him)
+- "Why can't / couldn't [character] [do thing]?" (why couldn't Sasha kill that Titan)
+- "The real reason [character] [looks or acts a certain way]"
+- "What if [famous situation] went differently?"
+- "This is the [most / first / only / luckiest] [thing] in [SERIES]"
+- Connecting dots inside the story: a pattern fans felt but never named (every holder of one power died saving the same person, history repeating itself)
+- Connections across series: the same idea showing up in several shows, or one creator paying tribute to another
+- A labeled fan theory (see the theory exception below)
+Ideas that flop, so KILL them:
+- pure opinion or humor with no fact (who would win, character redesigns, ship debates, "most sus moment")
+- news or trailer recaps that only report what happened ("the trailer looks insane", "X might have died in the new chapter")
+- side characters most viewers can't picture
+News is allowed only if the script answers a question about it, not just reports it.
+
+BALANCE RULE: Check the USED VIDEOS LIST before picking. Most entries so far are real-world trivia (inspirations, name origins, author facts). Top competitor channels get their biggest hits from IN-UNIVERSE questions (why a character did something, how a power works). Until about half of the recent entries are in-universe, prefer an in-universe question over another real-world trivia fact.
+
+FORMAT (pick one, default A)
+A. THE ANSWER: one question, one answer, one receipt.
+B. THE COUNTDOWN: exactly three items about ONE character or ONE arc (never across the whole series, so the footage stays in one clip pool). Count down from three, save the strongest item for last and introduce it with "But number one is...". Use B only when no single item is strong enough alone.
 
 IT HAS TO BE VERIFIED, NOT FAKE!
+THEORY EXCEPTION: a fan theory is allowed only if the theory itself really exists online (a known Reddit thread, wiki theory section, or popular video you can name) and the script labels it as a theory out loud ("One crazy theory says..."). Never present a theory as fact. The evidence the theory points to must be real.
 Use in correct places jokes, sarcasm, etc. (no cringe)
+Include at least one short roast line aimed at a character or the author, like a fan teasing a friend (style only, do not reuse: "Reiner really cannot catch a break." / "Eren had one job."). Humor is seasoning, never the meal: every joke sits on top of a real fact.
 Use simple words, and explain everything simply so average non english native speaker can understand it.
 While writing the script dont use any "", \,\
 AND REMEMBER YOU ARE WRITING A NARRATION THAT WILL BE USED FOR TEXT TO SPEACH AI VOICE
 
 TECHNICAL SPECS — OUTPUT FORMATTING, DELIVERY & API CONSTRAINTS
 TITLE RULE
-Output a "title" field: ONE declarative sentence that fully states the fact, plus the film/series name.
+Output a "title" field: ONE sentence that names the character or moment plus the film/series name, and WITHHOLDS the answer. The script's first line is this title, spoken word for word.
 
-Formats: "[The fact, stated plainly] in [MOVIE/SERIES]" / "The disturbing lore behind [X] in [MOVIE/SERIES]" / "Things you missed in [new episode/trailer] of [MOVIE/SERIES]" / "[Famous thing] [mundane property], and the movie actually tells us"
+Formats: "Why did [character] [do famous thing] in [MOVIE/SERIES]?" / "The real reason [character] [does thing] in [MOVIE/SERIES]" / "This is the [most / first / only] [thing] in [MOVIE/SERIES]" / "What if [twist] in [MOVIE/SERIES]?" / "Things you missed in [new episode/trailer] of [MOVIE/SERIES]" / Countdown: "Three [things] about [character] you never noticed in [MOVIE/SERIES]"
 
-Sentence case, casual, no clickbait ALL-CAPS, no emoji, no question marks.
+Sentence case, casual, no clickbait ALL-CAPS, no emoji. Question marks are allowed.
 
-The title gives the fact away. The video's job is showing the proof.
+The title asks, the video answers. Never put the answer in the title.
 
 Pillar G format: "The [X] controversy explained in sixty seconds or less"
 
@@ -72,19 +96,19 @@ STEP C - GENRE FALLBACK: add one broad, non-copyrighted instrumental search matc
 Every query must target an INSTRUMENTAL. Append "instrumental" / "no lyrics" / "OST" whenever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a step that gives you nothing, never pad with junk. If all three come up empty, music_queries: [].
 
 ELEVENLABS V3 AUDIO TAGS RULE
-Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the 90-100 word limit.
+Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the word limit.
 
 Placement (follow the story structure):
 - Hook (first sentence): one energy or curiosity tag.
 - Build: one pacing tag ([hesitates], [rushed]).
 - Reveal / punch: one tag at the start of the sentence containing the *WORD!* marker.
-- Outro: one calming or closing tag.
+- Outro: one tag that sells the final punchline ([deadpan], [sarcastic], [quietly], [understated]).
 
 Emotional states: [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happily], [annoyed], [surprised], [worried], [upset], [amazed]
 
 Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [giggles], [light chuckle], [sighs], [sigh of relief], [exhales], [gasps]
 
-Volume: [whispers], [shouts], [quietly], [softly], [booming]
+Volume: [whispers], [quietly], [softly], [booming]
 
 Pacing: [rushed], [stammers], [hesitates], [rapid-fire]
 
@@ -102,10 +126,6 @@ Rules:
 - Use ONLY tags from the lists above. Never invent tags. Never place tags inside *WORD!* markers.
 - Do not repeat the same tag twice in one script.
 - Use ellipses (...) for a beat before a reveal. You may CAPITALIZE at most one word per sentence for emphasis.
-
-Example of structure only (do NOT reuse its wording or tags):
-"[curious] Everyone thinks this fight ended in a draw... but the footage says otherwise. [hesitates] There's one detail nobody noticed. [gasps] He was BLEEDING the whole time. [calm] Watch it again."
-
 PUNCTUATION FOR DELIVERY
 Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause. CAPITALIZATION → spoken emphasis on a word.
 
@@ -116,21 +136,25 @@ Only genuine pivot/surprise beats. Single words only. One to three per script. A
 
 NUMBER RULE
 No digit characters anywhere in the script. All numbers written as words.
+Include at least one concrete, verified number in the script (a chapter, an age, a count, a speed, a year gap: "killed nearly five thousand people", "seventy years before the story"). Specific numbers sound credible, stick in memory, and let the pipeline show a stat card on screen. Never invent or round a number to make it sound bigger.
 
 WORD COUNT RULE
-Spoken text must be ninety to one hundred words, tags excluded. After drafting, count the spoken words and output the total in the spoken_word_count field. If the count falls outside ninety to one hundred, rewrite and recount — never approximate, never round.
+Spoken text, tags excluded: ninety to one hundred words for Format A, one hundred ten to one hundred thirty words for Format B. After drafting, count the spoken words and output the total in the spoken_word_count field. If the count falls outside the range for your format, rewrite and recount, never approximate, never round.
 
-SCRIPT STRUCTURE
+SCRIPT STRUCTURE (Format A)
 
-HOOK (one to two lines): state the fact + promise the receipt.
+HOOK (first line): the title, spoken word for word. No greeting, no intro.
 
-QUICK SETUP (one line): minimum context for the reveal to land.
+THE WRONG ANSWER (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then name what most fans assume and shoot it down ("Most fans think it's X... *WRONG!*" / "You might think X, but that makes zero sense").
 
-THE PROOF (the core): walk through the evidence — the scene, the quote, the prop, the comparison. This is the payoff.
+THE REAL ANSWER (the core): the receipt: the chapter, the fanbook, the interview, the scene. The answer must land by the halfway point. No long backstory before it.
 
-ESCALATION (one to two lines): why it's weirder/darker/funnier than it sounds; side detail here.
+ESCALATION (one to two lines): why it's weirder/darker/funnier than it sounds; side detail and the roast line go here.
 
-AUDIENCE BUTTON (last line): a direct question ("did you catch this on your first watch?") OR an open loop ("and that's not even the strangest part"). NEVER "follow for more," never a flat summary.
+PUNCHLINE (last line): an ironic twist or one-sentence reframe that hits harder than the answer itself, and calls back to the title so the video comes full circle (style only, do not reuse: title "This is the luckiest Titan in Attack on Titan" ends with "In the end, the only one who found freedom was a Titan nobody cared about."). You may add one very short question after it ("did you catch that?"). NEVER an open loop like "and that's not even the strangest part" (the video ends, so the loop never pays off), NEVER "follow for more", never a flat summary.
+
+SCRIPT STRUCTURE (Format B)
+HOOK (title, word for word) → number three → number two → "But number one is..." → PUNCHLINE. One short sentence of setup at most. Every item gets its own receipt and stays about the same character or arc.
 
 SCENE QUERY (for visual search)
 scene_query is a pure physical description of the receipt moment — what the screen looks like:
@@ -199,16 +223,20 @@ OUTPUT FORMAT REQUIREMENT
 Plaintext
 VERIFICATION BOX
 ☐ Track Selected: [Track A: News OR Track B: Fact]
+☐ Format: [A: The Answer OR B: The Countdown]
+☐ Topic Filter: Answers a question fans already have about a main character or famous scene (not opinion, not a news recap)
 ☐ Novelty Check: Topic does not repeat any from the Existing Videos list
-☐ Fact-Checked: [Yes - Source/Reason]
+☐ Fact-Checked: [Yes - Source/Reason] (for a theory: where the theory exists + labeled as a theory in the script)
+☐ Balance: [In-universe OR Real-world trivia], following the Balance Rule
 ☐ Language Standard: B1 Simple English verified
-☐ Spoken Word Count: [Number between 90-100] spoken words (tags excluded)
-☐ Number Check: Zero digit characters used
-☐ First Line Check: Direct declarative statement matching title (no greeting)
+☐ Spoken Word Count: [Number] spoken words (tags excluded; A: 90-100, B: 110-130)
+☐ Number Check: Zero digit characters used, at least one concrete verified number spoken as words
+☐ First Line Check: First line is the title spoken word for word, answer withheld (no greeting)
 ☐ Receipt Point: Direct visual reference included without frame-precise demands
 ☐ Footage Test: Passes Generic Footage Test ([GREEN / YELLOW])
-☐ Structure Check: Hook -> Setup -> Proof -> Escalation -> Audience Button
-☐ Ending Check: Direct question or open loop (NO "follow for more")
+☐ Structure Check: A: Hook -> Wrong Answer -> Real Answer -> Escalation -> Punchline / B: Hook -> 3 -> 2 -> 1 -> Punchline
+☐ Ending Check: Ends on a punchline or ironic twist that calls back to the title, optional short question (NO open loop, NO "follow for more")
+☐ Roast Line: At least one, sitting on a real fact
 ☐ Audio Tags: [Number] ElevenLabs v3 tags used (Min 4)
 ☐ Punch Markers: [Number] pivot markers used (Min 1, Max 3)
 
