@@ -90,10 +90,10 @@ TITLE RULE: the "title" field names the star or the moment and WITHHOLDS the ans
 Use exactly this five-beat structure (approximate timing for a 40 to 45 second voice):
 
 1. HOOK (0–3s, 10–15 words): the title, spoken. The big name + a claim with tension or a doubt. No "In this video". Start mid-story.
-2. CONTEXT (3–12s, 20–25 words): what happened, in the simplest words possible. If fans believe the wrong explanation, say it here and shoot it down.
+2. CONTEXT (3–12s, 20–25 words): what happened, in the simplest words possible. Only if a real, widespread wrong explanation exists (fans actually saying it in comments, Reddit, or pundit takes), say it here and shoot it down. Otherwise skip it and say what makes the story strange. Never invent a belief just to bust it.
 3. MECHANISM (12–30s, 40–45 words): the hidden why, the rule, or the trick. Explain the FULL chain from cause to result with no missing step: what the trick is, what it physically does, and why that makes them faster, richer or banned. Test: could a viewer explain it to a friend afterwards? If any step is only named ("a pipe to the wing") and not explained ("the air from the pipe made the wing stop working"), add it. Include ONE everyday analogy.
    NUMBER: the MECHANISM or TURN must contain at least one concrete, verified number that shows the size of the effect (seconds gained, speed added, money, years, fines, a record). Check it in a source and list it in claims_checked. A script with zero numbers fails.
-4. TURN (30–38s, 20–25 words): the twist or the evidence. This is where the punch marker and the strongest CAPS go.
+4. TURN (30–38s, 20–25 words): the twist or the evidence. This is where the strongest CAPS go, and usually a punch marker.
 5. PAYOFF (38–45s, 10–15 words): a kicker that lands the story: the verdict, the ban, the record that still stands, an ironic twist. If the trick was later banned, copied by every rival, or turned into an official rule, END ON THAT, it is almost always the strongest kicker. Call back to the hook if you can. No "what happens next" filler, no open loop, no "like and subscribe". One very short comment question after the kicker is allowed.
 For angle G (COUNTDOWN) the beats become: HOOK, number three, number two, "But number one is...", PAYOFF.
 
@@ -115,30 +115,24 @@ PUNCTUATION FOR DELIVERY:
 Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause before a reveal.
 CAPITALIZE at most one word per sentence. Save the strongest CAPS for the TURN.
 
-PUNCH MARKER RULE:
-Mark 1 to 3 high-impact pivot words with asterisks, in CAPS with an exclamation mark inside: *BUT!* *WAIT!* *WRONG!* *NEVER!*
-- Only genuine pivot or surprise moments, at least one of them in the TURN.
-- Single words only.
-- Asterisks are stripped before voice generation; the CAPS and ! stay.
+PUNCH MARKER RULE (sound effect words, REQUIRED)
+Every script marks exactly one or two words with asterisks (*word*). Each marked word gets a sound effect the moment it is spoken, so pick the words the viewer should FEEL. Choose them from THIS script's strongest moments:
+- the word the twist or evidence lands on ("the FIA *banned* it")
+- a shocking number or detail ("he lost *four* million dollars")
+- the word that flips what came before (the loophole, the contradiction, the absurd fact)
+- the key word of the kicker
+Never mark: anything in the hook line, filler words (but, so, really, actually, very), or two words in the same sentence. Do not default to the same word every script.
+Single words only. Use a word that appears only once in the script. No tags inside the asterisks. Asterisks are stripped before voice generation. List the marked words and why you chose them in verification.punch_markers.
 
-ELEVENLABS V3 AUDIO TAGS RULE:
+
+ELEVENLABS V4 AUDIO TAGS RULE:
 Insert 4 to 6 [bracketed] tags. Tags are not spoken and do not count toward the word limit.
-Placement by beat:
-- HOOK: one energy or curiosity tag.
-- CONTEXT or MECHANISM: one pacing tag ([slows down], [drawn out], [hesitates], [rushed]).
-- TURN: one tag at the start of the sentence containing the punch marker.
-- PAYOFF: one tag that sells the kicker ([deadpan], [sarcastic], [quietly], [understated]).
-- Optional 1–2 extra tags anywhere they genuinely help (e.g. [sarcastic] on the joke).
-
-Allowed tags ONLY:
-Emotional: [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happily], [annoyed], [surprised], [worried], [upset], [awe], [amazed]
-Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [giggles], [light chuckle], [sighs], [sigh of relief], [exhales], [gasps]
-Volume: [whispers], [quietly], [softly], [booming]
-Pacing: [rushed], [slows down], [drawn out], [stammers], [hesitates], [rapid-fire]
-Tone: [deadpan], [flatly], [understated], [suspicious tone]
-Non-verbal (max 1 per script): [clears throat], [gulps], [swallows], [snorts]
-Compound: [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously]
-Sound effects (max 1, only if the narration literally describes that sound): [gunshot], [explosion], [applause], [clapping]
+Allowed tags (use ONLY these, never invent others):
+Calm / reflective: [calm], [curious], [thoughtful], [peaceful], [content]
+Dry tone (for jokes and sarcasm): [deadpan], [flatly], [understated], [sarcastic],
+Volume: [softly], [quietly]
+Light reactions, 10% of the script: [sighs], [light chuckle]
+Throat clear (max 1 per script, only right before correcting a myth or an awkward fact): [clears throat]
 
 Rules:
 - A tag goes at the START of its sentence and stays active until the next tag.
@@ -210,7 +204,8 @@ Output ONLY this JSON, no text before or after:
     "sources": ["", ""],
     "claims_checked": ["", ""],
     "footage_status": "GREEN | YELLOW | RED",
-    "footage_note": ""
+    "footage_note": "",
+    "punch_markers": ["<word> -> <why the viewer should feel it>"]
   },
   "youtube_queries": ["", "", "", "", "", ""],
   "scene_query": "",

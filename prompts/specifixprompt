@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE jujutsu kaisen idea.
+Find ONE aot idea.
 
 It must be either:
 
@@ -95,44 +95,33 @@ STEP C - GENRE FALLBACK: add one broad, non-copyrighted instrumental search matc
 
 Every query must target an INSTRUMENTAL. Append "instrumental" / "no lyrics" / "OST" whenever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a step that gives you nothing, never pad with junk. If all three come up empty, music_queries: [].
 
-ELEVENLABS V3 AUDIO TAGS RULE
+ELEVENLABS V4 AUDIO TAGS RULE
 Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the word limit.
 
-Placement (follow the story structure):
-- Hook (first sentence): one energy or curiosity tag.
-- Build: one pacing tag ([hesitates], [rushed]).
-- Reveal / punch: one tag at the start of the sentence containing the *WORD!* marker.
-- Outro: one tag that sells the final punchline ([deadpan], [sarcastic], [quietly], [understated]).
-
-Emotional states: [nervous], [frustrated], [sorrowful], [calm], [curious], [crying], [sarcastic], [mischievously], [angry], [sad], [happily], [annoyed], [surprised], [worried], [upset], [amazed]
-
-Laughter & breath: [laughs], [laughs harder], [starts laughing], [wheezing], [giggles], [light chuckle], [sighs], [sigh of relief], [exhales], [gasps]
-
-Volume: [whispers], [quietly], [softly], [booming]
-
-Pacing: [rushed], [stammers], [hesitates], [rapid-fire]
-
-Tone: [deadpan], [flatly], [understated], [suspicious tone]
-
-Non-verbal (max 1 per script): [clears throat], [gulps], [swallows], [snorts]
-
-Compound variants (allowed): [frustrated sigh], [happy gasp], [excitedly], [dramatically], [curiously], [nervously]
-
-Sound effects (max 1 per script, only if the narration literally describes that sound): [gunshot], [explosion], [applause], [clapping]
+Allowed tags (use ONLY these, never invent others):
+Calm / reflective: [calm], [curious], [thoughtful], [peaceful], [content]
+Dry tone (for jokes and sarcasm): [deadpan], [flatly], [understated], [sarcastic],
+Volume: [softly], [quietly]
+Light reactions, 10% of the script: [sighs], [light chuckle]
+Throat clear (max 1 per script, only right before correcting a myth or an awkward fact): [clears throat]
 
 Rules:
 - A tag goes at the START of the sentence it applies to and stays active until the next tag.
 - Layer at most 2 tags in a row, and only compatible ones ([whispers][curious] is fine; never opposites like [whispers][shouts] or [calm][excited]).
-- Use ONLY tags from the lists above. Never invent tags. Never place tags inside *WORD!* markers.
+- Use ONLY tags from the lists above. Never invent tags. Never place tags inside *word* markers.
 - Do not repeat the same tag twice in one script.
 - Use ellipses (...) for a beat before a reveal. You may CAPITALIZE at most one word per sentence for emphasis.
 PUNCTUATION FOR DELIVERY
 Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause. CAPITALIZATION → spoken emphasis on a word.
 
-PUNCH MARKER RULE
-Mark exactly two to three high-impact pivot words with asterisks, in CAPS with an exclamation inside:
-For example: *BUT!* *WRONG!*, etc...
-Only genuine pivot/surprise beats. Single words only. One to three per script. Asterisks are stripped before voice generation; CAPS and ! stay.
+PUNCH MARKER RULE (sound effect words, REQUIRED)
+Every script marks exactly one or two words with asterisks (*word*). Each marked word gets a sound effect the moment it is spoken, so pick the words the viewer should FEEL. Choose them from THIS script's strongest moments:
+- the word the answer or twist lands on ("he was already *dead*")
+- a shocking number or detail ("it took *nine* years")
+- the word that flips what came before (the correction, the contradiction, the absurd fact)
+- the key word of the punchline
+Never mark: anything in the hook line, filler words (but, so, really, actually, very), or two words in the same sentence. Do not default to the same word every script.
+Single words only. Use a word that appears only once in the script. No tags inside the asterisks. Asterisks are stripped before voice generation.
 
 NUMBER RULE
 No digit characters anywhere in the script. All numbers written as words.
@@ -145,7 +134,10 @@ SCRIPT STRUCTURE (Format A)
 
 HOOK (first line): the title, spoken word for word. No greeting, no intro.
 
-THE WRONG ANSWER (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then name what most fans assume and shoot it down ("Most fans think it's X... *WRONG!*" / "You might think X, but that makes zero sense").
+THE SETUP (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then pick ONE of these:
+- MYTH BUST, only if a real, widespread wrong belief about this exact question exists (you could point to fans actually saying it in comments, Reddit, or popular videos). Name it and shoot it down ("Most fans think it's X, but that makes zero sense").
+- STAKES, for everything else: say why this question matters or what makes it strange ("And nobody ever explained why." / "Which is weird, because he never did that again.").
+Never invent a belief just to bust it. If you are not sure fans really believe it, use STAKES. Do not open the Setup with "most fans think" or "you might think" in two scripts in a row.
 
 THE REAL ANSWER (the core): the receipt: the chapter, the fanbook, the interview, the scene. The answer must land by the halfway point. No long backstory before it.
 
@@ -234,11 +226,11 @@ VERIFICATION BOX
 ☐ First Line Check: First line is the title spoken word for word, answer withheld (no greeting)
 ☐ Receipt Point: Direct visual reference included without frame-precise demands
 ☐ Footage Test: Passes Generic Footage Test ([GREEN / YELLOW])
-☐ Structure Check: A: Hook -> Wrong Answer -> Real Answer -> Escalation -> Punchline / B: Hook -> 3 -> 2 -> 1 -> Punchline
+☐ Structure Check: A: Hook -> Setup [MYTH BUST: where fans say it / STAKES] -> Real Answer -> Escalation -> Punchline / B: Hook -> 3 -> 2 -> 1 -> Punchline
 ☐ Ending Check: Ends on a punchline or ironic twist that calls back to the title, optional short question (NO open loop, NO "follow for more")
 ☐ Roast Line: At least one, sitting on a real fact
-☐ Audio Tags: [Number] ElevenLabs v3 tags used (Min 4)
-☐ Punch Markers: [Number] pivot markers used (Min 1, Max 3)
+☐ Audio Tags: [Number] ElevenLabs v4 tags used (Min 4)
+☐ Punch Markers: [1 or 2] marked: [the word(s)] -> [why each one is a moment the viewer should feel]
 
 [JSON OUTPUT HERE]
 
@@ -246,39 +238,11 @@ VERIFICATION BOX
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
 
-1. levi ackerman was created by accident in attack on titan #aot  #levi
-2. mikasa ackerman is named after a literal battleship in attack on titan #aot #mikasaackerman
-3. satoru gojo only sleeps three hours a night in jujutsu kaisen #jjk  #gojo
-4. the hilarious author mistake about yuji's ear in jujutsu kaisen #jjk #sukuna
-5. falco grice was secretly inspired by jesse pinkman in attack on titan #aot
-6. spy familly fun fact #anime
-7. aoi todos iq is a dragon ball z reference #anime
-8. gojo satoru blindfold design origin in jjk#anime
-9. turbo granny is actually based on a real modern myth in dan da dan #anime  #dandandan
-10. german word origins of frieren character names #anime #frieren
-11. ragatha's glitch face is actually a game of pong in the amazing digital circus #tadc
-12. toji fushiguro is based on jason statham in jujutsu kaisen #jujutsukaisen  #toji
-13. a real dam in japan was turned into wall maria in attack on titan #aot
-14. why did sukuna not kill uraume? #jjk #jujutsukaisen  #sukuna
-15. jennifer lawrence created the strongest friendship in jujutsu kaisen #jjk #jujutsukaisen
-16. the strange origin of levi's name in attack on titan #aot #levi
-17. ryomen sukuna's cursed technique is actually based on cooking in jujutsu kaisen #jjk  #sukuna
-18. pomni's name contains a secret message to escape in the amazing digital circus #tadc
-19. sasha was originally supposed to die in season two in attack on titan #aot
-20. the fake memory technique in jujutsu kaisen #jjk
-21. the secret meaning behind toge inumaki's rice ball words in jujutsu kaisen #jjk #anime
-22. the true inspiration behind satoru gojo in jujutsu kaisen #anime #gojo #jjk
-23. the author of chainsaw man got banned on twitter #chainsawman #anime
-24. titans were inspired by a drunk internet cafe customer in attack on titan #aot
-25. satoru gojo is actually hated by his own creator in jujutsu kaisen #jjk  #gojo
-26. satoru gojo loses his cursed technique when he drinks alcohol in jujutsu kaisen #jjk  #gojo
-27. the armored titan was actually modeled after ufc legend brock lesnar in attack on titan #aot
-28. the cursed fingers taste like soap in jujutsu kaisen #jjk #jujutsukaisen  #sukuna
-29. the worker drones' colorful eyes secretly mark their freedom in murder drones
-30. kento nanami was originally a villain in jujutsu kaisen #jjk #jujutsukaisen #nanami
-31. the unreadable language is just upside-down japanese in attack on titan #aot
-32. the hilarious reason mei mei fled to malaysia in jujutsu kaisen #jjk
-33. the colossal titan was originally designed as a stone monster with teeth in attack on titan #aot
-34. the real sukuna is worshipped as a temple hero in jujutsu kaisen #jjk #sukuna
-35. levi was made short on purpose because a tall levi would not be cool in attack on titan #aot  #leviackerman
-36. the next big jujutsu kaisen season four reveal already has an exact date #jjkjjk #jujutsukaisen
+1. why did zeke decide to die? #aot
+2. why does sukuna have four arms in jujutsu kaisen? #jjk  #sukunaryomen
+3. the original story was about climate change in attack on titan #aot
+4. the iconic photo of scp 173 was permanently deleted in scp foundation #scp #scp173
+5. gabi braun is actually a female eren in attack on titan #aot
+6. attack on titan in marvel? #aot #marvel
+7. yuta okkotsu wore a white uniform because he was labeled a problem child in jujutsu kaisen #jjk
+8. the unknown gender of hange in attack on titan #aot
