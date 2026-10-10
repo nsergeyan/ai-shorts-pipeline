@@ -113,47 +113,32 @@ DEFAULT_CHANNEL = {
 # ---------------------------------------- #
 
 MANUAL_DATA = {
-"channel": "sports",
-"sport": "f1",
-"angle": "banned_or_loophole",
-"topic": "McLaren F-duct loophole",
-"specific_subject": "Lewis Hamilton and McLaren MP4-25",
-"title": "Why Hamilton drove one-handed at 200mph 🏎️ #f1",
-"verification": {
-"event_date": "2010-03-14",
-"sources": [
-"https://www.autosport.com",
-"https://www.motorsport.com/f1/news/these-10-outlawed-tech-innovations-rocked-f1/10721262/"
-],
-"claims_checked": [
-"McLaren introduced the F-duct system in the 2010 F1 season using cockpit air channels",
-"Drivers covered an internal hole with their knee or hand to stall the rear wing and add 6 mph top speed",
-"The FIA banned driver-controlled fluidic ducts in 2011, which directly led to the development of DRS"
-],
-"footage_status": "GREEN",
-"footage_note": "Safe footage available in McLaren press releases, driver press conferences, paddock interviews, pit lane b-roll, and high-res photos."
-},
+"channel": "anime",
+"topic": "attack on titan",
+"specific_subject": "why eren laughed when sasha died",
+"title": "Why did Eren laugh when Sasha died in Attack on Titan?",
 "youtube_queries": [
-"McLaren F duct 2010 F1",
-"Lewis Hamilton press conference 2010",
-"McLaren garage F1 2010",
-"McLaren MP4 25 rear wing photo",
-"F1 2010 season highlights McLaren",
-"F1 pit lane stock footage"
+  "eren laughs sasha death scene",
+  "attack on titan airship scene goes hard",
+  "eren yeager edit aot",
+  "attack on titan sasha death episode",
+  "attack on titan sasha death english dub",
+  "attack on titan official clip sasha"
 ],
-"scene_query": "A silver McLaren Formula One car speeding down a long straightaway, transitioning to a driver in silver racing suit inside the cockpit covering a duct hole with his knee.",
+"scene_query": "Interior of an airship cabin, dim lighting, characters in military uniforms with green cloaks looking shocked and somber, Eren covering his face and chuckling while others look on in disbelief.",
 "footage_source": "official_or_press",
-"music_mood": "mysterious",
+"music_mood": "curious",
 "music_queries": [
-"Formula 1 official theme instrumental",
-"cinematic sports documentary suspense instrumental no copyright",
-"tense synthwave racing instrumental no copyright"
+  "attack on titan call of silence instrumental ost",
+  "attack on titan youseebiggirl instrumental cover no copyright",
+  "dark atmospheric orchestral tension instrumental no copyright"
 ],
-"music_prompt": "Tense synthwave track with pulsating bassline, 120 BPM, heavy engine roar swell, brass hits, subtle string tremolo, building mystery under the hook and mechanism, dropping into high tension around twenty-five seconds, landing on a clean electronic hit at the end, sports short-form video background, no lyrics, exclude: aggressive metal, upbeat pop",
+"music_prompt": "dark orchestral cinematic, eighty BPM, weeping cello and low sub-bass synth, quiet tension building to the dark reveal at second twenty, short-form video background, no lyrics, exclude: upbeat percussion, cheerful piano",
 "voice_name": "animatoryoung",
-"script": "[curious] Why did Lewis Hamilton drive one-handed at two hundred miles per hour in twenty-ten? [flatly] Rivals thought McLaren was illegally flexing their wings, but inspectors found zero rule violations on the car. [slows down] McLaren secretly routed an air pipe straight through the cockpit to the rear wing. On straights, Hamilton covered a tiny hole inside the cabin with his knee, redirecting air like blocking a whistle hole. This stalled wing downforce and added six miles per hour. [drawn out] Other teams lacked room for knee vents, forcing drivers to cover the hole using their hands. BUT! steering ONE-HANDED at high speed was insanely dangerous. [deadpan] The FIA banned fluidic ducts, but banning them inspired Formula One to invent DRS. Should driver loopholes like this be allowed?",
-"spoken_word_count": 121
+"spoken_word_count": 98,
+"script": "Why did Eren laugh when Sasha died in Attack on Titan? [curious] We all remember the heartbreaking scene inside the airship cabin after the raid. [thoughtful] Most viewers assumed he completely lost his sanity from overwhelming grief. [sighs] But reading chapter one hundred five exposes the grim reality. [flatly] He had already witnessed this exact tragedy through his future paths and knew he was entirely *powerless* to prevent it. [deadpan] Eren had one massive responsibility to protect his comrades, yet his stubborn obsession triggered the whole disaster. [sarcastic] In the end, achieving true freedom meant laughing as his closest friend breathed her last breath."
 }
+
 
 def load_channel(name):
     """Return DEFAULT_CHANNEL with channels/<name>.json layered on top (theme merged key by key)."""
@@ -173,31 +158,39 @@ def load_channel(name):
     return channel
 
 
+def _norm_word(word: str) -> str:
+    return word.strip(".,!?;:\"'—…*()").lower()
+
+
 def _strip_punch_markers(script: str):
-    """Strip *word* markers from script. Returns (clean_script, [word, ...]).
+    """Strip *word* markers from script. Returns (clean_script, [(word, n), ...]).
+    n is which copy of the word was marked (0 = first time it appears in the script),
+    so a marked second "dead" doesn't get matched to the first one.
     The word content (e.g. BUT!) stays in the script for TTS emphasis; only * is removed."""
     import re
+    marker = re.compile(r'\*([^*]+)\*')
     punch_words = []
     def _replace(m):
-        word = m.group(1)
-        punch_words.append(word.strip("!?.,;:").lower())
-        return word
-    clean_script = re.sub(r'\*([^*]+)\*', _replace, script)
+        word = _norm_word(m.group(1))
+        before = marker.sub(r'\1', script[:m.start()])
+        n = sum(1 for w in before.split() if _norm_word(w) == word)
+        punch_words.append((word, n))
+        return m.group(1)
+    clean_script = marker.sub(_replace, script)
     return clean_script, punch_words
 
 
 def _match_punch_times(punch_words: list, words_data: list) -> list:
-    """Match punch words to Whisper timestamps in script order."""
+    """Match each punch word to the Whisper timestamp of the same copy of that word."""
     times = []
-    remaining = list(punch_words)
-    for word, start, _end in words_data:
-        if not remaining:
-            break
-        clean = word.strip(".,!?\"'—…").lower()
-        if clean == remaining[0]:
-            times.append(round(start, 3))
-            remaining.pop(0)
-    return times
+    for target, n in punch_words:
+        hits = [start for word, start, _end in words_data if _norm_word(word) == target]
+        if not hits:
+            print(f"⚠️ Punch word '{target}' not found in transcript, skipping")
+            continue
+        # Whisper can drop a word, so fall back to the last copy it heard
+        times.append(round(hits[min(n, len(hits) - 1)], 3))
+    return sorted(times)
 
 
 def _ffprobe_fails(path):
