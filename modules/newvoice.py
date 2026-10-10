@@ -19,7 +19,7 @@ if not ELEVENLABS_API_KEYS:
     raise RuntimeError("ELEVENLABS_API_KEY is not set. Add it to your .env file.")
 
 VOICES = {
-    "animatoryoung": "xlnOCsItpCGtYrgUKVqx",
+    "animatoryoung": "b4c4RRmitA1JMvWSNTyZ",
     "hamid": "yr43K8H5LoTp6S1QFSGg",
     "Molodoy": "YjESejviApN7SHrbfnA2",
     "spanish_guy": "nR2KQXVwn2zMK8FALNCh",
