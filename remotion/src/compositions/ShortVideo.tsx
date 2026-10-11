@@ -310,7 +310,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
       ))}
       <GraphicLayer graphics={graphics} theme={theme} />
       {wordsData.length > 0 && <WordHighlight wordsData={wordsData} accent={theme.accent} topPct={inFullShot ? 58 : 27} />}
-      <ProgressBar accent={theme.accent} />
+      {!inFullShot && <ProgressBar accent={theme.accent} />}
     </AbsoluteFill>
   );
 };
