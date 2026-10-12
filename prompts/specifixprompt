@@ -137,9 +137,9 @@ HOOK (first line): the title, spoken word for word. No greeting, no intro.
 THE SETUP (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then pick ONE of these:
 - MYTH BUST, only if a real, widespread wrong belief about this exact question exists (you could point to fans actually saying it in comments, Reddit, or popular videos). Name it and shoot it down ("Most fans think it's X, but that makes zero sense").
 - STAKES, for everything else: say why this question matters or what makes it strange ("And nobody ever explained why." / "Which is weird, because he never did that again.").
-Never invent a belief just to bust it. If you are not sure fans really believe it, use STAKES. Do not open the Setup with "most fans think" or "you might think" in two scripts in a row.
+Never invent a belief just to bust it. If you are not sure fans really believe it, use STAKES. The bust must also be real: shoot the myth down with story evidence, never with an invented creator statement. Say "some fans" or "one theory" unless the belief is truly the majority view. Do not open the Setup with "most fans think" or "you might think" in two scripts in a row.
 
-THE REAL ANSWER (the core): the receipt: the chapter, the fanbook, the interview, the scene. The answer must land by the halfway point. No long backstory before it.
+THE REAL ANSWER (the core): the receipt. Best receipt is what happens on screen or on the page (the scene, the chapter). Name an official source (fanbook, interview, author note, databook) ONLY if you know its exact content and could name which one it is. If you are not sure, argue from the story itself and never say "the creator confirmed", "Gege said", "in the fanbook" or "officially". A made-up source is worse than no source. The answer must land by the halfway point. No long backstory before it.
 
 ESCALATION (one to two lines): why it's weirder/darker/funnier than it sounds; side detail and the roast line go here.
 
@@ -218,7 +218,9 @@ VERIFICATION BOX
 ☐ Format: [A: The Answer OR B: The Countdown]
 ☐ Topic Filter: Answers a question fans already have about a main character or famous scene (not opinion, not a news recap)
 ☐ Novelty Check: Topic does not repeat any from the Existing Videos list
-☐ Fact-Checked: [Yes - Source/Reason] (for a theory: where the theory exists + labeled as a theory in the script)
+☐ Fact-Checked: list EVERY factual claim in the script, one per line, tagged:
+   CANON [chapter/episode/scene] | OFFICIAL [exact source name] | THEORY [where it exists + labeled out loud] | UNSURE
+   Any UNSURE claim must be cut or rewritten before output. Any "the creator/fanbook/interview says" line must be OFFICIAL with the exact source.
 ☐ Balance: [In-universe OR Real-world trivia], following the Balance Rule
 ☐ Language Standard: B1 Simple English verified
 ☐ Spoken Word Count: [Number] spoken words (tags excluded; A: 90-100, B: 110-130)

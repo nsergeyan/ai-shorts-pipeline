@@ -78,6 +78,8 @@ Safe pools, priority order:
 STEP 4 — VERIFY (IT HAS TO BE REAL)
 ═══════════════════════════════════
 - Confirm every factual claim in at least 2 independent reputable sources (official team/league/promotion sites, BBC, ESPN, The Athletic, Autosport, The Race, Reuters, MMA Junkie, etc.).
+- Never attribute a statement to an official body or person ("the FIA confirmed", "UEFA said", "his coach admitted") unless a source shows they actually said it. Small details count: every number, date, fine and record needs its own source, not just the main story.
+- List EVERY factual claim in claims_checked with the source that confirms it. A claim you cannot pair with a source must be cut from the script.
 - Write down the event date. Old stories are fine; just never present an old story as if it happened this week.
 - Never invent quotes. Do not put words in a real person's mouth; paraphrase what they said and only if a source confirms it.
 - If an explanation is a theory (like "late brakers struggle with these cars"), the script must present it as a theory: "the theory is", "many engineers think".
@@ -202,7 +204,7 @@ Output ONLY this JSON, no text before or after:
   "verification": {
     "event_date": "",
     "sources": ["", ""],
-    "claims_checked": ["", ""],
+    "claims_checked": ["claim -> source name or URL", "claim -> source name or URL"],
     "footage_status": "GREEN | YELLOW | RED",
     "footage_note": "",
     "punch_markers": ["<word> -> <why the viewer should feel it>"]
