@@ -82,6 +82,7 @@ modules/
   video_editor.py           Remotion render, CTA composite, thumbnail render
   clipmaker.py              second entry point: promo clip from your own video
   competitor_analyzer.py    pulls a channel's top/bottom Shorts transcripts
+  tiktok_checker.py         lists a TikTok account's captions (duplicate-topic check)
 remotion/src/
   compositions/             ShortVideo, Thumbnail, SubtitlePreview (dev preview)
   components/               WordHighlight, ProgressBar, graphics/
@@ -106,6 +107,12 @@ python modules/competitor_analyzer.py <channel_handle>
 ```
 
 Only compare top vs bottom within one channel, and run one channel at a time to avoid YouTube's rate limit.
+
+**TikTok checker** prints the captions of a TikTok account's recent videos, so you can see which topics are already posted before writing a new prompt. Set `username` at the bottom of the file, then run:
+
+```bash
+python modules/tiktok_checker.py
+```
 
 ## Design decisions
 
