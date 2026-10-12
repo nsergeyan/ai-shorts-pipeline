@@ -89,7 +89,7 @@ def _verify_bitrate(path: str) -> None:
             f"continue rather than render a video with degraded audio."
         )
 
-    print(f"🔊 Audio quality OK: {actual}kbps")
+    print(f"Audio quality OK: {actual}kbps")
 
 
 def clean_text_for_speech(text: str) -> str:
@@ -108,7 +108,7 @@ def _try_generate_with_key(
 ) -> bool:
     """Attempt to generate TTS audio with a single ElevenLabs API key. Returns True on success."""
     client = ElevenLabs(api_key=api_key, base_url=ELEVENLABS_BASE_URL)
-    print(f"🔑 Using key: {api_key[:6]}... for Language: {lang.upper()}")
+    print(f"Using key: {api_key[:6]}... for Language: {lang.upper()}")
 
     tmp_path = output_path + ".partial"
 
@@ -149,13 +149,13 @@ def _try_generate_with_key(
             )
             os.replace(sped_path, output_path)
 
-        print(f"✅ Voice ready → {output_path}")
+        print(f"Voice ready → {output_path}")
         return True
 
     except Exception as e:
         if os.path.exists(tmp_path):
             os.remove(tmp_path)
-        print(f"⚠️ Error: {e}")
+        print(f"Error: {e}")
         return False
 
 
@@ -170,7 +170,7 @@ def generate_voice(
     voice_lookup = {name.lower(): vid for name, vid in VOICES.items()}
     voice_id = voice_lookup.get(voice.lower(), VOICES["animatoryoung"])
 
-    print(f"🎙️ Generating voice '{voice}' ({lang})...")
+    print(f"Generating voice '{voice}' ({lang})...")
 
     for api_key in ELEVENLABS_API_KEYS:
         if _try_generate_with_key(
@@ -186,7 +186,7 @@ def generate_voice(
             _verify_bitrate(output_path)
             return output_path
 
-        print("⏭️ Switching key...")
+        print("Switching key...")
 
     raise RuntimeError("All ElevenLabs keys failed.")
 
@@ -222,12 +222,12 @@ if __name__ == "__main__":
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
             )
 
-            print(f"🎧 take {i}: {raw}")
-            print(f"           {sped}  ({PIPELINE_SPEED}x)")
+            print(f"take {i}: {raw}")
+            print(f"        {sped}  ({PIPELINE_SPEED}x)")
 
-        print(f"\nListen to raw vs sped. If raw is good and sped is bad, "
-              f"atempo is the problem.")
+        print("\nListen to raw vs sped. If raw is good and sped is bad, "
+              "atempo is the problem.")
         print(f"Open {AUDIO_DIR}")
 
     except Exception as e:
-        print(f"❌ Test Failed: {e}")
+        print(f"Test Failed: {e}")

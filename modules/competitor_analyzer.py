@@ -61,7 +61,7 @@ def fetch_transcript(video_id: str) -> str:
 
 def analyze(handle: str):
     shorts = list_shorts(handle)
-    print(f"🔍 Found {len(shorts)} Shorts on @{handle}")
+    print(f"Found {len(shorts)} Shorts on @{handle}")
 
     # Bottom group comes from what's left after the top, so the two never overlap on small channels
     top = shorts[:TOP_N]
@@ -73,7 +73,7 @@ def analyze(handle: str):
         try:
             text = fetch_transcript(s["id"])
         except Exception as e:
-            print(f"⚠️ {s['id']} caption fetch failed: {e}")
+            print(f"{s['id']} caption fetch failed: {e}")
             text = ""
         print(f"{group:<6} {s['views']:>12,}  {s['title'][:50]}  ({len(text.split())} words)")
         if text:
@@ -81,7 +81,7 @@ def analyze(handle: str):
         time.sleep(SLEEP_BETWEEN)
 
     if not blocks:
-        print("❌ No transcripts found, nothing to analyze")
+        print("No transcripts found, nothing to analyze")
         return
 
     os.makedirs(RESEARCH_DIR, exist_ok=True)
@@ -89,7 +89,7 @@ def analyze(handle: str):
     with open(out, "w", encoding="utf-8") as f:
         f.write(f"{ANALYSIS_PROMPT}\n\nChannel: @{handle}, {len(blocks)} transcripts\n\n")
         f.write("\n\n".join(blocks))
-    print(f"✅ Saved to {out}, copy it into any AI or ask Claude to analyze it")
+    print(f"Saved to {out}, copy it into any AI or ask Claude to analyze it")
 
 
 if __name__ == "__main__":

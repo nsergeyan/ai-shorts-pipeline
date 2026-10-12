@@ -69,11 +69,7 @@ const ClipRenderer: React.FC<{
   const isFull = clip.layout === "full" && frame < fullFrames;
   const focusPct = Math.round((clip.focusX ?? 0.5) * 100);
 
-  // No fade on the first clip: frame 0 must land at full brightness so the hook
-  // shot is readable instantly instead of ramping up out of black.
-  const opacity = 1;
-
-  // Even clips exit left, odd clips exit right — alternating whip direction
+  // Even clips exit left, odd clips exit right, alternating whip direction
   const enterStartX = !isFirst ? ((clipIndex - 1) % 2 === 0 ? WHIP_DISTANCE : -WHIP_DISTANCE) : 0;
   const exitEndX = !isLast ? (clipIndex % 2 === 0 ? -WHIP_DISTANCE : WHIP_DISTANCE) : 0;
 
@@ -106,7 +102,6 @@ const ClipRenderer: React.FC<{
   return (
     <AbsoluteFill
       style={{
-        opacity,
         transform: `translateX(${translateX}px)`,
         filter: motionBlur > 0.1 ? `blur(${motionBlur}px)` : undefined,
       }}
@@ -201,7 +196,7 @@ const ChromaticGlitch: React.FC<{ glitchFrames: number[] }> = ({ glitchFrames })
   );
 };
 
-// Brief white flash on selected cuts — subtle, ±2 frames around the cut point
+// Brief white flash on selected cuts: subtle, ±2 frames around the cut point
 const FlashCut: React.FC<{ flashFrames: number[] }> = ({ flashFrames }) => {
   const frame = useCurrentFrame();
 
@@ -250,7 +245,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Build clip sequences (hard cuts — no overlap)
+  // Build clip sequences (hard cuts, no overlap)
   let accumulated = 0;
   const cutFrames: number[] = []; // frame where each clip ends (= start of next)
 
@@ -288,7 +283,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   }
   const inFullShot = fullRanges.some(([a, b]) => frame >= a && frame < b);
 
-  // Every 3rd cut (starting at index 1) gets a flash — evenly spread, ~1 in 3
+  // Every 3rd cut (starting at index 1) gets a flash, evenly spread, ~1 in 3
   const flashFrames = cutFrames.filter((_, i) => i % 3 === 1);
 
   return (

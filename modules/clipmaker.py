@@ -66,7 +66,7 @@ def _enforce_duration(start: float, end: float, target: float, video_duration: f
         target = min(target, video_duration)
         start = max(0.0, min(start, video_duration - target))
         end = start + target
-        print(f"📏 Gemini returned {span:.1f}s, forcing to {end - start:.1f}s")
+        print(f"Gemini returned {span:.1f}s, forcing to {end - start:.1f}s")
 
     if payoff is not None and 0 < payoff < end:
         # Stretching the clip must never swallow the answer, that is the entire
@@ -75,7 +75,7 @@ def _enforce_duration(start: float, end: float, target: float, video_duration: f
         if shift > 0:
             start -= shift
             end -= shift
-            print(f"🔒 Pulled back {shift:.1f}s to end before the payoff at {payoff:.1f}s")
+            print(f"Pulled back {shift:.1f}s to end before the payoff at {payoff:.1f}s")
     return start, end
 
 
@@ -119,9 +119,9 @@ def _pick_candidate(candidates: list, target: float, video_duration: float):
     for test, label in checks:
         for rank, c in enumerate(parsed, 1):
             if test(c):
-                print(f"✅ Using candidate #{rank} ({label})")
+                print(f"Using candidate #{rank} ({label})")
                 return c
-    print("⚠️ No candidate cleared the checks, falling back to the top pick")
+    print("No candidate cleared the checks, falling back to the top pick")
     return parsed[0]
 
 
@@ -200,10 +200,10 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"⚠️ Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
                 uploaded_file = _upload_and_wait(client, video_path, label="source video")
                 time.sleep(5)
@@ -222,7 +222,7 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
         result = json.loads(match.group(0))
 
     candidates = result.get("candidates") or [result]  # tolerate a flat answer
-    print("🎬 Gemini's candidates:")
+    print("Gemini's candidates:")
     for i, c in enumerate(candidates[:3], 1):
         try:
             c_start, c_end = _parse_ts(c.get("start", 0)), _parse_ts(c.get("end", 0))
@@ -241,9 +241,9 @@ def find_best_clip_with_gemini(video_path: str, target_duration: float = 30.0):
         pick["start"], pick["end"], target_duration, video_duration, pick["payoff"]
     )
 
-    print(f"✂️ Picked {start:.1f}s → {end:.1f}s ({end - start:.1f}s): {best.get('reason', '')}")
+    print(f"Picked {start:.1f}s → {end:.1f}s ({end - start:.1f}s): {best.get('reason', '')}")
     if best.get("open_question"):
-        print(f"❓ Leaves them asking: {best['open_question']}")
+        print(f"Leaves them asking: {best['open_question']}")
     return start, end
 
 
@@ -288,41 +288,39 @@ def run_clip_maker(data: dict) -> bool:
         except Exception as e:
             raise RuntimeError(f"source_video_path failed ffprobe: {e}")
 
-        print(f"📎 Source video: {source_video_path}")
-        print("🤖 Finding the best moment to promote this video...")
+        print(f"Source video: {source_video_path}")
+        print("Finding the best moment to promote this video...")
         start, end = find_best_clip_with_gemini(source_video_path, target_duration)
 
         clip_path = f"clip_maker_trim_{uuid.uuid4().hex[:6]}.mp4"
-        print(f"✂️ Trimming {end - start:.1f}s...")
+        print(f"Trimming {end - start:.1f}s...")
         _trim_clip(source_video_path, clip_path, start, end)
 
         extracted_audio_path = os.path.join(AUDIO_DIR, f"clip_maker_audio_{uuid.uuid4().hex[:6]}.mp3")
         _extract_audio(clip_path, extracted_audio_path)
 
-        print("📝 Transcribing the clip's own audio for subtitles...")
+        print("Transcribing the clip's own audio for subtitles...")
         words_data = transcribe_audio_to_words(extracted_audio_path, None)
         if not words_data:
-            print("⚠️ No speech detected in this clip, rendering without subtitles.")
+            print("No speech detected in this clip, rendering without subtitles.")
 
         base = os.path.splitext(os.path.basename(source_video_path))[0]
         output_filename = f"Promo_{base}_{random.randint(10, 99)}.mp4"
 
-        print("🎬 Rendering with the same layout and subtitles as main.py...")
+        print("Rendering with the same layout and subtitles as main.py...")
         final_path = merge_audio_video(
             video_paths=[clip_path],
             audio_path=extracted_audio_path,
             output_name=output_filename,
-            vertical=True,
             shorts_cap=True,
             words_data=words_data or None,
-            subtitles_position="top",
         )
 
-        print(f"\n✅ DONE! Saved to: {final_path}")
+        print(f"\nDONE! Saved to: {final_path}")
         return True
 
     except Exception as e:
-        print(f"❌ Clip maker error: {e}")
+        print(f"Clip maker error: {e}")
         traceback.print_exc()
         return False
     finally:

@@ -11,7 +11,6 @@ import itertools
 from concurrent.futures import ThreadPoolExecutor
 from google import genai
 import ffmpeg
-from sympy.parsing.sympy_parser import null
 
 subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
 
@@ -25,7 +24,7 @@ _key_pool = itertools.cycle(GEMINI_API_KEYS)
 def _gemini_client():
     """Return a Gemini client using the next API key in the rotation pool."""
     key = next(_key_pool)
-    print(f"🔑 Gemini key: {key[:8]}...")
+    print(f"Gemini key: {key[:8]}...")
     return genai.Client(api_key=key)
 
 def _state_name(file_info):
@@ -58,12 +57,12 @@ def _wait_for_active(client, file_name, label="File", timeout=300):
         except Exception as e:
             if any(code in str(e) for code in ("500", "INTERNAL", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
                 poll_errors += 1
-                print(f"⚠️ Gemini transient error polling {label} ({poll_errors}/10), retrying...")
+                print(f"Gemini transient error polling {label} ({poll_errors}/10), retrying...")
                 if poll_errors >= 10:
                     raise RuntimeError(f"{label} stuck in PROCESSING with repeated transient errors") from e
             else:
                 raise
-    print(f"{label} ACTIVE ✅")
+    print(f"{label} ACTIVE")
     return file_info
 
 
@@ -74,9 +73,11 @@ def _upload_and_wait(client, path, label=None):
     handle must be re-created after rotating to a different key.
     """
     uf = client.files.upload(file=path)
-    print(f"📤 Uploaded {label or os.path.basename(path)}: {uf.name}")
+    print(f"Uploaded {label or os.path.basename(path)}: {uf.name}")
     _wait_for_active(client, uf.name, label=label or os.path.basename(path))
     return uf
+
+
 try:
     from modules.video_material_fetcher import fetch_video_material_by_search
     from modules.music_generator import generate_music, fetch_music_from_youtube
@@ -86,13 +87,10 @@ try:
 except ImportError as e:
     print(f"Error importing modules: {e}")
     sys.exit(1)
-# ---------------- CONFIG ---------------- #
+
 LANGUAGE = "en"
 MUSIC_LUFS = -34.0                 # music loudness target; voice sits near -17.5, lower = quieter music
-SUBTITLES_POSITION = "top"
 CLEANUP_FILES = True
-CLIP_DURATION = 60.0
-SLEEP_INTERVAL = 5
 MIN_CLIP_DURATION = 3.0
 MIN_SEGMENT_DURATION = 6.0
 MAX_CLIPS = 5
@@ -110,33 +108,21 @@ DEFAULT_CHANNEL = {
     "allow_full_layout": True,         # let Gemini crop close-ups to fill the whole screen
     "graphic_types": list(GRAPHIC_TYPES),
 }
-# ---------------------------------------- #
 
 MANUAL_DATA = {
 "channel": "anime",
-"topic": "attack on titan",
-"specific_subject": "why eren laughed when sasha died",
-"title": "Why did Eren laugh when Sasha died in Attack on Titan?",
-"youtube_queries": [
-  "eren laughs sasha death scene",
-  "attack on titan airship scene goes hard",
-  "eren yeager edit aot",
-  "attack on titan sasha death episode",
-  "attack on titan sasha death english dub",
-  "attack on titan official clip sasha"
-],
-"scene_query": "Interior of an airship cabin, dim lighting, characters in military uniforms with green cloaks looking shocked and somber, Eren covering his face and chuckling while others look on in disbelief.",
+"topic": "Cyberpunk Edgerunners season two premiering October 20, 2026",
+"specific_subject": "Season two director Kai Ikarashi is the man who directed Maine's death episode in season one, and his new hero Weak is a fallen legend forced to live without chrome",
+"title": "This is the most worrying detail about Cyberpunk Edgerunners season two",
+"youtube_queries": ["Maine death scene Edgerunners", "Maine cyberpsychosis goes hard", "Maine edgerunners edit", "Cyberpunk Edgerunners episode 6 Maine", "Maine death english dub", "Cyberpunk Edgerunners 2 official trailer"],
+"scene_query": "A huge muscular bald man with heavy metal cybernetic arms and a beard is breaking down mentally, with blinding white light and an empty white void around him. He fights armored police in a neon city at night, and the scene is full of explosions, fire and flying debris while a young man with a cyber arm watches in shock. This is intercut with trailer shots of a scarred man in a red coat facing a hovering gunship in the rain.",
 "footage_source": "official_or_press",
-"music_mood": "curious",
-"music_queries": [
-  "attack on titan call of silence instrumental ost",
-  "attack on titan youseebiggirl instrumental cover no copyright",
-  "dark atmospheric orchestral tension instrumental no copyright"
-],
-"music_prompt": "dark orchestral cinematic, eighty BPM, weeping cello and low sub-bass synth, quiet tension building to the dark reveal at second twenty, short-form video background, no lyrics, exclude: upbeat percussion, cheerful piano",
+"music_mood": "emotional",
+"music_queries": ["I Really Want to Stay at Your House instrumental", "Cyberpunk Edgerunners OST instrumental", "dark emotional synthwave instrumental no copyright"],
+"music_prompt": "Melancholic dark synthwave with a slow cinematic build, 85 BPM. Heavy warm analog synth pads, a lonely detuned electric piano, and a deep pulsing sub bass for a neon sci-fi cyberpunk feel. It starts quiet and nostalgic, tension slowly rises toward a sudden heavy reveal around second twenty, there is a brief dry, lighter pocket for a sarcastic joke, then it ends on a soft, sad fading chord. Short-form video background, no lyrics, exclude: upbeat EDM drops, cheerful ukulele",
 "voice_name": "animatoryoung",
-"spoken_word_count": 98,
-"script": "Why did Eren laugh when Sasha died in Attack on Titan? [curious] We all remember the heartbreaking scene inside the airship cabin after the raid. [thoughtful] Most viewers assumed he completely lost his sanity from overwhelming grief. [sighs] But reading chapter one hundred five exposes the grim reality. [flatly] He had already witnessed this exact tragedy through his future paths and knew he was entirely *powerless* to prevent it. [deadpan] Eren had one massive responsibility to protect his comrades, yet his stubborn obsession triggered the whole disaster. [sarcastic] In the end, achieving true freedom meant laughing as his closest friend breathed her last breath."
+"spoken_word_count": 99,
+"script": "This is the most worrying detail about Cyberpunk Edgerunners season two. [curious] Remember episode six? Maine loses his mind to chrome, and his story ends in *fire*. [thoughtful] The man who directed that episode, Kai Ikarashi, now directs ALL of season two. His new hero? Weak, a washed-up legend forced to live without chrome. [deadpan] It feels like a Maine who survived. [sarcastic] The showrunner even said he wants to make the whole world sad. Sir, mission already complete. [softly] In season one, chrome destroyed a legend. In season two, the same director takes the chrome away... and we still expect a happy *ending*?"
 }
 
 
@@ -150,11 +136,11 @@ def load_channel(name):
         with open(path) as f:
             overrides = json.load(f)
     except FileNotFoundError:
-        print(f"⚠️ No channel config at {path}, using defaults")
+        print(f"No channel config at {path}, using defaults")
         return channel
     channel["theme"].update(overrides.pop("theme", {}))
     channel.update(overrides)
-    print(f"📺 Channel: {name}")
+    print(f"Channel: {name}")
     return channel
 
 
@@ -167,7 +153,6 @@ def _strip_punch_markers(script: str):
     n is which copy of the word was marked (0 = first time it appears in the script),
     so a marked second "dead" doesn't get matched to the first one.
     The word content (e.g. BUT!) stays in the script for TTS emphasis; only * is removed."""
-    import re
     marker = re.compile(r'\*([^*]+)\*')
     punch_words = []
     def _replace(m):
@@ -186,7 +171,7 @@ def _match_punch_times(punch_words: list, words_data: list) -> list:
     for target, n in punch_words:
         hits = [start for word, start, _end in words_data if _norm_word(word) == target]
         if not hits:
-            print(f"⚠️ Punch word '{target}' not found in transcript, skipping")
+            print(f"Punch word '{target}' not found in transcript, skipping")
             continue
         # Whisper can drop a word, so fall back to the last copy it heard
         times.append(round(hits[min(n, len(hits) - 1)], 3))
@@ -209,14 +194,10 @@ def trim_video_to_end(
     max_duration=61.0,
     crop=None,
 ):
-    """
-    Trims video starting a bit before AI-found timestamp and goes up to max_duration seconds,
-    but not beyond the actual video length.
-    Prevents freezing or looping.
+    """Trim from just before the AI-picked timestamp, up to max_duration but never past the end.
+
     `crop` is an ffmpeg crop string from _detect_crop() that removes baked-in black bars.
     """
-
-    # get video duration
     info = ffmpeg.probe(input_file)
 
     video_stream = next(
@@ -226,7 +207,6 @@ def trim_video_to_end(
 
     video_duration = float(video_stream["duration"])
 
-    # compute safe start
     clip_start = max(float(ai_start) - prepad, 0.0)
     clip_start = min(clip_start, video_duration - 0.001)
 
@@ -236,12 +216,11 @@ def trim_video_to_end(
     if video_duration >= max_duration and clip_start + max_duration > video_duration:
         clip_start = video_duration - max_duration
 
-    # compute clip end safely
     clip_end = min(clip_start + max_duration, video_duration)
     clip_duration = clip_end - clip_start
 
     if clip_duration <= 0:
-        print("⚠️ Invalid clip duration. Skipping.")
+        print("Invalid clip duration. Skipping.")
         return False
 
     subprocess.run([
@@ -259,7 +238,7 @@ def trim_video_to_end(
         output_file
     ], check=True)
 
-    print(f"🎬 Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
+    print(f"Trimmed clip saved: {output_file} ({clip_duration:.2f}s from {clip_start:.2f}s to {clip_end:.2f}s)")
 
 
 def _read_source_meta(video_path):
@@ -308,7 +287,7 @@ def _snap_to_shot_cut(video_path, start, max_back=1.5, max_forward=0.7):
     try:
         cuts = _find_shot_cuts(video_path, start - max_back, start + max_forward)
     except Exception as e:
-        print(f"⚠️ Shot-cut detection failed, keeping {start:.2f}s: {e}")
+        print(f"Shot-cut detection failed, keeping {start:.2f}s: {e}")
         return start
 
     after = [c for c in cuts if start < c <= start + max_forward]
@@ -321,7 +300,7 @@ def _snap_to_shot_cut(video_path, start, max_back=1.5, max_forward=0.7):
         return start
 
     snapped = round(snapped + 0.02, 2)   # just past the cut so frame one is the new shot
-    print(f"🎯 Snapped clip start {start:.2f}s → {snapped:.2f}s (shot cut)")
+    print(f"Snapped clip start {start:.2f}s → {snapped:.2f}s (shot cut)")
     return snapped
 
 
@@ -375,109 +354,9 @@ def _detect_crop(video_path):
     # H.264 needs even dimensions.
     cw, ch = (x2 - x1) // 2 * 2, (y2 - y1) // 2 * 2
     crop = f"{cw}:{ch}:{x1}:{y1}"
-    print(f"✂️ Black bars found in {os.path.basename(video_path)}: cropping {width}x{height} → {cw}x{ch}")
+    print(f"Black bars found in {os.path.basename(video_path)}: cropping {width}x{height} → {cw}x{ch}")
     return crop
 
-def evaluate_music_with_genai(music_path, script_text):
-    """Upload generated music to Gemini and score it for mood, energy, and voice compatibility."""
-    client = _gemini_client()
-
-    # Upload music file
-    uploaded_file = client.files.upload(file=music_path)
-    print(f"Uploaded music: {uploaded_file.name}")
-
-    # Wait until ACTIVE
-    _wait_for_active(client, uploaded_file.name, label="Music")
-
-    print("Music file ACTIVE ✅")
-
-    prompt = f"""
-    You are a short-form content audio expert.
-
-    Your job is to evaluate how well this MUSIC fits the SCRIPT.
-
-    IMPORTANT RULES:
-    - Focus ONLY on the audio provided.
-    - Do NOT assume visuals.
-    - Judge vibe, energy, and emotional tone.
-    - Consider this is for TikTok / YouTube Shorts.
-
-    SCRIPT:
-    \"\"\"{script_text}\"\"\"
-
-    SCORING CRITERIA:
-
-    1. Mood Match (mood_score: 1–10)
-       Does the music emotionally match the script?
-
-       9–10: Perfect emotional alignment
-       7–8 : Good fit
-       5–6 : Neutral / usable
-       3–4 : Slight mismatch
-       1–2 : Completely wrong mood
-
-    2. Energy & Engagement (energy_score: 1–10)
-       Is the music engaging for short-form content?
-
-       Consider:
-       - buildup
-       - rhythm
-       - loopability
-       - modern feel
-
-    3. Voice Compatibility (voice_score: 1–10)
-       Would this music sit well under narration?
-
-       Consider:
-       - not too loud or chaotic
-       - not distracting
-       - supports storytelling
-    DECISION RULES:
-
-    - "post"
-      mood_score >= 7 AND energy_score >= 7 AND voice_score >= 7
-
-    - "revise"
-      usable but not optimal
-
-    - "reject"
-      wrong vibe OR distracting OR unusable
-
-    OUTPUT FORMAT:
-    Return ONLY JSON.
-
-    {{
-      "mood_score": <1-10>,
-      "energy_score": <1-10>,
-      "voice_score": <1-10>,
-      "decision": "post" | "revise" | "reject"
-    }}
-    """
-
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=[uploaded_file, prompt],
-        config={"response_mime_type": "application/json"},
-    )
-
-    raw_text = response.text if hasattr(response, "text") else str(response)
-
-    try:
-        clean_text = raw_text.strip()
-        if not clean_text.startswith("{"):
-            clean_text = clean_text[clean_text.find("{"):]
-        if not clean_text.endswith("}"):
-            clean_text = clean_text[:clean_text.rfind("}") + 1]
-        return json.loads(clean_text)
-    except Exception as e:
-        print(f"⚠️ Failed to parse music JSON: {e}")
-        print("Raw:", raw_text)
-        return {
-            "mood_score": 0,
-            "energy_score": 0,
-            "voice_score": 0,
-            "decision": "revise"
-        }
 
 def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: str) -> dict:
     """Evaluate YouTube-sourced music: checks for lyrics, topic fit, and voice compatibility."""
@@ -543,10 +422,10 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503 on music eval, retrying in 20s... ({attempt}/{max_attempts})")
+                print(f"Gemini 503 on music eval, retrying in 20s... ({attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"⚠️ Gemini 429 on music eval, rotating key... ({attempt}/{max_attempts})")
+                print(f"Gemini 429 on music eval, rotating key... ({attempt}/{max_attempts})")
                 client = _gemini_client()
                 uploaded_file = _upload_and_wait(client, music_path, label="YouTube music")
                 time.sleep(5)
@@ -565,7 +444,7 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
             clean_text = clean_text[:clean_text.rfind("}") + 1]
         return json.loads(clean_text)
     except Exception as e:
-        print(f"⚠️ Failed to parse YouTube music eval JSON: {e}")
+        print(f"Failed to parse YouTube music eval JSON: {e}")
         print("Raw:", raw_text)
         return {"has_lyrics": True, "topic_score": 0, "voice_score": 0, "decision": "reject", "reason": "parse error"}
 
@@ -589,28 +468,28 @@ def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: st
     queries = _clean_music_queries(music_queries)[:MAX_MUSIC_QUERIES]
 
     for i, query in enumerate(queries, 1):
-        print(f"🎵 Music candidate {i}/{len(queries)}: '{query}'")
+        print(f"Music candidate {i}/{len(queries)}: '{query}'")
         yt_path = fetch_music_from_youtube(query)
         if not yt_path:
-            print("⚠️ Music download failed, trying next query")
+            print("Music download failed, trying next query")
             continue
 
-        print(f"🔍 Evaluating YouTube music with Gemini...")
+        print("Evaluating YouTube music with Gemini...")
         try:
             result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
             reason = result.get("reason", "")
             if result.get("decision") == "use":
-                print(f"✅ YouTube music approved — {reason}")
+                print(f"YouTube music approved: {reason}")
                 return yt_path
-            print(f"❌ YouTube music rejected ({reason}), trying next query")
+            print(f"YouTube music rejected ({reason}), trying next query")
         except Exception as e:
-            print(f"⚠️ Gemini music eval error: {e}, trying next query")
+            print(f"Gemini music eval error: {e}, trying next query")
 
         if os.path.exists(yt_path):
             os.remove(yt_path)
 
     if queries:
-        print("🎼 No YouTube music approved, falling back to ElevenLabs")
+        print("No YouTube music approved, falling back to ElevenLabs")
     return generate_music(music_prompt)
 
 
@@ -618,14 +497,11 @@ def evaluate_video_with_genai(video_path, script_text):
     """Upload a video to Gemini and score it for relevance, hook potential, and technical quality."""
     client = _gemini_client()
 
-    # Upload video
     uploaded_file = client.files.upload(file=video_path)
     print(f"Uploaded file: {uploaded_file.name}")
 
-    # Wait until file is ACTIVE
     _wait_for_active(client, uploaded_file.name, label="Video")
 
-    # Build prompt
     prompt = f"""
     You are an AI Video Editor Assistant.
     Evaluate whether this RAW SOURCE FOOTAGE is usable as background B-roll for a short-form video.
@@ -702,10 +578,10 @@ def evaluate_video_with_genai(video_path, script_text):
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"⚠️ Gemini 429 quota hit, rotating key... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 429 quota hit, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
                 uploaded_file = _upload_and_wait(client, video_path)
                 time.sleep(5)
@@ -717,7 +593,6 @@ def evaluate_video_with_genai(video_path, script_text):
     raw_text = response.text if hasattr(response, "text") else str(response)
 
     try:
-        # Clean up extra characters
         clean_text = raw_text.strip()
         if not clean_text.startswith("{"):
             clean_text = clean_text[clean_text.find("{"):]
@@ -725,7 +600,7 @@ def evaluate_video_with_genai(video_path, script_text):
             clean_text = clean_text[:clean_text.rfind("}") + 1]
         return json.loads(clean_text)
     except Exception as e:
-        print(f"⚠️ Failed to parse GenAI JSON: {e}")
+        print(f"Failed to parse GenAI JSON: {e}")
         print("Raw response:", raw_text)
         return {
             "relevance_score": 0,
@@ -824,7 +699,7 @@ def find_scene_with_gemini(video_path, query, script):
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             else:
                 raise
@@ -1053,7 +928,7 @@ def _validate_graphic(graphic, segment, allowed, index):
                 raise ValueError("empty quote")
             clean = {"type": "quote", "text": quote, "author": str(graphic.get("author", "")).strip()}
     except (KeyError, TypeError, ValueError) as e:
-        print(f"⚠️ Dropped graphic on segment {index} ({gtype}): {e}")
+        print(f"Dropped graphic on segment {index} ({gtype}): {e}")
         return None
     clean["anchor_word"] = anchor
     return clean
@@ -1067,7 +942,7 @@ def _fix_timestamps(text):
         seconds = 0.0
         for p in parts:
             seconds = seconds * 60 + p
-        print(f"🔧 Fixed Gemini timestamp {m[2]} -> {seconds}s")
+        print(f"Fixed Gemini timestamp {m[2]} -> {seconds}s")
         return f"{m[1]}{seconds}"
     return re.sub(r'("start"\s*:\s*)"?(\d+(?::\d{1,2}(?:\.\d+)?){1,2})"?', to_seconds, text)
 
@@ -1089,17 +964,17 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
             video_durations.append(float(vs["duration"]))
             valid_video_paths.append(vp)
         except Exception as e:
-            print(f"⚠️ Skipping bad video {vp}: {e}")
+            print(f"Skipping bad video {vp}: {e}")
     video_paths = valid_video_paths
 
     if not video_paths:
-        print("⚠️ All source videos failed ffprobe — using fallback scene plan.")
+        print("All source videos failed ffprobe, using fallback scene plan.")
         return [{"index": i, "video_index": 0, "start": 0.0} for i in range(len(script_segments))], [], [], [], client
 
     uploaded_files = []
     for i, vp in enumerate(video_paths):
         uf = client.files.upload(file=vp)
-        print(f"📤 Uploaded Video {i}: {uf.name}")
+        print(f"Uploaded Video {i}: {uf.name}")
         uploaded_files.append(uf)
 
     pending = list(range(len(uploaded_files)))
@@ -1115,7 +990,7 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
             except Exception as e:
                 if any(code in str(e) for code in ("500", "INTERNAL", "503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED")):
                     _poll_error_counts[i] += 1
-                    print(f"⚠️ Gemini transient error polling video {i} ({_poll_error_counts[i]}/10), retrying...")
+                    print(f"Gemini transient error polling video {i} ({_poll_error_counts[i]}/10), retrying...")
                     if _poll_error_counts[i] >= 10:
                         raise RuntimeError(f"Gemini video {i} stuck in PROCESSING with repeated transient errors") from e
                     still_pending.append(i)
@@ -1124,7 +999,7 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
                     raise
             state = _state_name(fi)
             if state == "ACTIVE":
-                print(f"Video {i} ACTIVE ✅")
+                print(f"Video {i} ACTIVE")
             elif state == "FAILED":
                 raise RuntimeError(f"Video {i} failed to process on Gemini (corrupt or truncated upload)")
             else:
@@ -1325,10 +1200,10 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"⚠️ Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
                 uploaded_files = [
                     _upload_and_wait(client, vp, label=f"Video {i}")
@@ -1342,7 +1217,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             raise RuntimeError("Gemini scene detection failed after max retries.")
 
     text = _fix_timestamps(re.sub(r"```json|```", "", response.text).strip())
-    print(f"🤖 Gemini multi-source edit plan:\n{text}\n")
+    print(f"Gemini multi-source edit plan:\n{text}\n")
 
     try:
         result = json.loads(text)
@@ -1359,7 +1234,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             lo = INTRO_BAN_SEC
             hi = dur - (OUTRO_BAN_SEC if has_outro[vi] else 0.0) - 2.0
             if hi < lo:
-                # Video too short to honor both bans — fall back to the old, looser bound.
+                # Video too short to honor both bans, so fall back to the old, looser bound.
                 lo, hi = 0.0, max(dur - 2.0, 0.0)
 
             scene["start"] = round(min(max(scene.get("start", 0.0), lo), hi), 2)
@@ -1377,10 +1252,10 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             if clean:
                 clean["segment_index"] = si
                 graphics.append(clean)
-        print(f"✂️ {len(validated)} scenes planned across {len(video_paths)} video(s), {len(graphics)} graphic card(s) proposed")
+        print(f"{len(validated)} scenes planned across {len(video_paths)} video(s), {len(graphics)} graphic card(s) proposed")
         return validated, graphics, video_paths, uploaded_files, client
     except Exception as e:
-        print(f"⚠️ Failed to parse scene JSON: {e}\nRaw: {text}")
+        print(f"Failed to parse scene JSON: {e}\nRaw: {text}")
         fallback = []
         for i in range(n):
             vi = i % len(video_paths)
@@ -1410,11 +1285,11 @@ def _clip_layout(scene, clip_path, source_video, crop):
         clip_dur = float(ffmpeg.probe(clip_path)["format"]["duration"])
         cuts = [c for c in _find_shot_cuts(clip_path, 0.0, clip_dur) if c > 0.1]
     except Exception as e:
-        print(f"⚠️ Cut check failed for {clip_path}, keeping it framed: {e}")
+        print(f"Cut check failed for {clip_path}, keeping it framed: {e}")
         return meta
     full_until = cuts[0] if cuts else clip_dur
     if full_until < MIN_FULL_SHOT:
-        print(f"↩️ Clip {scene.get('index')}: full shot only lasts {full_until:.1f}s, using framed")
+        print(f"Clip {scene.get('index')}: full shot only lasts {full_until:.1f}s, using framed")
         return meta
 
     focus_x = scene.get("focus_x", 0.5)
@@ -1426,7 +1301,7 @@ def _clip_layout(scene, clip_path, source_video, crop):
             focus_x = min(max((focus_x * src_w - x) / cw, 0.15), 0.85)
         except Exception:
             pass
-    print(f"🖥️ Clip {scene.get('index')}: full screen for {full_until:.1f}s (focus {focus_x:.2f})")
+    print(f"Clip {scene.get('index')}: full screen for {full_until:.1f}s (focus {focus_x:.2f})")
     return {"layout": "full", "focusX": round(focus_x, 3), "fullUntil": round(full_until, 2)}
 
 
@@ -1460,9 +1335,9 @@ def _fit_graphic_windows(graphics):
     spaced = []
     for g in sorted(graphics, key=lambda g: g["start"]):
         if g["start"] < HOOK_CLEAR_SECONDS:
-            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (over the hook)")
+            print(f"Dropped {g['type']} card at {g['start']:.1f}s (over the hook)")
         elif spaced and g["start"] - spaced[-1]["start"] < MIN_CARD_GAP:
-            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (too close to the previous card)")
+            print(f"Dropped {g['type']} card at {g['start']:.1f}s (too close to the previous card)")
         else:
             spaced.append(g)
     graphics = spaced
@@ -1545,10 +1420,10 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             break
         except Exception as e:
             if "503" in str(e):
-                print(f"⚠️ Gemini 503 (thumbnail), retrying in 20s... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 503 (thumbnail), retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"⚠️ Gemini 429 (thumbnail), rotating key... (attempt {attempt}/{max_attempts})")
+                print(f"Gemini 429 (thumbnail), rotating key... (attempt {attempt}/{max_attempts})")
                 client = _gemini_client()
                 uploaded_files = [
                     _upload_and_wait(client, vp, label=f"Video {i}")
@@ -1557,11 +1432,11 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                 contents = uploaded_files + [prompt]
                 time.sleep(5)
             else:
-                print(f"⚠️ Thumbnail selection failed: {e}")
+                print(f"Thumbnail selection failed: {e}")
                 return None
 
     if response is None:
-        print("⚠️ Thumbnail selection failed after max retries.")
+        print("Thumbnail selection failed after max retries.")
         return None
 
     text = _fix_timestamps(re.sub(r"```json|```", "", response.text).strip())
@@ -1597,18 +1472,18 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         }
         hook_text = " ".join(l["text"] for l in hook_lines).lower()
         if subject_words and not any(w in hook_text for w in subject_words):
-            print(f"⚠️ Thumbnail hook may not match subject '{subject}': {hook_text!r} "
+            print(f"Thumbnail hook may not match subject '{subject}': {hook_text!r} "
                   f"(no overlap with {sorted(subject_words)})")
 
-        print(f"🖼️ Thumbnail pick: video {vi} @ {start}s — {hook_lines}")
+        print(f"Thumbnail pick: video {vi} @ {start}s: {hook_lines}")
         return {"video_index": vi, "start": start, "hook_lines": hook_lines}
     except Exception as e:
-        print(f"⚠️ Failed to parse thumbnail JSON: {e}\nRaw: {text}")
+        print(f"Failed to parse thumbnail JSON: {e}\nRaw: {text}")
         return None
 
 
 def run_manual_pipeline(data):
-    """Run the full pipeline from a MANUAL_DATA dict — download, evaluate, voice, music, subtitles, edit."""
+    """Run the full pipeline from a MANUAL_DATA dict: download, evaluate, voice, music, subtitles, edit."""
     approved_videos, clip_paths, audio_path, music_path = [], [], None, None
     thumb_frame_path = None
     pipeline_ok = False
@@ -1622,18 +1497,18 @@ def run_manual_pipeline(data):
         VOICE_NAME = data.get('voice_name') or CHANNEL['voice_name']
         SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
 
-        print(f"📋 PROCESSING MANUAL ORDER: {SUBJECT}")
+        print(f"PROCESSING MANUAL ORDER: {SUBJECT}")
         print(f"topic: {TOPIC}")
         print(f"   Script Length: {len(SCRIPT_TEXT)} chars")
 
-        print(f"🎮 Fetching visuals...")
+        print("Fetching visuals...")
 
         rejected_videos = []
         used_video_ids = set()
         MAX_SOURCE_VIDEOS = 3
 
         for i, query in enumerate(YOUTUBE_QUERIES):
-            print(f"📌 Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
+            print(f"Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
             video_paths = fetch_video_material_by_search(
                 search_queries=[query],
                 max_videos=1,
@@ -1641,34 +1516,34 @@ def run_manual_pipeline(data):
                 used_video_ids=used_video_ids
             )
             if not video_paths:
-                print(f"❌ No results for query '{query}', skipping...")
+                print(f"No results for query '{query}', skipping...")
                 continue
 
             candidate_video = video_paths[0]
             try:
                 ffmpeg.probe(candidate_video)
             except Exception:
-                print(f"⚠️ Downloaded file is corrupt (ffprobe failed) — skipping")
+                print("Downloaded file is corrupt (ffprobe failed), skipping")
                 rejected_videos.append(candidate_video)
                 continue
-            print(f"🔍 Evaluating video...")
+            print("Evaluating video...")
             try:
                 evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
             except RuntimeError as e:
-                print(f"⚠️ Gemini evaluation failed for query '{query}': {e} — skipping")
+                print(f"Gemini evaluation failed for query '{query}': {e}, skipping")
                 rejected_videos.append(candidate_video)
                 continue
 
             reason = evaluation.get("reason", "") if evaluation else ""
             if evaluation and evaluation.get("decision") == "post":
-                print(f"✅ Video {i + 1} approved! — {reason}")
+                print(f"Video {i + 1} approved!: {reason}")
                 approved_videos.append(candidate_video)
                 if len(approved_videos) >= MAX_SOURCE_VIDEOS:
-                    print(f"🎯 Reached {MAX_SOURCE_VIDEOS} approved videos — skipping remaining queries.")
+                    print(f"Reached {MAX_SOURCE_VIDEOS} approved videos, skipping remaining queries.")
                     break
             else:
                 decision = evaluation.get("decision") if evaluation else "unknown"
-                print(f"❌ Video rejected ({decision}) — {reason}")
+                print(f"Video rejected ({decision}): {reason}")
                 rejected_videos.append(candidate_video)
 
         for path in rejected_videos:
@@ -1682,24 +1557,24 @@ def run_manual_pipeline(data):
             _remove_sidecars(path)
 
         if not approved_videos:
-            print("❌ All queries failed. No suitable video found.")
+            print("All queries failed. No suitable video found.")
             return False
 
-        print(f"✅ {len(approved_videos)} video(s) approved for editing.")
+        print(f"{len(approved_videos)} video(s) approved for editing.")
 
-        # Kick off music resolution immediately — it has no dependencies on voice/scene
-        print(f"🎵 Starting music in background...")
+        # Kick off music resolution immediately, since it has no dependencies on voice/scene
+        print("Starting music in background...")
         executor = ThreadPoolExecutor(max_workers=1)
         music_future = executor.submit(_resolve_music, MUSIC_QUERIES, MUSIC_PROMPT, TOPIC, SCRIPT_TEXT)
 
         # Voice must come before scene finding so Whisper timestamps drive the cuts
-        print(f"🗣️ Generating voice ({VOICE_NAME})...")
+        print(f"Generating voice ({VOICE_NAME})...")
         audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
         audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
 
-        print(f"📝 Transcribing for scene sync...")
+        print("Transcribing for scene sync...")
         if LANGUAGE == "es":
-            print("🇪🇸 Spanish detected — skipping subtitles.")
+            print("Spanish detected, skipping subtitles.")
             words_data = None
         else:
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
@@ -1717,11 +1592,11 @@ def run_manual_pipeline(data):
                 a, b = script_segments[m], script_segments[m + 1]
                 script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
                 script_segments.pop(m + 1)
-            print(f"🎬 {len(script_segments)} clips planned — analyzing {len(approved_videos)} video(s)...")
+            print(f"{len(script_segments)} clips planned, analyzing {len(approved_videos)} video(s)...")
             scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL)
 
             if len(scenes) < len(script_segments):
-                print(f"⚠️ Gemini returned {len(scenes)} scenes for {len(script_segments)} segments — using available scenes only")
+                print(f"Gemini returned {len(scenes)} scenes for {len(script_segments)} segments, using available scenes only")
             crops = {v: _detect_crop(v) for v in valid_videos}
             for scene, segment in zip(scenes, script_segments):
                 vi = min(scene.get("video_index", 0), len(valid_videos) - 1)
@@ -1745,9 +1620,9 @@ def run_manual_pipeline(data):
             if words_data:
                 graphics = [_time_graphic(g, script_segments[g["segment_index"]], words_data) for g in graphic_plan]
             graphics = _fit_graphic_windows(graphics)
-            print(f"🎨 Graphics: {[(g['type'], g['start']) for g in graphics] or 'none'}")
+            print(f"Graphics: {[(g['type'], g['start']) for g in graphics] or 'none'}")
 
-            print(f"🖼️ Picking thumbnail frame...")
+            print("Picking thumbnail frame...")
             thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT)
             if thumb:
                 frame_path = os.path.join(DATA_DIR, f"thumb_frame_{uuid.uuid4().hex[:6]}.jpg")
@@ -1763,16 +1638,16 @@ def run_manual_pipeline(data):
                     )
                     thumb_frame_path, thumb_hook_lines = frame_path, thumb["hook_lines"]
                 except subprocess.CalledProcessError as e:
-                    print(f"⚠️ Thumbnail frame extraction failed: {e.stderr.decode()[-300:]}")
+                    print(f"Thumbnail frame extraction failed: {e.stderr.decode()[-300:]}")
 
         if not clip_paths:
-            # Fallback for Spanish or failed transcription
-            print("🤖 Falling back to single-scene Gemini search...")
+            # Spanish, or transcription failed
+            print("Falling back to single-scene Gemini search...")
             fallback_video = next(
                 (v for v in approved_videos if not _ffprobe_fails(v)), None
             )
             if not fallback_video:
-                raise RuntimeError("No usable approved videos — all failed ffprobe.")
+                raise RuntimeError("No usable approved videos, all failed ffprobe.")
             scene = find_scene_with_gemini(fallback_video, data.get("scene_query"), SCRIPT_TEXT)
             if scene and not (scene["start"] == 0 and scene["end"] == 0):
                 clip_path = f"trimmed_scene_{uuid.uuid4().hex[:6]}.mp4"
@@ -1783,29 +1658,27 @@ def run_manual_pipeline(data):
             else:
                 clip_paths = [fallback_video]
 
-        print(f"🎵 Waiting for music generation...")
+        print("Waiting for music generation...")
         music_path = music_future.result()
         executor.shutdown(wait=False)
         if not music_path:
-            print("⚠️ Music generation failed, continuing without music.")
+            print("Music generation failed, continuing without music.")
 
         safe_subject = re.sub(r'[^A-Za-z0-9_-]+', '_', SUBJECT)[:80]
         final_filename = f"Short_{safe_subject}_{random.randint(10, 99)}.mp4"
         punch_times = _match_punch_times(_punch_words, words_data) if (words_data and _punch_words) else []
         if punch_times:
-            print(f"👊 Punch SFX at: {punch_times}")
+            print(f"Punch SFX at: {punch_times}")
 
-        print(f"🎬 Starting video editing...")
+        print("Starting video editing...")
         final_path = merge_audio_video(
             video_paths=clip_paths,
             audio_path=audio_path,
             output_name=final_filename,
-            vertical=True,
             shorts_cap=True,
             music_path=music_path,
             music_lufs=MUSIC_LUFS,
             words_data=words_data,
-            subtitles_position=SUBTITLES_POSITION,
             punch_times=punch_times,
             clip_meta=clip_meta,
             graphics=graphics,
@@ -1813,7 +1686,7 @@ def run_manual_pipeline(data):
             frame_background=CHANNEL["frame_background"],
         )
 
-        print(f"\n✅ DONE! Saved to: {final_path}")
+        print(f"\nDONE! Saved to: {final_path}")
 
         if thumb_frame_path and os.path.exists(thumb_frame_path):
             try:
@@ -1822,7 +1695,7 @@ def run_manual_pipeline(data):
                 if EMBED_THUMBNAIL_FRAME:
                     append_thumbnail_frame(final_path, thumb_png, THUMBNAIL_FRAME_DURATION, THUMBNAIL_FRAME_POSITION)
             except Exception as e:
-                print(f"⚠️ Thumbnail render failed: {e}")
+                print(f"Thumbnail render failed: {e}")
             finally:
                 os.remove(thumb_frame_path)
 
@@ -1830,9 +1703,9 @@ def run_manual_pipeline(data):
         return True
 
     except KeyError as e:
-        print(f"❌ Missing Key in JSON: {e}")
+        print(f"Missing Key in JSON: {e}")
     except Exception as e:
-        print(f"❌ Pipeline Error: {e}")
+        print(f"Pipeline Error: {e}")
         traceback.print_exc()
     finally:
         # Only on success: a crash leaves the clips, narration and music on disk
@@ -1848,6 +1721,7 @@ def run_manual_pipeline(data):
                         os.remove(path)
                     except Exception:
                         pass
+
 
 if __name__ == "__main__":
     if MANUAL_DATA:

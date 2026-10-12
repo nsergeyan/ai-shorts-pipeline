@@ -1,245 +1,120 @@
 # AI Shorts Pipeline
 
-An automated end-to-end pipeline that produces YouTube Shorts and TikTok videos from a single structured prompt. The system chains together five AI services — script generation, video sourcing, scene detection, voice synthesis, and music — then assembles and edits the final vertical video without any manual intervention.
-
----
-
-## How It Works
+Turns one structured JSON script into a finished 1080x1920 YouTube Short / TikTok, with no manual editing. It finds and vets footage on YouTube, generates narration and music, cuts the clips to the narration, adds word-level subtitles and on-screen graphics, and renders the result with Remotion and FFmpeg. A matching thumbnail comes out alongside the video.
 
 ```
-Prompt → Script → YouTube Search → AI Video Evaluation → Voice (ElevenLabs v3)
-       → Transcription (Whisper) → Multi-Scene Detection (Gemini)
-       → Music (ElevenLabs) → Remotion Render + FFmpeg CTA → Final Short (.mp4)
-                                          ↘ Thumbnail Pick (Gemini) → Thumbnail (.png)
+script JSON
+  -> YouTube search + download (yt-dlp)  -> footage check (Gemini)
+  -> narration (ElevenLabs)              -> word timestamps (Whisper)
+  -> edit plan: clips, layout, graphics (Gemini)
+  -> music: YouTube track vetted by Gemini, ElevenLabs as fallback
+  -> render (Remotion) -> follow-button overlay (FFmpeg) -> data/final/*.mp4
+  -> thumbnail frame + hook text (Gemini + Remotion)    -> data/thumbnails/*.png
 ```
 
-Each stage passes structured data to the next. If the AI rejects a video (bad quality, wrong scene), the pipeline retries automatically with the next YouTube query.
+## Quick start
 
----
-
-## Features
-
-- **Structured prompt system** - Two tracked prompt templates: `prompts/specifixprompt` (targets a specific pre-chosen series or movie) and `prompts/testsport.txt` (F1, UFC and soccer, half hot viral news and half timeless stories). Both enforce live-search fact verification, a footage reality check (GREEN/YELLOW/RED), natural YouTube query generation, word count, duplicate avoidance, and the punch marker rule. Their story rules (curiosity-gap titles spoken as the first line, a wrong-answer beat, kicker endings instead of open loops, concrete numbers, bans and loopholes as topics) come from analyzing top competitor Shorts
-- **Competitor research** - `modules/competitor_analyzer.py` pulls the captions of a channel's most and least viewed Shorts and saves them with an analysis prompt to `data/research/`, so you can see what the winners do differently before changing a prompt
-- **AI video evaluation with reasons** — Gemini 2.5 Flash scores every downloaded clip on relevance, hook potential, and technical quality. Returns a `reason` field explaining each accept/reject decision (e.g. "subject not present — footage shows generic octagon with no visible Charles Oliveira"), making it easy to debug and improve queries
-- **Multi-source editing** — The pipeline downloads up to six videos across six query strategies and collects up to three approved clips. All approved videos are uploaded to Gemini in a single call; Gemini watches all of them together and assigns the best (video, timestamp) pair to each narration segment, pulling from whichever source has the strongest matching moment
-- **ElevenLabs v3 voice** — English narration uses the `text_to_dialogue` endpoint with full support for bracketed emotion and performance tags (`[excited]`, `[whispers]`, `[sighs]`, etc.); output is speed-boosted via FFmpeg `atempo`
-- **Smart music sourcing** - The prompt system generates `music_queries` (up to 3 YouTube searches for an official OST/instrumental, best first; a single `music_query` also works) and a `music_prompt` (ElevenLabs generation spec). The pipeline tries the YouTube searches in order; the first track Gemini approves (no lyrics, topic-relevant, voice-compatible) is used for free. Only if every query fails does ElevenLabs compose a custom 90-second instrumental
-- **Remotion rendering** — Video is composed and rendered in React/TypeScript via Remotion (Chrome Headless Shell). Each frame is pixel-accurate, fully programmable, and GPU-accelerated
-- **Smart per-shot layout** - Gemini tags every shot it picks as `full` or `framed`. Steady close-ups of one subject are cropped to fill the whole 9:16 screen around the subject (`focus_x`); wide shots stay framed (full picture in the middle, blurred copy above and below) so nobody gets cut off. ffmpeg checks each clip for hard cuts and keeps full screen only until the first one, then switches to framed. Anything unclear falls back to framed, so the worst case is the classic look. Subtitles drop lower during full-screen shots so they never cover faces
-- **Narration graphic cards** - Remotion draws cards in the lower part of the screen that show what the voice is saying: `stat` (a number counting up), `versus` (two values with bars), `list` (items popping in) and `quote` (revealed word by word). Gemini places them on exact words across the narration; the code drops any card whose number isn't actually spoken, keeps the first 3 seconds clean, spaces cards at least 6 seconds apart and ends them before the follow button
-- **Channel configs** - `channels/<name>.json` sets each channel's accent colour, card panel colour, voice, background style and which features are on. Pick one with `"channel": "sports"` in `MANUAL_DATA`; the same engine gives each channel its own look
-- **Clean clip starts** - Clip starts snap to the nearest hard cut so a clip never opens on the tail of the previous shot, and baked-in black bars (letterbox/pillarbox) are detected with `cropdetect` and cropped out
-- **Word-level subtitles** — Whisper `large-v3` transcribes narration at the word level; each spoken word highlights in yellow with a spring-animated pop, 3 words per line, with a bold black-stroke text shadow
-- **Whip pan transitions** — Every cut slides clips in/out with a directional translateX + motion blur over 4 frames, alternating left/right direction per clip for a dynamic feel
-- **Chromatic glitch** — On every 3rd cut a red/blue RGB split overlay with a horizontal tear line fires alongside the flash, adding visual impact without being distracting
-- **Flash cut transitions** — Hard cuts between all clips; every 3rd cut fires a 2-frame white flash overlay for extra punctuation
-- **SFX audio** — Whoosh sounds play on every regular cut; a camera-flash SFX plays on every 3rd cut. Events are computed from clip timestamps and passed to Remotion as `sfxEvents`, rendered as `<Sequence><Audio>` components
-- **Audio-driven punch SFX** — Script authors mark 1–3 high-impact pivot words with `*WORD!*` markers (e.g. `*BUT!*`, `*WAIT!*`). Markers are stripped before TTS so ElevenLabs receives clean text; after Whisper transcription the marked words are matched to their timestamps. At render time a random impact SFX fires at each matched moment via Remotion `<Sequence><Audio>`
-- **Controlled pacing** - Narration sentences are merged into groups of at least 6 seconds (`MIN_SEGMENT_DURATION`) before scene detection, with a hard cap of 5 clips per video (`MAX_CLIPS`), so a 30-second video gets about 4 to 5 cuts. Individual clips have a 3-second floor so no clip is shorter than a single cut
-- **FFmpeg chroma key CTA** - Green screen call-to-action video is keyed out via FFmpeg `chromakey` filter and composited over the final 4.6 seconds of the video (the 8-second clip with its static middle removed, so the full animation still plays)
-- **Ranked 1080p YouTube download** - 15 search results are scored by title (query match, commentary/reaction words penalised, "official"/"4K" boosted) and views before anything is downloaded. Downloads try HD streams up to 1080p first (without cookies, then with cookies via the `tv`/`web_safari`/`mweb` clients), then a no-cookie 720p method and the CLI. All requests go over IPv4 with pauses and a 3 MB/s cap, at most 3 results are tried per query, and the no-cookie methods are switched off for the rest of the run once YouTube shows its bot check
-- **Automatic thumbnail generation** — Alongside the video, the pipeline produces a matching 1080×1920 thumbnail image. Gemini reuses the footage it already uploaded for scene detection to pick the single most scroll-stopping frame (with crop-safety and intro/outro/watermark bans), then writes a short comic-style hook split into 1–3 lines, each colored white, yellow, or red for emphasis. FFmpeg extracts the chosen frame and Remotion renders the final PNG with a bold display font. This is a deterministic composite (real frame + styled text), not a generative image model — so it costs nothing extra and never hallucinates the subject. Output lands in `data/thumbnails/`, named to match the final video
-- **Multi-language support** — English, Russian, and Spanish voice generation with language-specific ElevenLabs model settings
-
----
-
-## Tech Stack
-
-| Layer | Tool |
-|---|---|
-| Script generation | Structured prompt → Google Gemini / Claude |
-| Video sourcing | `yt-dlp` (HD streams, browser cookies via the `tv`/`web_safari`/`mweb` clients, JS challenge solver) + fallbacks |
-| Video evaluation & scene detection | Google Gemini 2.5 Flash (multimodal) |
-| Voice synthesis | ElevenLabs `eleven_v3` (`text_to_dialogue`) for English; `eleven_multilingual_v2` for RU/ES |
-| Music | YouTube (yt-dlp audio-only, same cookie setup as video) evaluated by Gemini, with ElevenLabs Generative Music as fallback |
-| Audio transcription | OpenAI Whisper `large-v3` |
-| Video rendering | Remotion 4.0 (React/TypeScript, Chrome Headless Shell) |
-| CTA compositing | FFmpeg `chromakey` + `overlay` filter |
-| Subtitle rendering | Remotion `interpolate()` + `spring()` — word-level highlight with pill background |
-
----
-
-## Pipeline Stages
-
-### 1. Script (Prompt Engineering)
-The prompt template enforces a multi-step structure: category selection, ranked candidate table with rarity and viral-curiosity scores, a fact-verification box with confidence tiers, and a quality checklist. The script field must hit an exact word range: 90-100 words for the anime prompt (110-130 for its three-item countdown format) and 110-130 for the sports prompt. The output is a JSON object consumed directly by the pipeline.
-
-### 2. Video Sourcing & Evaluation
-`fetch_video_material_by_search` queries YouTube with up to six queries and filters out livestreams, Shorts, and videos outside the 1 to 120 minute window. The remaining results are ranked by title and views (reaction, review and podcast uploads sink to the bottom) and downloaded best-first: HD streams up to 1080p, then two fallback methods (at most 3 results per query). Each download is trimmed to 5 minutes and gets a `.meta.json` sidecar with the original length, so the "skip the outro" rule is only applied to videos that really end on one. Queries are written as natural fan searches (short, casual phrasing matching real upload titles) across six angles: direct moment, emotional/viral framing, edit pool, episode/arc pool, dub vs sub pool, official clip pool.
-
-Each downloaded video is uploaded to Gemini, which returns `relevance_score`, `hook_score`, `technical_score` (1–10 each), and a `reason` string explaining the decision. The evaluator checks for the character or show by name regardless of their specific state (e.g. normal form, abstracted form, different costume all count). Only a `post` decision passes. Approved videos are collected until three are found or all queries are exhausted; rejected videos are deleted immediately.
-
-### 3. Voice & Transcription
-ElevenLabs generates the narration MP3. English uses the `text_to_dialogue` endpoint (ElevenLabs v3) which natively processes bracketed performance tags for natural delivery. Russian and Spanish use `eleven_multilingual_v2`. The narration is transcribed by Whisper with `word_timestamps=True` immediately after, producing per-word `(word, start, end)` tuples used for both subtitle rendering and scene segmentation.
-
-### 4. Multi-Source Scene Detection
-Whisper sentence segments are first merged into groups of at least 6 seconds (`MIN_SEGMENT_DURATION`), and if there are still more than 5 (`MAX_CLIPS`) the shortest neighbours are merged until 5 remain. A 30-second video gets about 4 to 5 clips instead of one per sentence, keeping transitions at a watchable pace. All approved videos and the merged segments are sent to Gemini in a single call. Gemini watches every video and returns an edit plan: for each segment it picks the best `(video_index, start)` pair. Gemini is required to use every available source video at least once and never use the same video more than 2 segments in a row. Each clip is trimmed to at least `MIN_CLIP_DURATION` (3 seconds) so very short final sentences don't produce sub-second clips.
-
-In the same call Gemini also returns:
-- a `layout` (`full` or `framed`) and `focus_x` per scene. Python validates both, and `_clip_layout()` limits full screen to the first hard cut inside the clip
-- a `graphics` list of cards anchored to words. `_validate_graphic()` rejects invented numbers (spelled-out numbers like "fifty-two" or "one point two million" are understood), `_time_graphic()` starts each card on its anchor word, and `_fit_graphic_windows()` enforces the spacing rules
-
-Before trimming, `_snap_to_shot_cut()` moves each start onto a nearby hard cut, and `_detect_crop()` removes baked-in black bars.
-
-### 5. Music
-The pipeline resolves music in two stages. First it goes through the `music_queries` list from the script JSON (up to 3, or a single `music_query`). For each one, yt-dlp searches YouTube and downloads the first result as audio-only MP3, using the same anti-bot setup as the video downloader (no cookies first, then browser cookies; straight to cookies once the run has hit YouTube's bot check). That track is uploaded to Gemini, which scores it on three criteria: no vocals/lyrics, topic relevance (≥7/10), and voice compatibility (≥6/10). If all three pass, the track is used as-is, for free. If every query is rejected or fails to download, or none was provided, ElevenLabs Generative Music composes a custom 90-second instrumental from the `music_prompt` field, which is written per script by the prompt system specifying genre, tempo, instruments, and emotional arc.
-
-### 6. Video Rendering (Remotion)
-`merge_audio_video` in `modules/video_editor.py` orchestrates the render:
-
-1. Starts a local HTTP server to serve project files (Remotion requires `http://` URLs)
-2. Writes a `props.json` with clip paths, audio paths, word timestamps, and timing data
-3. Calls `npx remotion render ShortVideo` — Remotion composes the scene in React, renders frame-by-frame via Chrome Headless Shell, and encodes to H.264
-
-The Remotion composition (`remotion/src/compositions/ShortVideo.tsx`) handles:
-- **Two layout modes per clip** - `full` renders the clip once at `objectFit: cover` positioned on `focusX` until `fullUntil`; `framed` renders it twice (blurred cover copy for the bars, or a dark backdrop if the channel sets `frame_background: "dark"`, plus `objectFit: contain` for the full picture)
-- **Graphic cards** - `components/graphics/` (`StatGraphic`, `VersusGraphic`, `ListGraphic`, `QuoteGraphic`) placed on the timeline by `GraphicLayer`, all in the channel's accent colour
-- **Word-highlight subtitles** - in the top bar for framed shots, lower (58%) during full-screen shots; spring-animated per word with the channel's accent colour and a bold black-stroke shadow
-- **Whip pan** — every clip slides in/out with translateX + motion blur over 4 frames, alternating direction per clip
-- **Flash cuts** — every 3rd cut fires a 2-frame white flash overlay
-- **Chromatic glitch** — red/blue RGB split + horizontal tear line fires on the same cuts as the flash
-- **SFX** — whoosh `<Audio>` on every cut, camera-flash SFX on every 3rd cut via `sfxEvents` prop; impact SFX at punch-word timestamps
-- **Progress bar** - thin bar in the channel's accent colour along the bottom edge of the video panel
-- **Audio mix** — narration + background music + SFX via Remotion `<Audio>` components
-
-### 7. CTA Compositing (FFmpeg)
-After Remotion outputs the base video, FFmpeg overlays the green-screen CTA for the final 4.6 seconds. The 8-second CTA clip is shortened by keeping only its intro + click (0 to 3.2s) and its exit (6.6 to 8.0s), see `CTA_KEEP` in `video_editor.py`:
-```
-ffmpeg -i base.mp4 -i CTA.mp4 \
-  -filter_complex "[1:v]split[ca][cb]; [ca]trim=0:3.2[c1]; [cb]trim=6.6:8.0[c2]; [c1][c2]concat,setpts,chromakey=color=0x00FF00:similarity=0.35:blend=0.1[ck]; [0:v][ck]overlay=0:500[v]" \
-  -map [v] -map 0:a final.mp4
-```
-The CTA overlaps the end of the narration (not appended after). Graphic cards are cut to end before it starts, because both use the lower part of the screen.
-
-### 8. Thumbnail Generation
-After the video is saved, the pipeline builds a matching thumbnail image. `find_thumbnail_with_gemini` reuses the same footage files already uploaded to Gemini during scene detection (no extra upload cost) and asks for one JSON object: the single best `(video_index, start)` frame and a `hook_lines` array of 1–3 short colored lines. The prompt enforces crop-safety (the frame is cropped to 9:16, so the subject must be centered and large) and bans watermarks, baked-in text, reactors, and intro/outro frames. FFmpeg extracts that exact frame as a JPG, then `render_thumbnail` in `modules/video_editor.py` renders it through the Remotion `Thumbnail` composition (`npx remotion still`) — the real frame as a background with the styled hook text on top — and writes a `1080×1920` PNG to `data/thumbnails/`. It is a deterministic image composite, not a generative image model, so it is free and always shows the actual footage.
-
----
-
-## Project Structure
-
-```
-YOutuber/
-├── main.py                    # Main pipeline entrypoint
-├── config.py                  # Directory and API configuration
-├── channels/
-│   ├── sports.json            # Per-channel look: accent colour, voice, layout + card settings
-│   └── anime.json
-├── prompts/
-│   ├── specifixprompt         # Script prompt template (specific series or movie)
-│   └── testsport.txt          # Script prompt template (F1, UFC, soccer)
-├── modules/
-│   ├── clipmaker.py               # Promo clip entrypoint (cuts a teaser out of a video you already have)
-│   ├── competitor_analyzer.py     # Saves top/bottom Shorts transcripts of a channel for analysis
-│   ├── video_editor.py            # Remotion render orchestration + FFmpeg CTA composite
-│   ├── video_material_fetcher.py  # YouTube search and download
-│   ├── newvoice.py                # ElevenLabs TTS (v3 dialogue + multilingual)
-│   ├── music_generator.py         # YouTube audio fetch + ElevenLabs generative music fallback
-│   ├── transcriber.py             # Whisper word-level transcription
-│   └── tiktok_checker.py          # TikTok duplicate detection
-└── remotion/
-    ├── package.json           # Remotion + React dependencies
-    ├── remotion.config.ts     # Codec and quality settings
-    └── src/
-        ├── index.ts           # Entry point (registerRoot)
-        ├── Root.tsx           # Composition registration + calculateMetadata
-        ├── compositions/
-        │   ├── ShortVideo.tsx # Main composition (clips, audio, subtitles, transitions)
-        │   └── Thumbnail.tsx  # Static thumbnail still (footage frame + colored hook text)
-        └── components/
-            ├── graphics/          # Narration cards: Stat, Versus, List, Quote + GraphicLayer + Panel
-            ├── WordHighlight.tsx  # Word-level subtitle with spring animation
-            ├── ProgressBar.tsx    # Playback progress bar
-            ├── CTAOverlay.tsx     # Remotion CTA component (unused — CTA composited via FFmpeg instead)
-            └── HookCard.tsx       # Optional hook text overlay (unused by default)
-```
-
----
-
-## Design Decisions
-
-- **Remotion over MoviePy** — MoviePy renders subtitles by baking Pillow images into video frames, which is slow, inflexible, and produces lower quality output. Remotion renders the entire composition in a real browser engine, giving access to CSS animations, spring physics, and pixel-accurate compositing at full resolution.
-- **Per-shot layout over always-cropped or always-letterboxed** - Cropping every landscape shot to 9:16 keeps only about a third of the width and cuts people off in wide shots, while a letterbox everywhere leaves two-thirds of the screen as blurred filler that reads as a reupload. Deciding per shot gets the best of both: close-ups fill the screen, wide shots stay whole. Framed is the default whenever anything is uncertain, so the feature can only improve a video, never break it.
-- **Graphic cards from the narration only** - Cards may only show values the narration actually says, checked in code, so they make the video look produced without ever putting a made-up stat on screen.
-- **FFmpeg chromakey for CTA over Remotion transparency** — Remotion's `OffthreadVideo` does not reliably support alpha channel from VP9 WebM in Chrome Headless Shell. FFmpeg's native `chromakey` filter produces cleaner keying and compositing as a post-process step.
-- **Whip pan + flash + glitch stack** — Hard cuts alone feel flat at short durations. Whip pan adds kinetic energy without covering the actual content (4-frame translateX + blur, not a wipe). The chromatic glitch and white flash fire only on every 3rd cut so the effect stays punctuation, not wallpaper. SFX (whoosh/camera-flash) reinforce each cut at the audio layer, making transitions feel intentional even on small screens with no headphones context.
-- **Audio punch SFX over video zoom** — A scale-burst zoom on punch words draws attention to the video layer, not the narration. An audio hit at the exact spoken word is more precise and feels more natural — the viewer hears the impact at the moment the word lands, without the video layout shifting or distracting from the subject on screen.
-- **Gemini 2.5 Flash over local models** — Ollama (Gemma 27B) was tested for script generation but response quality and speed weren't consistent enough for production. Gemini 2.5 Flash with Google Search grounding produces more accurate, fact-checked scripts.
-- **ElevenLabs v3 `text_to_dialogue` for English** — The standard TTS endpoint ignores bracketed emotion tags. `text_to_dialogue` was purpose-built for performance-directed narration and produces noticeably more natural delivery for Shorts content.
-- **Whisper before scene detection** — Voice is generated and transcribed first so that Gemini receives sentence-level timing data when choosing scenes. This lets multi-scene clips align with the actual narration rhythm rather than being arbitrarily split.
-- **Whisper `large-v3` over smaller models** — Smaller Whisper models produced inaccurate word timestamps, breaking the word-level subtitle sync. The accuracy of `large-v3` justifies the slower load time.
-
----
-
-## Setup
-
-**Requirements:** Python 3.11+, Node.js 18+, FFmpeg
+**Requirements:** macOS (the pipeline uses `caffeinate` to keep the machine awake), Python 3.11+, Node.js 18+, FFmpeg.
 
 ```bash
-# Python dependencies
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-# Latest yt-dlp with its JS challenge solver (yt-dlp-ejs); YouTube breaks older builds
-pip install -U "yt-dlp[default]"
-
-# Remotion
-cd remotion && npm install
+pip install -U "yt-dlp[default]"   # latest yt-dlp + its JS challenge solver; YouTube breaks old builds
+cd remotion && npm install && cd ..
+cp .env.example .env               # then fill in your keys
 ```
 
-Set your API keys in `.env`:
+`.env`:
 
 ```
-ELEVENLABS_API_KEY=
-GEMINI_API_KEYS=key1,key2
+GEMINI_API_KEYS=key1,key2          # comma-separated, rotated on quota errors
+ELEVENLABS_API_KEY=...             # account needs music generation enabled
 ```
 
-**YouTube cookies:** when YouTube shows its "confirm you're not a bot" check, downloads fall back to the cookies of a Chrome profile signed into YouTube (`BROWSER` / `PROFILE` in `modules/video_material_fetcher.py`). Use a profile with a spare Google account, not the one that owns your channel, so automated downloads can never put the channel account at risk.
+Then:
 
----
+1. Run one of the prompt templates in `prompts/` through a chatbot with web search. `specifixprompt` covers a specific anime, series or movie. `testsport.txt` covers F1, UFC and soccer.
+2. Paste the JSON it returns into `MANUAL_DATA` at the top of `main.py`.
+3. Run `python main.py`.
 
-## Usage
+The finished video lands in `data/final/` and the thumbnail in `data/thumbnails/`. Whisper `large-v3` (~3 GB) and Chrome Headless Shell download automatically on the first run.
 
-Paste a completed JSON script object into `MANUAL_DATA` in `main.py` and run it. The prompt templates already output a `"channel"` field (`"sports"` from `testsport.txt`, `"anime"` from `specifixprompt`), which picks the channel look; add or change it by hand if needed:
+**Optional assets:**
+- **Sound effects:** put them in `data/sfx/` (filenames are in `modules/video_editor.py`). Any missing file is skipped.
+- **YouTube cookies:** once YouTube shows its "confirm you're not a bot" check, downloads switch to the cookies of a signed-in Chrome profile (`BROWSER` / `PROFILE` in `modules/video_material_fetcher.py`). Use a spare Google account for this, not the one that owns your channel.
 
-```bash
-python main.py
+## What it does
+
+**Footage**
+- Searches YouTube with up to six queries from the script. Before downloading anything, it ranks 15 results by title and views, pushing reaction, review and podcast uploads to the bottom.
+- Downloads up to 1080p and falls back through several methods when YouTube blocks a request. It goes over IPv4 with rate limits, tries at most 3 results per query, and stops sending cookie-less requests after the first bot check.
+- Gemini scores each download on relevance, hook potential and technical quality, and gives a reason for every accept or reject. It keeps up to 3 approved videos and deletes the rejected ones straight away.
+
+**Edit**
+- Whisper sentences are merged into segments of at least 6 s, with at most 5 clips per video. All approved videos and segments go to Gemini in a single call, which picks a `(video, timestamp)` for each segment.
+- Clip starts snap to the nearest hard cut, and baked-in black bars are cropped out with `cropdetect`.
+- **Per-shot layout:** steady close-ups are cropped to fill the 9:16 screen around the subject (`full`). Everything else shows the whole picture with a blurred backdrop (`framed`). Full screen only lasts until the first hard cut inside the clip, and anything uncertain falls back to framed.
+- **Graphic cards:** `stat`, `versus`, `list` and `quote` cards appear on the exact word that triggers them. A card is dropped if its number is not actually spoken (spelled-out numbers like "one point two million" count). No cards appear in the first 3 s, cards are at least 6 s apart, and all of them end before the follow button.
+
+**Look and sound**
+- Word-by-word subtitles in the channel's accent colour, 3 words per line, shrunk to fit the width. They move lower during full-screen shots so they don't cover faces.
+- Whip-pan transitions on every cut. Every 3rd cut also gets a white flash and a chromatic glitch.
+- Whoosh and camera-flash sound effects on cuts. A punch sound fires on words marked `*like this*` in the script; the asterisks are stripped before text-to-speech.
+- Narration uses ElevenLabs `eleven_v4` through `text_to_dialogue`, so emotion tags like `[sarcastic]` work, and is sped up 1.1x. Russian and Spanish use `eleven_multilingual_v2`.
+- Music is normalised to -34 LUFS under the voice.
+- The green-screen follow button is chroma-keyed over the last 4.6 s. The 8 s clip has its static middle cut out.
+
+**Channels**
+- Each file in `channels/<name>.json` sets one channel's accent and panel colour, voice, backdrop style (`blur` / `dark`), whether full-screen crops are allowed, and which card types to use. Select a channel with `"channel"` in `MANUAL_DATA`.
+
+## Project structure
+
+```
+main.py                     pipeline entry point, Gemini calls, edit planning
+config.py                   paths and API keys from .env
+channels/                   per-channel look and voice
+prompts/                    script prompt templates
+modules/
+  video_material_fetcher.py YouTube search, ranking, download fallbacks
+  newvoice.py               ElevenLabs narration
+  music_generator.py        YouTube music fetch + ElevenLabs music fallback
+  transcriber.py            Whisper word timestamps
+  video_editor.py           Remotion render, CTA composite, thumbnail render
+  clipmaker.py              second entry point: promo clip from your own video
+  competitor_analyzer.py    pulls a channel's top/bottom Shorts transcripts
+remotion/src/
+  compositions/             ShortVideo, Thumbnail, SubtitlePreview (dev preview)
+  components/               WordHighlight, ProgressBar, graphics/
 ```
 
-The pipeline runs fully automatically and saves the final `.mp4` to `data/final/`.
+Settings such as `LANGUAGE`, `MUSIC_LUFS`, `MAX_CLIPS` and the thumbnail-frame options are at the top of `main.py`.
 
-To trigger impact SFX at key moments, add `*WORD!*` markers in the script:
+## Other tools
 
-```
-"He scored 60 goals for Norway. *BUT!* he was born in England."
-```
-
-Markers are stripped before voice generation; after Whisper transcription the words are matched to timestamps and a random SFX fires at each moment during the Remotion render.
-
-### Promo Clip Maker
-
-`modules/clipmaker.py` is a second entrypoint for a different job: cutting a short promo clip out of a video you already have, instead of sourcing footage from YouTube. Set `source_video_path` in `CLIP_MAKER_DATA`, then run:
+**Promo clip maker** cuts a teaser out of a video you already have. It keeps the video's original audio and uses no narration or music. Set `source_video_path` in `CLIP_MAKER_DATA`, then run:
 
 ```bash
 python -m modules.clipmaker
 ```
 
-Gemini watches the full video and returns three ranked teaser candidates: continuous moments that open on a cold hook and end before the video gives the answer (`payoff_at`). The code takes the highest-ranked one that both stops before its payoff and matches the target length (`clip_duration`, default 30s), and if it has to stretch the clip it slides the window back so it never swallows the answer. FFmpeg trims to that moment, keeping the video's own original audio, no script, no AI narration, no music. That audio is transcribed by Whisper and the clip is rendered through the same Remotion pipeline as `main.py`, so it gets the same blurred/contained 9:16 layout, the same word-highlighted subtitles, and the same follow-button CTA. Output lands in `data/final/` as `Promo_<filename>_XX.mp4`; the original source video is never deleted.
+Gemini proposes three continuous moments that open on a hook and end before the answer (`payoff_at`). The code picks the best one that both has the right length and stops before its payoff, then renders it with the same layout, subtitles and follow button as `main.py`.
 
-### Competitor Research
-
-`modules/competitor_analyzer.py` studies a competitor channel before you change a prompt:
+**Competitor research** saves the captions of a channel's 15 most viewed and 5 least viewed Shorts, with an analysis prompt on top, to `data/research/<handle>_transcripts.txt`:
 
 ```bash
 python modules/competitor_analyzer.py <channel_handle>
 ```
 
-yt-dlp lists the channel's Shorts (metadata only, no downloads), takes the 15 most viewed and the 5 least viewed, and pulls their English captions. Everything is saved to `data/research/<handle>_transcripts.txt` with an analysis prompt on top, ready to paste into any AI. Compare TOP vs BOTTOM only within the same channel, since view counts are not comparable across channels. Run channels one at a time: many caption requests in a row trigger YouTube's rate limit (HTTP 429).
+Only compare top vs bottom within one channel, and run one channel at a time to avoid YouTube's rate limit.
 
----
+## Design decisions
 
-## Example Output
-
-Input: a 90-word script about a hidden lore mechanic in *Jujutsu Kaisen*
-
-Output: a 1080×1920 vertical video with multi-scene cuts synced to the narration, word-highlight subtitles with spring animation, AI-composed script-matched music, ElevenLabs v3 narration with emotion tags, flash cut transitions, and a chroma-keyed follow-button CTA — ready to upload.
+- **Remotion over MoviePy.** MoviePy baked subtitles in as Pillow images, which was slow and looked worse. Remotion renders each frame in a real browser engine, which gives CSS, spring animations and exact compositing.
+- **Per-shot layout.** Cropping every shot to 9:16 cuts people off in wide shots. Letterboxing every shot leaves two thirds of the screen as filler. Deciding per shot, with framed as the safe default, gets close-ups that fill the screen without ever breaking a wide shot.
+- **Cards only show what the narration says.** The number check runs in code, so a made-up stat can never reach the screen.
+- **FFmpeg chromakey for the CTA.** Remotion's `OffthreadVideo` does not reliably handle VP9 alpha in Chrome Headless Shell, while FFmpeg keys the green screen cleanly as a post-process.
+- **Effects only on every 3rd cut.** The flash and glitch stay punctuation, not wallpaper.
+- **Punch sounds instead of zoom punches.** A sound on the spoken word draws attention to the narration without moving the picture.
+- **Voice before scene finding.** Gemini gets real sentence timings from Whisper, so cuts follow the narration rhythm.
+- **Whisper `large-v3`.** Smaller models gave word timestamps too loose for word-level subtitles.
+- **`text_to_dialogue` for English.** The plain text-to-speech endpoint ignores bracketed emotion tags.

@@ -13,7 +13,7 @@ export const RemotionRoot: React.FC = () => {
       id="ShortVideo"
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       component={ShortVideo as any}
-      durationInFrames={1800} // placeholder — overridden by calculateMetadata
+      durationInFrames={1800} // placeholder, overridden by calculateMetadata
       fps={DEFAULT_FPS}
       width={1080}
       height={1920}

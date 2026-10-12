@@ -44,7 +44,7 @@ export const Thumbnail: React.FC<ThumbnailProps> = ({ framePath, hookLines }) =>
           filter: "contrast(1.18) saturate(1.35) brightness(1.03)",
         }}
       />
-      {/* Lower-middle text block — sits over the chest, not the face */}
+      {/* Lower-middle text block: sits over the chest, not the face */}
       <div
         style={{
           position: "absolute",

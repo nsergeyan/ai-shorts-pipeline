@@ -5,12 +5,11 @@ import os
 import random
 import socket
 import subprocess
-import tempfile
 import threading
 import urllib.parse
 from typing import List, Optional, Union
 
-from config import DATA_DIR, CTA_PATH, THUMBNAIL_DIR
+from config import DATA_DIR, CTA_PATH, FINAL_DIR, THUMBNAIL_DIR
 
 SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
@@ -38,10 +37,9 @@ def _next_punch_sfx() -> str:
         pass
     return _PUNCH_SFX_FILES[next_index]
 
+
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FINAL_DIR = os.path.join(DATA_DIR, "final")
 REMOTION_DIR = os.path.join(PROJECT_ROOT, "remotion")
-os.makedirs(FINAL_DIR, exist_ok=True)
 
 
 class _SilentFileServer(http.server.SimpleHTTPRequestHandler):
@@ -74,31 +72,6 @@ def _probe_duration(path: str) -> float:
     return float(json.loads(result.stdout)["format"]["duration"])
 
 
-def _prepare_cta_transparent(cta_path: str) -> Optional[str]:
-    """Convert green-screen CTA to transparent WebM, stored inside DATA_DIR."""
-    out_path = os.path.join(DATA_DIR, "cta_transparent.webm")
-    if os.path.exists(out_path):
-        return out_path
-    if not cta_path or not os.path.exists(cta_path):
-        return None
-    try:
-        subprocess.run([
-            "ffmpeg", "-y",
-            "-i", cta_path,
-            "-vf", "chromakey=color=0x00FF00:similarity=0.35:blend=0.05",
-            "-pix_fmt", "yuva420p",
-            "-c:v", "libvpx-vp9",
-            "-b:v", "2M",
-            "-an",
-            out_path
-        ], check=True, capture_output=True)
-        print(f"✅ CTA transparent: {out_path}")
-        return out_path
-    except subprocess.CalledProcessError as e:
-        print(f"⚠️ CTA chromakey failed, using original: {e.stderr.decode()[-200:]}")
-        return cta_path
-
-
 def _measure_lufs(path: str) -> Optional[float]:
     """Measure integrated loudness (LUFS) of an audio file."""
     try:
@@ -127,7 +100,7 @@ def _prepare_music(music_path: str, target_dur: float,
     measured = _measure_lufs(music_path)
     gain_db = max(-40.0, min(20.0, target_lufs - measured)) if measured is not None else 0.0
     encode = ["-af", f"volume={gain_db:.1f}dB", "-c:a", "libmp3lame", "-b:a", "192k"]
-    print(f"\U0001F39A\uFE0F  Music {measured} LUFS -> {target_lufs} LUFS ({gain_db:+.1f} dB)")
+    print(f"Music {measured} LUFS -> {target_lufs} LUFS ({gain_db:+.1f} dB)")
 
     out_path = music_path + "_final.mp3"
     try:
@@ -152,7 +125,7 @@ def _prepare_music(music_path: str, target_dur: float,
             ], check=True, capture_output=True)
         return out_path
     except subprocess.CalledProcessError as e:
-        print(f"⚠️ Music prep failed: {e}")
+        print(f"Music prep failed: {e}")
         return music_path
 
 
@@ -236,7 +209,7 @@ def _graphics_before_cta(graphics: List[dict], cutoff: float) -> List[dict]:
         if end - g["start"] >= 1.0:
             kept.append({**g, "end": round(end, 3)})
         else:
-            print(f"🎨 Dropped {g['type']} card at {g['start']:.1f}s (overlaps follow button)")
+            print(f"Dropped {g['type']} card at {g['start']:.1f}s (overlaps follow button)")
     return kept
 
 
@@ -271,19 +244,14 @@ def merge_audio_video(
     video_paths: Union[str, List[str]],
     audio_path: str,
     output_name: str = "final_short.mp4",
-    vertical: bool = False,
     target_w: int = 1080,
     target_h: int = 1920,
     shorts_cap: bool = True,
     cap_seconds: float = 82,
     music_path: Optional[str] = None,
     music_lufs: float = -34.0,
-    subtitles_data: Optional[list] = None,
-    subtitles_position: str = "top",
     words_data: Optional[list] = None,
     cta_path: str = CTA_PATH,
-    subtitles_text: Optional[str] = None,
-    hook_text: Optional[str] = None,
     punch_times: Optional[List[float]] = None,
     clip_meta: Optional[List[dict]] = None,
     graphics: Optional[List[dict]] = None,
@@ -291,14 +259,14 @@ def merge_audio_video(
     frame_background: str = "blur",
 ) -> str:
     """Render final Short via Remotion (background + audio + subtitles), then composite CTA via FFmpeg."""
-    print("\n🎬  Starting Remotion render...")
+    print("\nStarting Remotion render...")
 
     if isinstance(video_paths, str):
         video_paths = [video_paths]
 
     httpd, port = _start_asset_server(PROJECT_ROOT)
     base_url = f"http://127.0.0.1:{port}"
-    print(f"📡 Asset server: {base_url}")
+    print(f"Asset server: {base_url}")
 
     out_path = os.path.join(FINAL_DIR, output_name)
     prepared_music = None
@@ -341,7 +309,7 @@ def merge_audio_video(
 
         remotion_out = out_path + "_base.mp4" if has_cta else out_path
 
-        print(f"🎞️  Rendering {total_dur:.1f}s @ 1080×1920 via Remotion...")
+        print(f"Rendering {total_dur:.1f}s @ 1080×1920 via Remotion...")
         subprocess.run(
             [
                 "npx", "remotion", "render",
@@ -367,22 +335,21 @@ def merge_audio_video(
                 pass
 
     if has_cta:
-        print(f"🎭  Compositing CTA (starts at {cta_start:.1f}s)...")
+        print(f"Compositing CTA (starts at {cta_start:.1f}s)...")
         try:
             _composite_cta(remotion_out, cta_path, cta_start, out_path)
             os.remove(remotion_out)
         except subprocess.CalledProcessError as e:
-            print(f"⚠️  CTA composite failed, using base render: {e.stderr.decode()[-300:]}")
+            print(f"CTA composite failed, using base render: {e.stderr.decode()[-300:]}")
             os.rename(remotion_out, out_path)
 
-    print(f"✅  Saved: {out_path}")
+    print(f"Saved: {out_path}")
     return out_path
 
 
 def render_thumbnail(frame_path: str, hook_lines: List[dict], output_name: str) -> str:
-    """Render a static thumbnail: a real footage frame (CSS-enhanced) + brand-styled,
-    multi-color hook text (e.g. [{"text": "PRIME", "color": "#FFE000"}, ...]).
-    No generative AI involved — deterministic and free."""
+    """Render a static thumbnail: a real footage frame (CSS-enhanced) with multi-color
+    hook text on top (e.g. [{"text": "PRIME", "color": "#FFE000"}, ...])."""
     out_path = os.path.join(THUMBNAIL_DIR, output_name)
 
     httpd, port = _start_asset_server(PROJECT_ROOT)
@@ -412,7 +379,7 @@ def render_thumbnail(frame_path: str, hook_lines: List[dict], output_name: str) 
     finally:
         httpd.shutdown()
 
-    print(f"🖼️  Thumbnail saved: {out_path}")
+    print(f"Thumbnail saved: {out_path}")
     return out_path
 
 
@@ -443,5 +410,5 @@ def append_thumbnail_frame(video_path: str, thumbnail_path: str, duration: float
         tmp_out,
     ], check=True, capture_output=True)
     os.replace(tmp_out, video_path)
-    print(f"🖼️  Thumbnail frame added ({duration}s, {position}) to video")
+    print(f"Thumbnail frame added ({duration}s, {position}) to video")
     return video_path

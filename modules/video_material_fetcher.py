@@ -1,7 +1,6 @@
 import json
 import math
 import os
-import random
 import re
 import time
 import subprocess
@@ -73,50 +72,11 @@ BONUS_WORDS = (
 
 
 def _get_yt_dlp_version():
-    """Check yt-dlp version"""
     try:
         result = subprocess.run(["yt-dlp", "--version"], capture_output=True, text=True)
         return result.stdout.strip()
-    except:
+    except Exception:
         return "unknown"
-
-
-def _make_opts(skip_download: bool, use_range: bool = False):
-    """Create yt-dlp options that avoid 403 errors"""
-    opts = {
-        "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
-        "quiet": False,
-        "skip_download": skip_download,
-        "playlistend": 1,
-        "restrictfilenames": True,
-        "no_warnings": False,
-        "ignoreerrors": True,
-        "nocheckcertificate": True,
-        "overwrites": True,
-        "nopart": True,
-
-        # Progressive formats only — HLS/DASH cause 403s
-        "format": "18/best[ext=mp4][protocol=https]/best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]/best",
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android", "web"],
-                "skip": ["hls", "dash"],
-            }
-        },
-        "js_runtimes": {"node": {}},
-        "sleep_interval": 3,
-        "max_sleep_interval": 6,
-        "sleep_interval_requests": 1,
-
-        "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    }
-
-    if COOKIEFILE and os.path.exists(COOKIEFILE):
-        opts["cookiefile"] = COOKIEFILE
-    else:
-        opts["cookiesfrombrowser"] = (BROWSER, PROFILE)
-
-    return opts
 
 
 def _make_opts_hd(skip_download: bool, use_cookies: bool = False):
@@ -191,7 +151,7 @@ def _rank_entries(entries: list, query: str) -> list:
         ((_score_entry(e, query, i), e) for i, e in enumerate(entries)),
         key=lambda pair: pair[0], reverse=True,
     )
-    print("   📊 Ranked candidates:")
+    print("   Ranked candidates:")
     for score, e in scored[:5]:
         print(f"      {score:5.1f}  {e.get('title', 'Unknown')[:70]}")
     return [e for _, e in scored]
@@ -208,7 +168,7 @@ def _write_source_meta(filepath: str, title: str, source_duration) -> None:
 
 
 def _make_opts_no_cookies(skip_download: bool):
-    """yt-dlp options without browser cookies — used as a fallback when cookie-based download fails."""
+    """yt-dlp options without browser cookies, used as a fallback when cookie-based download fails."""
     return {
         "outtmpl": os.path.join(VIDEO_MATERIAL_DIR, "%(id)s.%(ext)s"),
         "quiet": False,
@@ -257,19 +217,19 @@ def _download_is_healthy(path: Optional[str]) -> bool:
 
     size = os.path.getsize(path)
     if size < MIN_DOWNLOAD_BYTES:
-        print(f"   ⚠️ Download too small: {size / 1024:.0f} KB, discarding")
+        print(f"   Download too small: {size / 1024:.0f} KB, discarding")
         _discard(path)
         return False
 
     duration = _probe_duration(path)
     if not duration:
-        print(f"   ⚠️ Download unreadable by ffprobe, discarding")
+        print("   Download unreadable by ffprobe, discarding")
         _discard(path)
         return False
 
     rate = size / duration
     if rate < MIN_BYTES_PER_SEC:
-        print(f"   ⚠️ Stub download: {size / 1e6:.2f} MB for {duration:.0f}s "
+        print(f"   Stub download: {size / 1e6:.2f} MB for {duration:.0f}s "
               f"({rate / 1024:.1f} KB/s), discarding")
         _discard(path)
         return False
@@ -286,11 +246,10 @@ def _discard(path: str) -> None:
 
 
 def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
-    """Trim video to max_duration seconds AFTER download using ffmpeg"""
+    """Cut a downloaded video down to max_duration seconds (stream copy, no re-encode)."""
     if not os.path.exists(input_path):
         return input_path
 
-    # Check current duration
     try:
         result = subprocess.run(
             ["ffprobe", "-v", "error", "-show_entries", "format=duration",
@@ -300,15 +259,14 @@ def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
         current_duration = float(result.stdout.strip())
 
         if current_duration <= max_duration:
-            print(f"   ✓ Video is already {current_duration:.0f}s (under {max_duration}s limit)")
+            print(f"   Video is already {current_duration:.0f}s (under {max_duration}s limit)")
             return input_path
 
     except Exception as e:
-        print(f"   ⚠️ Could not check duration: {e}")
+        print(f"   Could not check duration: {e}")
         return input_path
 
-    # Trim the video
-    print(f"   ✂️ Trimming video from {current_duration:.0f}s to {max_duration}s...")
+    print(f"   Trimming video from {current_duration:.0f}s to {max_duration}s...")
 
     base, ext = os.path.splitext(input_path)
     trimmed_path = f"{base}_trimmed{ext}"
@@ -317,18 +275,17 @@ def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
         subprocess.run([
             "ffmpeg", "-y", "-i", input_path,
             "-t", str(max_duration),
-            "-c", "copy",  # Fast copy without re-encoding
+            "-c", "copy",
             trimmed_path
         ], capture_output=True, timeout=120, check=True)
 
-        # Replace original with trimmed
         if os.path.exists(trimmed_path) and os.path.getsize(trimmed_path) > 0:
             os.remove(input_path)
             os.rename(trimmed_path, input_path)
-            print(f"   ✓ Trimmed successfully to {max_duration}s")
+            print(f"   Trimmed successfully to {max_duration}s")
 
     except Exception as e:
-        print(f"   ⚠️ Trim failed: {e}")
+        print(f"   Trim failed: {e}")
         if os.path.exists(trimmed_path):
             os.remove(trimmed_path)
 
@@ -336,7 +293,7 @@ def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
 
 
 def _final_filepath(ydl: yt_dlp.YoutubeDL, info: dict) -> str:
-    """Get the final filepath of downloaded video"""
+    """Find where yt-dlp actually wrote the file (the extension depends on the format it picked)."""
     vid_id = info.get("id", "unknown")
 
     if info.get("requested_downloads"):
@@ -379,26 +336,26 @@ def _pick_existing_video_material() -> Optional[str]:
     os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
     candidates = [f for f in os.listdir(VIDEO_MATERIAL_DIR) if f.lower().endswith((".mp4", ".webm", ".mkv"))]
     if candidates:
-        # Return the largest file (most likely complete)
+        # Largest file is the one most likely to be complete
         candidates.sort(key=lambda f: os.path.getsize(os.path.join(VIDEO_MATERIAL_DIR, f)), reverse=True)
         return os.path.join(VIDEO_MATERIAL_DIR, candidates[0])
     return None
 
 
 def _find_latest_video() -> Optional[str]:
-    """Find the most recently created video file"""
+    """Most recently created video in VIDEO_MATERIAL_DIR that is over 10 KB, or None."""
     try:
         video_files = []
         for f in os.listdir(VIDEO_MATERIAL_DIR):
             if f.endswith(('.mp4', '.webm', '.mkv')):
                 full_path = os.path.join(VIDEO_MATERIAL_DIR, f)
-                if os.path.getsize(full_path) > 10000:  # At least 10KB
+                if os.path.getsize(full_path) > 10000:
                     video_files.append((full_path, os.path.getctime(full_path)))
 
         if video_files:
             video_files.sort(key=lambda x: x[1], reverse=True)
             return video_files[0][0]
-    except:
+    except Exception:
         pass
     return None
 
@@ -454,7 +411,7 @@ def _note_bot_check(errors, uses_cookies: bool) -> None:
     global _no_cookie_blocked
     if not uses_cookies and not _no_cookie_blocked and any("not a bot" in e for e in errors):
         _no_cookie_blocked = True
-        print("   🚫 YouTube bot check: skipping no-cookie methods for the rest of this run")
+        print("   YouTube bot check: skipping no-cookie methods for the rest of this run")
 
 
 def _try_download(label: str, opts: dict, url: str, uses_cookies: bool) -> Optional[str]:
@@ -471,10 +428,10 @@ def _try_download(label: str, opts: dict, url: str, uses_cookies: bool) -> Optio
         log.errors.append(str(e))
 
     if path and _download_is_healthy(path):
-        print(f"   ✅ {label}")
+        print(f"   {label}: ok")
         return path
     reason = _short_error(log.errors[-1]) if log.errors else "no usable file"
-    print(f"   ⚠️ {label} failed: {reason}")
+    print(f"   {label} failed: {reason}")
     _note_bot_check(log.errors, uses_cookies)
     return None
 
@@ -494,15 +451,15 @@ def _try_cli_download(vid_id: str, url: str) -> Optional[str]:
             url,
         ], capture_output=True, text=True, timeout=300)
     except Exception as e:
-        print(f"   ⚠️ Method 3: CLI failed: {str(e)[:90]}")
+        print(f"   Method 3: CLI failed: {str(e)[:90]}")
         return None
 
     if _download_is_healthy(output_path):
-        print("   ✅ Method 3: CLI")
+        print("   Method 3: CLI")
         return output_path
     errors = [line for line in result.stderr.splitlines() if line.startswith("ERROR")]
     reason = _short_error(errors[-1]) if errors else "no usable file"
-    print(f"   ⚠️ Method 3: CLI failed: {reason}")
+    print(f"   Method 3: CLI failed: {reason}")
     _note_bot_check(errors, uses_cookies=False)
     return None
 
@@ -513,15 +470,13 @@ def fetch_video_material_by_search(
         retry_searches: int = 20,
         used_video_ids: Optional[set] = None
 ) -> list[str]:
-    """
-    Search YouTube and download videos, avoiding 403 errors.
-    """
+    """Search YouTube, rank the results, and download up to max_videos of them. Returns file paths."""
     if isinstance(search_queries, str):
         search_queries = [search_queries]
 
     os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
 
-    print(f"📌 yt-dlp version: {_get_yt_dlp_version()}")
+    print(f"yt-dlp version: {_get_yt_dlp_version()}")
 
     attempts = 0
     query_index = 0
@@ -533,7 +488,7 @@ def fetch_video_material_by_search(
         query = search_queries[query_index % len(search_queries)]
         query_index += 1
 
-        print(f"\n🔎 [Attempt {attempts}/{retry_searches}] Searching: \"{query}\"")
+        print(f"\n[Attempt {attempts}/{retry_searches}] Searching: \"{query}\"")
 
         try:
             search_opts = {
@@ -549,7 +504,7 @@ def fetch_video_material_by_search(
             with yt_dlp.YoutubeDL(search_opts) as ydl:
                 info = ydl.extract_info(f"ytsearch{max(SEARCH_RESULTS, max_videos * 5)}:{query}", download=False)
         except Exception as e:
-            print(f"❌ Search failed: {e}")
+            print(f"Search failed: {e}")
             time.sleep(3)
             continue
 
@@ -586,24 +541,24 @@ def fetch_video_material_by_search(
                 continue
 
             valid_entries.append(entry)
-            print(f"✓ Found: {entry.get('title', 'Unknown')[:60]}... ({duration}s)")
+            print(f"Found: {entry.get('title', 'Unknown')[:60]}... ({duration}s)")
 
         # Keep every valid result in ranked order: if the best one fails to
         # download, the next one is tried instead of giving up on the query.
         filtered_entries = _rank_entries(valid_entries, query) if valid_entries else []
 
         if filtered_entries:
-            print(f"✅ Found {len(filtered_entries)} suitable video(s).")
+            print(f"Found {len(filtered_entries)} suitable video(s).")
             break
         else:
-            print(f"⚠️ No valid results. Retrying...")
+            print("No valid results. Retrying...")
             time.sleep(2)
 
     if not filtered_entries:
-        print("❌ No suitable videos found after all retries.")
+        print("No suitable videos found after all retries.")
         existing = _pick_existing_video_material()
         if existing:
-            print(f"📁 Using existing video: {existing}")
+            print(f"Using existing video: {existing}")
             return [existing]
         return []
 
@@ -614,7 +569,7 @@ def fetch_video_material_by_search(
         if len(paths) >= max_videos:
             break
         if tries >= MAX_DOWNLOAD_TRIES:
-            print(f"   ⏭️ Tried {tries} results for this query, moving on")
+            print(f"   Tried {tries} results for this query, moving on")
             break
         tries += 1
         vid_id = e.get("id")
@@ -622,7 +577,7 @@ def fetch_video_material_by_search(
         webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
 
         used_video_ids.add(vid_id)
-        print(f"\n⬇️  Downloading: {title}")
+        print(f"\nDownloading: {title}")
         print(f"   URL: {webpage_url}")
 
         filepath = None
@@ -647,74 +602,48 @@ def fetch_video_material_by_search(
 
         download_success = filepath is not None
 
-        # Check result
         if download_success and filepath and os.path.exists(filepath):
             file_size = os.path.getsize(filepath) / (1024 * 1024)
-            print(f"   📁 Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
+            print(f"   Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
 
             filepath = _trim_video_after_download(filepath, max_duration=MAX_SOURCE_SECONDS)
             paths.append(filepath)
             _write_source_meta(filepath, title, e.get("duration"))
         else:
-            print(f"   ❌ All methods failed for: {vid_id}")
+            print(f"   All methods failed for: {vid_id}")
 
             latest = _find_latest_video()
             if latest and vid_id in latest:
-                print(f"   📁 Found partial download: {latest}")
+                print(f"   Found partial download: {latest}")
                 paths.append(latest)
 
     return paths
 
 
-
-
 if __name__ == "__main__":
-    import sys
+    import traceback
 
-    print("\n" + "=" * 60)
-    print("   YOUTUBE UTILS - TEST")
-    print("=" * 60)
+    print(f"yt-dlp version: {_get_yt_dlp_version()} (if downloads fail, run: pip install -U yt-dlp)")
+    print(f"VIDEO_MATERIAL_DIR: {VIDEO_MATERIAL_DIR}")
 
-    print(f"\n📌 yt-dlp version: {_get_yt_dlp_version()}")
-    print(f"📂 VIDEO_MATERIAL_DIR: {VIDEO_MATERIAL_DIR}")
-
-    # Check if yt-dlp needs updating
-    print("\n💡 TIP: If downloads fail, update yt-dlp:")
-    print("   pip install -U yt-dlp")
-    print("   # or")
-    print("   yt-dlp -U")
-
-    # Test queries - use generic content less likely to be restricted
-    test_queries = [
-        "thors cinematic 4k vinland saga"
-    ]
-
-    print(f"\n🧪 Testing download with queries: {test_queries[0][:40]}...")
+    test_query = "thors cinematic 4k vinland saga"
+    print(f"\nTesting download with query: {test_query}")
 
     try:
         results = fetch_video_material_by_search(
-            search_queries=test_queries,
+            search_queries=[test_query],
             max_videos=1,
             retry_searches=5,
             used_video_ids=set()
         )
-
         if results:
-            print(f"\n✅ SUCCESS! Downloaded {len(results)} video(s):")
+            print(f"\nDownloaded {len(results)} video(s):")
             for i, path in enumerate(results, 1):
                 if os.path.exists(path):
                     size_mb = os.path.getsize(path) / (1024 * 1024)
                     print(f"   {i}. {os.path.basename(path)} ({size_mb:.2f} MB)")
         else:
-            print("\n❌ No videos downloaded.")
-            existing = _pick_existing_video_material()
-            if existing:
-                print(f"📁 But found existing: {existing}")
-
+            print("\nNo videos downloaded.")
     except Exception as e:
-        print(f"\n💥 Test failed: {e}")
-        import traceback
-
+        print(f"\nTest failed: {e}")
         traceback.print_exc()
-
-    print("\n" + "=" * 60)

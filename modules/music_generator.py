@@ -7,7 +7,7 @@ from modules.video_material_fetcher import (
     POLITE_OPTS, _ErrorCollector, _short_error, no_cookie_blocked, youtube_cookie_opts,
 )
 
-MUSIC_LENGTH_MS = 90_000  # 90 seconds
+MUSIC_LENGTH_MS = 90_000
 
 
 def generate_music(prompt: str) -> str | None:
@@ -19,7 +19,7 @@ def generate_music(prompt: str) -> str | None:
     filename = f"music_{random.randint(10000, 99999)}.mp3"
     output_path = os.path.join(MUSIC_DIR, filename)
 
-    print(f"🎼 Generating music with ElevenLabs...")
+    print("Generating music with ElevenLabs...")
     print(f"   Prompt: {prompt}")
 
     try:
@@ -36,11 +36,11 @@ def generate_music(prompt: str) -> str | None:
 
         if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
             size_mb = os.path.getsize(output_path) / (1024 * 1024)
-            print(f"✅ Music generated: {filename} ({size_mb:.2f} MB)")
+            print(f"Music generated: {filename} ({size_mb:.2f} MB)")
             return output_path
 
     except Exception as e:
-        print(f"❌ ElevenLabs music generation failed: {e}")
+        print(f"ElevenLabs music generation failed: {e}")
         if os.path.exists(output_path):
             os.remove(output_path)
 
@@ -71,7 +71,7 @@ def fetch_music_from_youtube(query: str) -> str | None:
         **POLITE_OPTS,
     }
 
-    print(f"🎵 Fetching music from YouTube: '{query}'...")
+    print(f"Fetching music from YouTube: '{query}'...")
     output_path = output_template + ".mp3"
     attempts = [True] if no_cookie_blocked() else [False, True]
     for use_cookies in attempts:
@@ -86,11 +86,11 @@ def fetch_music_from_youtube(query: str) -> str | None:
 
         if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
             size_mb = os.path.getsize(output_path) / (1024 * 1024)
-            print(f"✅ YouTube music downloaded ({label}): {os.path.basename(output_path)} ({size_mb:.2f} MB)")
+            print(f"YouTube music downloaded ({label}): {os.path.basename(output_path)} ({size_mb:.2f} MB)")
             return output_path
 
         reason = _short_error(log.errors[-1]) if log.errors else "no usable file"
-        print(f"   ⚠️ Music download ({label}) failed: {reason}")
+        print(f"   Music download ({label}) failed: {reason}")
         if os.path.exists(output_path):
             os.remove(output_path)
 
@@ -101,6 +101,6 @@ if __name__ == "__main__":
     test_prompt = "Epic orchestral cinematic music, dark and dramatic tension, slow build-up with strings and brass, anime battle lore atmosphere"
     path = generate_music(test_prompt)
     if path:
-        print(f"🎧 Saved to: {path}")
+        print(f"Saved to: {path}")
     else:
-        print("❌ Music generation failed")
+        print("Music generation failed")
