@@ -26,7 +26,7 @@ VOICES = {
 }
 
 # Speed boost applied after TTS. Set to 1.0 to disable.
-SPEED_MULTIPLIER = 1.1
+SPEED_MULTIPLIER = 1.0
 
 OUTPUT_FORMAT = "mp3_44100_192"
 
