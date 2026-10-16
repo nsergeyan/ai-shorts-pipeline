@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE aot idea.
+Find ONE jjk idea.
 
 It must be either:
 
@@ -52,7 +52,7 @@ AND REMEMBER YOU ARE WRITING A NARRATION THAT WILL BE USED FOR TEXT TO SPEACH AI
 
 TECHNICAL SPECS — OUTPUT FORMATTING, DELIVERY & API CONSTRAINTS
 TITLE RULE
-Output a "title" field: ONE sentence that names the character or moment plus the film/series name, and WITHHOLDS the answer. The script's first line is this title, spoken word for word.
+Output a "title" field: ONE sentence that names the character or moment plus the film/series name, and WITHHOLDS the answer. The script's first line is this title, spoken, minus the series name at the end (see HOOK below).
 
 Formats: "Why did [character] [do famous thing] in [MOVIE/SERIES]?" / "The real reason [character] [does thing] in [MOVIE/SERIES]" / "This is the [most / first / only] [thing] in [MOVIE/SERIES]" / "What if [twist] in [MOVIE/SERIES]?" / "Things you missed in [new episode/trailer] of [MOVIE/SERIES]" / Countdown: "Three [things] about [character] you never noticed in [MOVIE/SERIES]"
 
@@ -132,7 +132,8 @@ Spoken text, tags excluded: ninety to one hundred words for Format A, one hundre
 
 SCRIPT STRUCTURE (Format A)
 
-HOOK (first line): the title, spoken word for word. No greeting, no intro.
+HOOK (first line): the title, spoken, but DROP the series name at the end ("in Attack on Titan").
+Ten spoken words at most. The character name and the curiosity word (why, real reason, only, never) must land in the first four words. No greeting, no intro. The written title keeps the series name, because it is shown on screen as a big hook card while the voice speaks.
 
 THE SETUP (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then pick ONE of these:
 - MYTH BUST, only if a real, widespread wrong belief about this exact question exists (you could point to fans actually saying it in comments, Reddit, or popular videos). Name it and shoot it down ("Most fans think it's X, but that makes zero sense").
@@ -225,7 +226,7 @@ VERIFICATION BOX
 ☐ Language Standard: B1 Simple English verified
 ☐ Spoken Word Count: [Number] spoken words (tags excluded; A: 90-100, B: 110-130)
 ☐ Number Check: Zero digit characters used, at least one concrete verified number spoken as words
-☐ First Line Check: First line is the title spoken word for word, answer withheld (no greeting)
+☐ First Line Check: First line is the title without the series name, ten words max, character + curiosity word in the first four, answer withheld (no greeting)
 ☐ Receipt Point: Direct visual reference included without frame-precise demands
 ☐ Footage Test: Passes Generic Footage Test ([GREEN / YELLOW])
 ☐ Structure Check: A: Hook -> Setup [MYTH BUST: where fans say it / STAKES] -> Real Answer -> Escalation -> Punchline / B: Hook -> 3 -> 2 -> 1 -> Punchline
@@ -239,12 +240,8 @@ VERIFICATION BOX
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-
-1. why did zeke decide to die? #aot
-2. why does sukuna have four arms in jujutsu kaisen? #jjk  #sukunaryomen
-3. the original story was about climate change in attack on titan #aot
-4. the iconic photo of scp 173 was permanently deleted in scp foundation #scp #scp173
-5. gabi braun is actually a female eren in attack on titan #aot
-6. attack on titan in marvel? #aot #marvel
-7. yuta okkotsu wore a white uniform because he was labeled a problem child in jujutsu kaisen #jjk
-8. the unknown gender of hange in attack on titan #aot
+1. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
+2. the real reason l never sits normally in death note. #deathnote
+3. why light never just guessed l's name in death note #deathnote
+4. the jaw titan curse in attack on titan #aot
+5. why did sukuna save megumi in jujutsu kaisen? #jjk

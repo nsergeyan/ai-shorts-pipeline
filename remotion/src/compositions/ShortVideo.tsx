@@ -10,6 +10,7 @@ import {
 } from "remotion";
 import { WordHighlight } from "../components/WordHighlight";
 import { ProgressBar } from "../components/ProgressBar";
+import { HookCard } from "../components/HookCard";
 import { GraphicLayer } from "../components/graphics/GraphicLayer";
 import { DEFAULT_THEME, GraphicData, Theme } from "../components/graphics/types";
 
@@ -48,12 +49,16 @@ export interface ShortVideoProps {
   graphics?: GraphicData[];
   theme?: Partial<Theme>;
   frameBackground?: FrameBackground;
+  hookText?: string;
   totalDurationSec: number;
 }
 
 const WHIP_FRAMES = 4;
 const WHIP_DISTANCE = 80;
 const WHIP_BLUR = 8;
+
+const HOOK_MIN_SEC = 1.5;
+const HOOK_MAX_SEC = 3.5;
 
 const ClipRenderer: React.FC<{
   clip: ClipProps;
@@ -240,6 +245,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   graphics = [],
   theme: themeOverrides = {},
   frameBackground = "blur",
+  hookText = "",
 }) => {
   const theme: Theme = { ...DEFAULT_THEME, ...themeOverrides };
   const frame = useCurrentFrame();
@@ -269,8 +275,7 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
     );
   });
 
-  // Frame ranges where a full-screen crop is showing. Faces sit in the upper
-  // half of a close-up, so subtitles drop lower during those ranges.
+  // Frame ranges where a full-screen crop is showing (the progress bar hides there).
   const fullRanges: [number, number][] = [];
   let rangeStart = 0;
   for (const clip of clips) {
@@ -282,6 +287,13 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
     rangeStart += clipFrames;
   }
   const inFullShot = fullRanges.some(([a, b]) => frame >= a && frame < b);
+
+  // Card stays until the voice finishes the first sentence (the spoken hook)
+  const firstStop = wordsData.find((w) => /[?.!]$/.test(w.word));
+  const hookEnd = hookText
+    ? Math.min(HOOK_MAX_SEC, Math.max(HOOK_MIN_SEC, firstStop?.end ?? HOOK_MAX_SEC))
+    : 0;
+  const subtitleWords = wordsData.filter((w) => w.start >= hookEnd);
 
   // Every 3rd cut (starting at index 1) gets a flash, evenly spread, ~1 in 3
   const flashFrames = cutFrames.filter((_, i) => i % 3 === 1);
@@ -304,7 +316,8 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
         </Sequence>
       ))}
       <GraphicLayer graphics={graphics} theme={theme} />
-      {wordsData.length > 0 && <WordHighlight wordsData={wordsData} accent={theme.accent} topPct={inFullShot ? 58 : 27} />}
+      {hookText && <HookCard text={hookText} endSec={hookEnd} accent={theme.accent} topPct={22} wordsData={wordsData} />}
+      {subtitleWords.length > 0 && <WordHighlight wordsData={subtitleWords} accent={theme.accent} topPct={27} />}
       {!inFullShot && <ProgressBar accent={theme.accent} />}
     </AbsoluteFill>
   );

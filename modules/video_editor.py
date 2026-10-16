@@ -257,6 +257,7 @@ def merge_audio_video(
     graphics: Optional[List[dict]] = None,
     theme: Optional[dict] = None,
     frame_background: str = "blur",
+    hook_text: str = "",
 ) -> str:
     """Render final Short via Remotion (background + audio + subtitles), then composite CTA via FFmpeg."""
     print("\nStarting Remotion render...")
@@ -300,6 +301,7 @@ def merge_audio_video(
             "graphics": _graphics_before_cta(graphics or [], cta_start if has_cta else total_dur),
             "theme": theme or {},
             "frameBackground": frame_background,
+            "hookText": hook_text,
             "totalDurationSec": round(total_dur, 3),
         }
 

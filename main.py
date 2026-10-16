@@ -109,20 +109,20 @@ DEFAULT_CHANNEL = {
     "graphic_types": list(GRAPHIC_TYPES),
 }
 
-MANUAL_DATA = {
+MANUAL_DATA ={
 "channel": "anime",
-"topic": "Cyberpunk Edgerunners season two premiering October 20, 2026",
-"specific_subject": "Season two director Kai Ikarashi is the man who directed Maine's death episode in season one, and his new hero Weak is a fallen legend forced to live without chrome",
-"title": "This is the most worrying detail about Cyberpunk Edgerunners season two",
-"youtube_queries": ["Maine death scene Edgerunners", "Maine cyberpsychosis goes hard", "Maine edgerunners edit", "Cyberpunk Edgerunners episode 6 Maine", "Maine death english dub", "Cyberpunk Edgerunners 2 official trailer"],
-"scene_query": "A huge muscular bald man with heavy metal cybernetic arms and a beard is breaking down mentally, with blinding white light and an empty white void around him. He fights armored police in a neon city at night, and the scene is full of explosions, fire and flying debris while a young man with a cyber arm watches in shock. This is intercut with trailer shots of a scarred man in a red coat facing a hovering gunship in the rain.",
-"footage_source": "official_or_press",
-"music_mood": "emotional",
-"music_queries": ["I Really Want to Stay at Your House instrumental", "Cyberpunk Edgerunners OST instrumental", "dark emotional synthwave instrumental no copyright"],
-"music_prompt": "Melancholic dark synthwave with a slow cinematic build, 85 BPM. Heavy warm analog synth pads, a lonely detuned electric piano, and a deep pulsing sub bass for a neon sci-fi cyberpunk feel. It starts quiet and nostalgic, tension slowly rises toward a sudden heavy reveal around second twenty, there is a brief dry, lighter pocket for a sarcastic joke, then it ends on a soft, sad fading chord. Short-form video background, no lyrics, exclude: upbeat EDM drops, cheerful ukulele",
+"topic": "Jujutsu Kaisen",
+"specific_subject": "Toji Heavenly Restriction",
+"title": "Why Toji never gets trapped in domains in Jujutsu Kaisen",
+"youtube_queries": ["Toji vs Dagon full fight", "Toji Fushiguro domain goes hard", "Toji Fushiguro edit", "Jujutsu Kaisen episode 38 Toji scene", "Toji vs Dagon english dub", "Jujutsu Kaisen Toji official clip"],
+"scene_query": "Toji Fushiguro standing confidently inside a bright tropical beach setting, wearing a tight black short-sleeve shirt and light pants, holding a sharp weapon, looking extremely muscular and dangerous.",
+"footage_source": "stills_and_broll",
+"music_mood": "curious",
+"music_queries": ["Toji Fushiguro theme ost", "Jujutsu Kaisen season 2 tension ost", "dark ambient trap tension instrumental no lyrics"],
+"music_prompt": "dark atmospheric trap, 100 BPM, heavy synth bass and a ticking hi-hat, an intense but curious tension building, short-form video background, no lyrics, exclude: bright piano, upbeat brass",
 "voice_name": "animatoryoung",
-"spoken_word_count": 99,
-"script": "This is the most worrying detail about Cyberpunk Edgerunners season two. [curious] Remember episode six? Maine loses his mind to chrome, and his story ends in *fire*. [thoughtful] The man who directed that episode, Kai Ikarashi, now directs ALL of season two. His new hero? Weak, a washed-up legend forced to live without chrome. [deadpan] It feels like a Maine who survived. [sarcastic] The showrunner even said he wants to make the whole world sad. Sir, mission already complete. [softly] In season one, chrome destroyed a legend. In season two, the same director takes the chrome away... and we still expect a happy *ending*?"
+"spoken_word_count": 96,
+"script": "[thoughtful] Why Toji never gets trapped in domains.\nWe all remember his brutal fight inside that tropical beach domain.\nHe walked in through the hole Megumi tore in the barrier.\nA domain expansion is usually a trap you cannot escape.\n[curious] But Toji has exactly *zero* cursed energy.\n[flatly] Domains lock onto people through their cursed energy... so this one cannot see him at all.\nTo a barrier, his body counts as an object... just like a normal building.\nSo a domain cannot trap him unless he lets it.\n[light chuckle] The Sorcerer Killer is technically just a very angry chair."
 }
 
 
@@ -736,6 +736,13 @@ def find_scene_with_gemini(video_path, query, script):
     return {"start": 0, "end": 0}
 
 
+def _hook_text(title: str) -> str:
+    """Title as shown on the hook card: no hashtags, no emoji."""
+    title = re.sub(r"#\S+", "", title)
+    title = re.sub(r"[\U0001F000-\U0001FFFF\u2600-\u27BF\uFE0F\u200D]", "", title)
+    return " ".join(title.split())
+
+
 def segment_by_sentences(words_data):
     """Split word-level timestamps into sentence segments on punctuation boundaries."""
     segments = []
@@ -1088,6 +1095,7 @@ FIRST-FRAME TIMING (segment 0, hard rule):
 The striking action must ALREADY be on screen at `start`, not building toward it. Judge the shot by what the frame at `start` itself looks like, not by what happens later in the clip.
 - If the impact, reveal, or peak expression happens at time t, return start = t - 0.3, never t - 2 or earlier.
 - Reject any candidate whose first half second is wind-up: a character standing still before they move, a camera slowly pushing in, someone talking before the action.
+- The first two seconds must MOVE: a cut, a camera move, or the subject moving. Reject held frames, slow pans over a still image, and dark, foggy, or washed-out frames. Bright and readable on a phone wins.
 - Nothing may be mid-fade or mid-transition at `start`. The frame must be fully lit and fully readable from the very first frame.
 - If your best candidate cannot satisfy this, use your second-best shot that can. An instantly readable good shot beats a great shot that starts slow.
 
@@ -1118,6 +1126,7 @@ HARD BANS — never pick a timestamp that shows any of:
 - A creator, commentator, YouTuber, or reactor speaking directly to camera ABOUT the subject (talking-head style) — this means someone OTHER than the subject reacting to or narrating over footage. It does NOT mean the subject themselves. If the person on screen IS the subject of this video (e.g. the athlete, character, or public figure the script is actually about) shown in real, authentic footage — an interview, press conference, broadcast moment — that is ALLOWED and can be used normally, since it's genuine footage of the subject, not third-party commentary.
 - Static text screens, title cards, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
+- Burned-in subtitles or captions from the source (fansubs, translated dialogue lines at the bottom)
 - The first 10 seconds of any video (channel intros, animated logos, title cards)
 - The last 30 seconds of any video marked "ends with outro: yes" (outros, end screens, subscribe buttons, "thanks for watching" text). Videos marked "no" can be used right up to their end.
 - Score overlays, countdown timers, or match clocks visible in frame
@@ -1684,6 +1693,7 @@ def run_manual_pipeline(data):
             graphics=graphics,
             theme=CHANNEL["theme"],
             frame_background=CHANNEL["frame_background"],
+            hook_text=_hook_text(data.get("title", "")),
         )
 
         print(f"\nDONE! Saved to: {final_path}")
