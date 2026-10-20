@@ -28,6 +28,10 @@ MAX_HEIGHT = 1080
 # How many search results to look at before picking which one to download.
 SEARCH_RESULTS = 15
 
+# Only MAX_SOURCE_SECONDS of a source is kept, so a feature-length upload is a huge
+# download for one slice of it (usually the intro). Ranked lower, not dropped.
+LONG_SOURCE_SECONDS = 1200
+
 # How many of those ranked results to actually try downloading per query. When
 # YouTube is blocking requests every attempt fails, and hammering it with all 15
 # (4 methods each) only makes the block last longer.
@@ -137,6 +141,9 @@ def _score_entry(entry: dict, query: str, position: int) -> float:
 
     views = entry.get("view_count") or 0
     score += math.log10(views + 1) * 0.3
+
+    if (entry.get("duration") or 0) > LONG_SOURCE_SECONDS:
+        score -= 2
 
     # YouTube's own relevance order still counts as a tiebreaker.
     score -= 0.15 * position
@@ -502,7 +509,10 @@ def fetch_video_material_by_search(
 
     attempts = 0
     query_index = 0
-    used_video_ids = used_video_ids or set()
+    # An empty set is falsy, so `or set()` would swap the caller's set for a new one
+    # and videos rejected in an earlier query could come back in the next one.
+    if used_video_ids is None:
+        used_video_ids = set()
     filtered_entries = []
 
     while attempts < retry_searches:

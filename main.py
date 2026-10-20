@@ -92,8 +92,9 @@ LANGUAGE = "en"
 MUSIC_LUFS = -34.0                 # music loudness target; voice sits near -17.5, lower = quieter music
 CLEANUP_FILES = True
 MIN_CLIP_DURATION = 3.0
-MIN_SEGMENT_DURATION = 6.0
-MAX_CLIPS = 5
+MIN_SEGMENT_DURATION = 4.0        # shorter segments = a new shot every ~4s instead of every ~10s
+MAX_CLIPS = 8
+CANDIDATES_PER_QUERY = 2           # if a query's top result is rejected, also try its next best result
 MAX_MUSIC_QUERIES = 3              # how many free YouTube tracks to try before paying ElevenLabs
 EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
 THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
@@ -114,66 +115,61 @@ MANUAL_DATA =  {
   "sport": "football",
   "lane": "fun_fact",
   "format": "money_countdown",
-  "topic": "Cristiano Ronaldo's three most expensive purchases",
-  "specific_subject": "#3 Bugatti Centodieci (reportedly about $9M, only 10 built). #2 Quinta da Marinha mansion in Cascais (budget about €19.7M, final cost reportedly €35M, reportedly listed for sale weeks after completion over privacy). #1 Gulfstream G650 private jet (reportedly $73M, seats 19, CR7 initials and a Siuuu silhouette on the outside).",
-  "title": "Cristiano Ronaldo's 3 Most EXPENSIVE Purchases #football",
+  "topic": "The three priciest things Lionel Messi has bought: a Florida mansion, an Ibiza villa and a private jet",
+  "specific_subject": "Lionel Messi: Fort Lauderdale Bay Colony mansion ($10.75M), Ibiza villa near Cala Tarida (reportedly about €11M, vandalised by climate activists in 2024), Gulfstream V private jet (reportedly $15M, number 10 on the tail, family names on the boarding steps)",
+  "title": "Lionel Messi's Most EXPENSIVE Purchases #football",
   "verification": {
-    "event_date": "Evergreen fun fact. Centodieci purchase reported in 2020. G650 reported in December 2024. Cascais mansion completion and sale reported in January 2026.",
+    "event_date": "Fun fact lane, so the 72-hour rule does not apply. Jet bought 2018, Ibiza villa bought 2022, Fort Lauderdale mansion bought after his July 2023 move to Inter Miami, Ibiza vandalism on 6 August 2024. No F1 race in the last 72 hours (Singapore was 11 Oct, Austin is 25 Oct). The only fresh football news options were Betis 2-5 Barcelona on 17 Oct, which was already covered as Why Real Betis LOST To Lamine Yamal, and Real Madrid 4-1 Sevilla on 18 Oct, a tier-two Mbappe story with a low-shock why. F1 got a -2 sport-balance penalty because it was in 2 of the last 3 used videos. Messi plus money_countdown has never been used, so this scored highest.",
     "sources": [
-      "Gulf News (Bugatti Centodieci): https://gulfnews.com/auto/car-culture/ron-of-a-kind-cristiano-ronaldo-buys-limited-edition-bugatti-centodieci--one-of-just-ten-models-built-1.1585478402755",
-      "Gulf News (Ronaldo luxury lifestyle): https://gulfnews.com/sport/football/a-peek-into-cristiano-ronaldos-earnings-luxury-lifestyle-and-spendings-1.500300240",
-      "WapCar (citing Corriere della Sera): https://www.wapcar.my/news/4730/amp",
-      "CarSpiritPK (citing Corriere della Sera): https://carspiritpk.com/cristiano-ronaldo-bugatti-centodieci",
-      "idealista (Cascais mansion €35M): https://www.idealista.pt/en/news/luxury-real-estate-in-portugal/2026/01/14/73335-cristiano-ronaldo-s-eu35-million-cascais-mansion-finally-ready-far-above",
-      "idealista Spain (mansion for sale over privacy): https://www.idealista.com/news/taxonomy/term/18428",
-      "Portugal.com (mansion listed for sale): https://www.portugal.com/news/ronaldo-lists-e35-million-cascais-mansion-just-weeks-after-completion-over-privacy-concerns/",
-      "Al Arabiya (G650 jet): https://english.alarabiya.net/sports/2024/12/16/cristiano-ronaldo-unveils-new-private-jet-worth-73-million",
-      "Robb Report (G650 jet): https://robbreport.com/motors/aviation/michael-jordan-cristiano-ronaldo-gulfstream-g650-1236124885/",
-      "Goal (G650 jet): https://www.goal.com/en/lists/cristiano-ronaldo-flies-style-al-nassr-star-buys-75m-private-jet-610mph-seat-19-passengers/bltb7edb2448d785397",
-      "SportBible (G650 $73M): https://www.sportbible.com/football/saudi-pro-league/cristiano-ronaldo-private-jet-saudi-arabia-al-nassr-270408-20241206"
+      "https://www.cbsnews.com/miami/news/messi-buys-10-75-million-dollar-mansion-in-fort-lauderdale-officially-a-south-florida-resident/",
+      "https://www.orlandoweekly.com/news/lionel-messi-buys-waterfront-florida-mansion-for-1075-million-35058031/",
+      "https://www.thelocal.es/20240806/climate-activists-target-messis-mansion-in-spains-ibiza",
+      "https://www.goal.com/en-sg/lists/lionel-messi-illegal-ibiza-mansion-vandalised-by-climate-activists/blt51c25df3b4eecb64",
+      "https://www.goal.com/de/meldungen/lionel-messi-privatjet-13-millionen-euro/5buynarpgqme1ah0zajdmjzq8",
+      "https://www.theweek.in/news/sports/2025/12/13/meet-lionel-messi-s-gulfstream-v-private-jet-price-specs-and-more.amp.html",
+      "https://www.lafm.com.co/deportes/futbol/messi-adquirio-un-avion-privado-por-15-millones-de-dolares",
+      "https://m.scmp.com/magazines/style/celebrity/article/3196240/2-trips-3-months-lionel-messis-excessive-private-jet-use"
     ],
     "claims_checked": [
-      "Ronaldo reportedly bought a Bugatti Centodieci -> Gulf News 2020, WapCar and CarSpiritPK (both citing Corriere della Sera); Bugatti never confirmed it, so the script says 'is said to own'",
-      "Centodieci reportedly around $9M -> Gulf News 2020 ($8.9M), Gulf News lifestyle piece (around $9M); WapCar and CarSpiritPK give about €8.5M",
-      "Bugatti built only 10 Centodieci -> Gulf News, WapCar, CarSpiritPK",
-      "Cascais mansion was meant as the family's home after Ronaldo retires -> idealista, Portugal.com",
-      "Mansion originally estimated at about €19.7M (script says about twenty million euros) -> idealista (EN and PT), idealista Spain",
-      "More than three years of construction -> idealista, idealista Spain",
-      "Final cost reportedly €35M -> idealista, Portugal.com, idealista Spain",
-      "Reportedly put up for sale weeks after completion over privacy, because neighbours could see directly into the house -> idealista Spain, Portugal.com",
-      "Ronaldo's private jet is a Gulfstream G650 -> Al Arabiya, Robb Report, Goal",
-      "The jet seats up to 19 passengers -> Al Arabiya, Robb Report, Goal",
-      "The exterior shows his CR7 initials and a silhouette of his Siuuu celebration -> Al Arabiya, Robb Report, Goal",
-      "Jet reportedly worth $73M -> Al Arabiya, SportBible (Robb Report says about $72M; Goal says $75M)",
-      "Total over $100M ($8.9M + €35M + $73M) -> arithmetic on the sourced reported figures, said as 'reportedly'"
+      "Messi bought a waterfront mansion in Fort Lauderdale for $10.75 million -> CBS News Miami; Orlando Weekly; Forbes Australia (agents confirmed the price)",
+      "The mansion has eight bedrooms -> CBS News Miami; Orlando Weekly; South Florida Agent Magazine",
+      "Messi owns an Ibiza villa reportedly bought for around €11 million -> AFP via The Local Spain; Goal; Majorca Daily Bulletin (spoken as reportedly)",
+      "The Ibiza villa has a spa and a cinema room -> AFP via The Local Spain; AFP via Free Malaysia Today",
+      "In 2024 climate activists broke in and sprayed the villa red and black -> Goal (activists broke into the property and painted it red and black); AFP via The Local Spain (6 Aug 2024, red and black paint on the facade); Majorca Daily Bulletin",
+      "In 2018 Messi reportedly paid $15 million for a Gulfstream V jet -> Goal Germany citing AS (2018, $15M); The Week India; 100knots citing Marca (acquired 2018, about $15M) (spoken as reportedly)",
+      "16 seats that convert into beds -> La FM; Goal Germany (16 passengers); SCMP citing Marca (16 seats into eight beds)",
+      "His number 10 is on the jet's tail -> La FM; Goal Germany; The Week India",
+      "Every step of the jet's boarding stairs carries a family name: Leo, Antonela, Thiago, Mateo, Ciro -> La FM; Goal Germany citing AS; El Heraldo Honduras",
+      "Hook total of over $35 million: $10.75M + about $12M (AFP converts €11M to about $12M) + $15M = about $37.75M -> sum of the sourced figures above, spoken as reportedly",
+      "Not claimed: that these are his three most expensive purchases ever. The hook says three things only, because the price of the earlier Embraer jet is not reliably sourced. Also cut: Messi's €50,000 compensation claim against the activists, which has only one source."
     ],
     "footage_status": "GREEN",
-    "footage_note": "Ronaldo has plenty of airport, jet-arrival and Instagram footage. Videos of the CR7 G650 livery circulated widely in December 2024. The Bugatti Centodieci has official Bugatti launch and review video (generic model b-roll, not Ronaldo's own car). The Cascais mansion exists in Portuguese news reports and drone shots. No match footage is needed.",
+    "footage_note": "Messi is filmed constantly stepping off the white Gulfstream with the 10 on the tail, including the widely covered December 2025 India tour arrival. Local TV news (CBS Miami, WSVN, NBC6) aired listing photos and aerials of the Fort Lauderdale mansion. Futuro Vegetal's own vandalism video of the Ibiza villa was rebroadcast by AFP and Spanish outlets. No match footage is needed.",
     "punch_markers": [
-      "neighbors -> the absurd flip; a €35M dream home sold because the neighbours could see in",
-      "seventy-three -> the biggest number, landing as the number one reveal"
+      "sprayed -> the twist on number two, where the eleven million euro dream villa gets vandalised",
+      "stairs -> the kicker that pays off the family names on every step and loops back into the hook"
     ]
   },
   "youtube_queries": [
-    "Ronaldo arriving private jet",
-    "Ronaldo Gulfstream G650 jet",
-    "Ronaldo Cascais mansion news",
-    "Ronaldo talks about his cars",
-    "Ronaldo lifestyle documentary",
-    "Bugatti Centodieci b roll"
+    "Messi Fort Lauderdale mansion",
+    "Messi Ibiza house activists paint",
+    "Messi private jet tour",
+    "Messi arriving private jet",
+    "Messi jet family names stairs",
+    "Fort Lauderdale waterfront mansion drone"
   ],
-  "scene_query": "Cristiano Ronaldo in dark sunglasses and a black jacket walking down the steps of a sleek private jet with CR7 initials on the fuselage, on a sunny airport tarmac",
+  "scene_query": "Lionel Messi in a dark jacket walking down the boarding stairs of a white private jet with a large number 10 on its tail, on an airport tarmac",
   "footage_source": "official_or_press",
   "music_mood": "flex",
   "music_queries": [
-    "Champions League anthem instrumental",
-    "Ronaldo edit phonk instrumental",
-    "luxury trap instrumental no copyright"
+    "Messi edit phonk instrumental no copyright",
+    "luxury lifestyle hip hop beat instrumental",
+    "flex trap beat no copyright"
   ],
-  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 140 BPM half-time feel. Instruments: 808 bass, glossy piano stabs, and a cash-register cha-ching plus a jet-engine whoosh as accents. It starts confident and minimal under the hook, adds hi-hats and a car engine rev on number three, and builds tension with rising synth swells through the mansion twist on number two. It cuts to a one-beat silence before number one, then drops hard with the full 808 and a jet-engine swoosh on the seventy-three million reveal, riding out with a smug bounce into the loop. Sports short-form video background, no lyrics, exclude: sad piano ballad, horror suspense drones",
+  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 92 BPM, deep 808 bass, glossy piano stabs and crisp hi-hat rolls with a cash-register style riser. Starts confident and bouncy under number three, adds a tense filtered break for the activist twist at number two, then drops hard into a full-bass section on the jet reveal at number one before cutting to near silence on the final line. Sports short-form video background, no lyrics, exclude: horror suspense drones, cheerful acoustic ukulele",
   "voice_name": "animatoryoung",
-  "script": "Cristiano Ronaldo reportedly spent over one hundred million dollars on his three most expensive purchases. [curious] And at number three... a Bugatti Centodieci, reportedly around nine million dollars. Bugatti only built ten, and he's said to own one. [light chuckle] That makes it rarer than a legendary skin in Fortnite. [deadpan] But at number two... his retirement mansion in Portugal. It was supposed to cost about twenty million euros. After three years of building, the bill reportedly hit thirty-five million. Weeks after it was done, it reportedly went up for sale, cause the *neighbors* could see in. [thoughtful] But at number one... it doesn't touch the ground. It's his private jet, a Gulfstream that seats nineteen people. On the outside? His initials, and a silhouette of HIMSELF doing the Siuuu. The price... reportedly *seventy-three* million dollars. [content] His celebration literally flies, and that's why...",
-  "spoken_word_count": 138
+  "script": "Lionel Messi reportedly spent over thirty-five million dollars on just three things. [curious] And at number three... a Fort Lauderdale mansion, for ten point seven five million dollars. [deadpan] Eight bedrooms, like a house straight out of GTA Vice City. But at number two... an Ibiza villa, reportedly around eleven million euros, with a spa and cinema room. [sighs] But in twenty twenty-four, climate activists broke in and *sprayed* it red and black. [thoughtful] But at number one... something that FLIES. In twenty eighteen, he reportedly paid fifteen million dollars for a Gulfstream V jet. Sixteen seats that turn into beds, and his number ten on the tail. But the crazy part... every step onto the plane has a family name on it. Leo, Antonela, Thiago, Mateo and Ciro. [quietly] So Messi never flies without his family, not even on the *stairs*. And that's why",
+  "spoken_word_count": 139
 }
 
 
@@ -199,6 +195,13 @@ def _norm_word(word: str) -> str:
     return word.strip(".,!?;:\"'—…*()").lower()
 
 
+def _punch_key(word: str):
+    """Comparable form of a punch word. Numbers compare by value, because the script
+    spells them out for TTS ("fifteen") while Whisper writes digits ("$15")."""
+    nums = _numbers_in_text(word)
+    return nums.pop() if len(nums) == 1 else _norm_word(word)
+
+
 def _strip_punch_markers(script: str):
     """Strip *word* markers from script. Returns (clean_script, [(word, n), ...]).
     n is which copy of the word was marked (0 = first time it appears in the script),
@@ -207,9 +210,9 @@ def _strip_punch_markers(script: str):
     marker = re.compile(r'\*([^*]+)\*')
     punch_words = []
     def _replace(m):
-        word = _norm_word(m.group(1))
+        word = _punch_key(m.group(1))
         before = marker.sub(r'\1', script[:m.start()])
-        n = sum(1 for w in before.split() if _norm_word(w) == word)
+        n = sum(1 for w in before.split() if _punch_key(w) == word)
         punch_words.append((word, n))
         return m.group(1)
     clean_script = marker.sub(_replace, script)
@@ -220,7 +223,7 @@ def _match_punch_times(punch_words: list, words_data: list) -> list:
     """Match each punch word to the Whisper timestamp of the same copy of that word."""
     times = []
     for target, n in punch_words:
-        hits = [start for word, start, _end in words_data if _norm_word(word) == target]
+        hits = [start for word, start, _end in words_data if _punch_key(word) == target]
         if not hits:
             print(f"Punch word '{target}' not found in transcript, skipping")
             continue
@@ -448,13 +451,20 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
        5–6 : Somewhat busy but usable
        1–4 : Too loud, too chaotic, or too distracting
 
+    4. Blocked Anthem Check (is_league_anthem: true/false)
+       true → this is the official anthem, theme or broadcast music of a sports league, tournament or
+       broadcaster (UEFA Champions League anthem, FIFA anthem, Formula 1 theme, Premier League theme...),
+       or a remix, cover or trap/phonk version of one. Their owners block videos that use them.
+       Film, game and anime soundtracks do NOT count here.
+
     DECISION RULES:
-    - "use"    → has_lyrics=false AND topic_score >= 7 AND voice_score >= 6
-    - "reject" → has_lyrics=true OR topic_score < 7 OR voice_score < 6
+    - "use"    → has_lyrics=false AND is_league_anthem=false AND topic_score >= 7 AND voice_score >= 6
+    - "reject" → has_lyrics=true OR is_league_anthem=true OR topic_score < 7 OR voice_score < 6
 
     Return ONLY valid JSON, no markdown:
     {{
       "has_lyrics": <true|false>,
+      "is_league_anthem": <true|false>,
       "topic_score": <1-10>,
       "voice_score": <1-10>,
       "decision": "use" | "reject",
@@ -529,7 +539,9 @@ def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: st
         try:
             result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
             reason = result.get("reason", "")
-            if result.get("decision") == "use":
+            if result.get("is_league_anthem"):
+                reason = f"league anthem, gets videos blocked. {reason}"
+            elif result.get("decision") == "use":
                 print(f"YouTube music approved: {reason}")
                 return yt_path
             print(f"YouTube music rejected ({reason}), trying next query")
@@ -544,9 +556,18 @@ def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: st
     return generate_music(music_prompt)
 
 
-def evaluate_video_with_genai(video_path, script_text):
-    """Upload a video to Gemini and score it for relevance, hook potential, and technical quality."""
+def evaluate_video_with_genai(video_path, script_text, script_items=None):
+    """Upload a video to Gemini and score it for relevance, hook potential, and technical quality.
+
+    Also returns `script_items` (the concrete things the script talks about) and `items_shown`
+    (the ones visible in this footage). Pass the first call's script_items back in later calls
+    so every video is checked against the same list.
+    """
     client = _gemini_client()
+    if script_items:
+        items_rule = f"Use EXACTLY this list, copied word for word: {json.dumps(script_items)}"
+    else:
+        items_rule = "Write the list yourself: up to 6 items, 2-5 words each."
 
     uploaded_file = client.files.upload(file=video_path)
     print(f"Uploaded file: {uploaded_file.name}")
@@ -578,6 +599,13 @@ def evaluate_video_with_genai(video_path, script_text):
 
     If type B, C, or D → set decision = "reject", technical_score = 1, and stop evaluating.
 
+    STEP 0.7 — SCRIPT ITEMS:
+    script_items = the concrete things the script talks about that footage could show: places, objects,
+    events, forms (e.g. "Florida mansion", "Ibiza villa", "private jet", "activists painting the villa").
+    {items_rule}
+    items_shown = the script_items clearly visible somewhere in THIS footage. REQUIRED_SUBJECT alone on
+    screen does not count as showing an item, unless the item is the subject in that exact state or place.
+
     EVALUATION (1-10):
 
     1. Visual-Script Alignment (relevance_score)
@@ -601,7 +629,8 @@ def evaluate_video_with_genai(video_path, script_text):
     - "reject": subject_present = false (subject not visible → automatic reject, no exceptions)
     - "reject": relevance_score <= 6  (subject barely visible, wrong character, or wrong show → reject)
     - "reject": technical_score <= 4
-    - "post":   relevance_score >= 7 AND hook_score >= 5 AND technical_score >= 5 AND subject_present = true
+    - "reject": items_shown is empty (the subject is there, but nothing the script actually talks about)
+    - "post":   items_shown is not empty AND relevance_score >= 7 AND hook_score >= 5 AND technical_score >= 5 AND subject_present = true
     - "revise": anything else / unsure
     
     OUTPUT FORMAT:
@@ -610,6 +639,8 @@ def evaluate_video_with_genai(video_path, script_text):
     {{
       "required_subject": "<the subject you identified>",
       "subject_present": <true|false>,
+      "script_items": ["<item>", ...],
+      "items_shown": ["<items from script_items visible in this footage>"],
       "relevance_score": <1-10>,
       "hook_score": <1-10>,
       "technical_score": <1-10>,
@@ -851,7 +882,7 @@ def merge_short_segments(segments, min_duration):
     return merged
 
 
-def _graphic_prompt_rules(allowed):
+def _graphic_prompt_rules(allowed, max_cards):
     """Prompt section describing the on-screen graphic cards Gemini may place across the narration."""
     if not allowed:
         return "GRAPHICS: always return \"graphics\": []."
@@ -876,7 +907,8 @@ Allowed shapes (use exactly these keys):
 RULES:
 - Every value, name, item and quote MUST come from THAT segment's text. Never add facts, never round or convert numbers into new ones. Write numbers as digits even if the text spells them out ("fifty-two" → "52").
 - `segment_index` = the segment whose text contains the anchor word. `anchor_word` = that exact word, where the card should appear (usually the number or the first item).
-- Spacing: aim for one card roughly every 6 seconds of narration (use the segment `start` times). None in the first 3 seconds, so the hook stays clean. Skip a spot rather than force a weak card.
+- At most {max_cards} cards in total. Pick the strongest numbers and moments, skip the rest.
+- Spacing: at least {MIN_CARD_GAP:.0f} seconds between cards (use the segment `start` times), and none in the first {HOOK_CLEAR_SECONDS:.0f} seconds, so the hook stays clean. Cards that break this get dropped anyway.
 - Keep text short: labels up to 6 words, list items up to 5 words."""
 
 
@@ -1005,7 +1037,19 @@ def _fix_timestamps(text):
     return re.sub(r'("start"\s*:\s*)"?(\d+(?::\d{1,2}(?:\.\d+)?){1,2})"?', to_seconds, text)
 
 
-def find_scenes_with_gemini(video_paths, script_segments, channel=None):
+def _intro_ban(video_path, duration):
+    """Seconds at the start of a source that may hold a channel intro or title card.
+
+    A flat 10s ban pushed starts in a 70s news clip past the shot Gemini actually checked,
+    so short videos get a shorter ban, and a file cut from the middle of a longer video
+    (it starts mid-video) gets none.
+    """
+    if _read_source_meta(video_path).get("trim_start", 0) > 0:
+        return 0.0
+    return round(min(10.0, max(3.0, duration * 0.05)), 1)
+
+
+def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_items=None):
     """
     Upload all approved source videos to Gemini in one call.
     Returns a flat list of scenes: [{index, video_index, start}, ...]
@@ -1084,7 +1128,9 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
     channel = channel or DEFAULT_CHANNEL
     allowed_graphics = [t for t in channel.get("graphic_types", []) if t in GRAPHIC_TYPES]
     full_allowed = channel.get("allow_full_layout", True)
-    graphic_rules = _graphic_prompt_rules(allowed_graphics)
+    narration_seconds = script_segments[-1]["end"] if script_segments else 0.0
+    max_cards = max(1, round((narration_seconds - HOOK_CLEAR_SECONDS) / 10))
+    graphic_rules = _graphic_prompt_rules(allowed_graphics, max_cards)
 
     # A file the fetcher cut (MAX_SOURCE_SECONDS) ends mid-video unless the cut reaches
     # the real end, so its final 30 seconds are real footage and should stay usable.
@@ -1095,8 +1141,16 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
         cut_end = meta.get("trim_start", 0) + dur
         has_outro.append(not (source_duration and source_duration > cut_end + 5))
 
+    intro_bans = [_intro_ban(vp, dur) for vp, dur in zip(video_paths, video_durations)]
+    video_items = video_items or {}
+
+    def _shows(vp):
+        items = video_items.get(vp)
+        return f", shows: {', '.join(items)}" if items else ""
+
     videos_info = "\n".join(
-        f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, ends with outro: {'yes' if has_outro[i] else 'no, cut from a longer video'})"
+        f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, usable from {intro_bans[i]:.1f}s, "
+        f"ends with outro: {'yes' if has_outro[i] else 'no, cut from a longer video'}{_shows(video_paths[i])})"
         for i, dur in enumerate(video_durations)
     )
 
@@ -1180,7 +1234,7 @@ HARD BANS — never pick a timestamp that shows any of:
 - Static text screens, title cards, or sponsor segments
 - Black screens, fade-ins, fade-outs, or scene transitions
 - Burned-in subtitles or captions from the source (fansubs, translated dialogue lines at the bottom)
-- The first 10 seconds of any video (channel intros, animated logos, title cards)
+- Anything before a video's "usable from" time (channel intros, animated logos, title cards)
 - The last 30 seconds of any video marked "ends with outro: yes" (outros, end screens, subscribe buttons, "thanks for watching" text). Videos marked "no" can be used right up to their end.
 - Score overlays, countdown timers, or match clocks visible in frame
 - Replay indicators ("REPLAY" / "INSTANT REPLAY" text on screen)
@@ -1201,7 +1255,7 @@ Before writing JSON, verify:
 ☐ All selected shots show the subject actively doing something (not just standing/posing)
 ☐ No two consecutive clips are from the same timestamp range in the same video
 ☐ Shot distances vary across the edit (wide → close-up → mid, etc.)
-☐ No banned content in any selected timestamp
+☐ No banned content in any selected timestamp, and every start is at or after its video's "usable from" time
 ☐ All start times are safe (enough footage remaining)
 ☐ Every available source video is used at least once
 ☐ No single video is used more than 2 times in a row
@@ -1284,7 +1338,6 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     try:
         result = json.loads(text)
         scenes = sorted(result.get("scenes", []), key=lambda x: x["index"])
-        INTRO_BAN_SEC = 10.0   # matches "first 10 seconds" ban in the prompt
         OUTRO_BAN_SEC = 30.0   # matches "last 30 seconds" ban in the prompt
 
         validated = []
@@ -1293,13 +1346,17 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             scene["video_index"] = vi
             dur = video_durations[vi]
 
-            lo = INTRO_BAN_SEC
+            lo = intro_bans[vi]
             hi = dur - (OUTRO_BAN_SEC if has_outro[vi] else 0.0) - 2.0
             if hi < lo:
                 # Video too short to honor both bans, so fall back to the old, looser bound.
                 lo, hi = 0.0, max(dur - 2.0, 0.0)
 
-            scene["start"] = round(min(max(scene.get("start", 0.0), lo), hi), 2)
+            asked = float(scene.get("start", 0.0))
+            scene["start"] = round(min(max(asked, lo), hi), 2)
+            if abs(scene["start"] - asked) > 1.0:
+                print(f"Scene {scene.get('index')}: Gemini start {asked:.1f}s is outside video {vi}'s usable range, "
+                      f"moved to {scene['start']:.1f}s (Gemini did not check this frame)")
             _validate_layout(scene, full_allowed)
             validated.append(scene)
 
@@ -1569,44 +1626,68 @@ def run_manual_pipeline(data):
         used_video_ids = set()
         MAX_SOURCE_VIDEOS = 3
 
+        script_items = None   # concrete things the script talks about, fixed by the first evaluation
+        video_items = {}      # approved video path -> script items it shows
+
         for i, query in enumerate(YOUTUBE_QUERIES):
             print(f"Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
-            video_paths = fetch_video_material_by_search(
-                search_queries=[query],
-                max_videos=1,
-                retry_searches=5,
-                used_video_ids=used_video_ids
-            )
-            if not video_paths:
-                print(f"No results for query '{query}', skipping...")
-                continue
-
-            candidate_video = video_paths[0]
-            try:
-                ffmpeg.probe(candidate_video)
-            except Exception:
-                print("Downloaded file is corrupt (ffprobe failed), skipping")
-                rejected_videos.append(candidate_video)
-                continue
-            print("Evaluating video...")
-            try:
-                evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT)
-            except RuntimeError as e:
-                print(f"Gemini evaluation failed for query '{query}': {e}, skipping")
-                rejected_videos.append(candidate_video)
-                continue
-
-            reason = evaluation.get("reason", "") if evaluation else ""
-            if evaluation and evaluation.get("decision") == "post":
-                print(f"Video {i + 1} approved!: {reason}")
-                approved_videos.append(candidate_video)
-                if len(approved_videos) >= MAX_SOURCE_VIDEOS:
-                    print(f"Reached {MAX_SOURCE_VIDEOS} approved videos, skipping remaining queries.")
+            # used_video_ids skips results already tried, so each pass gets the next best one
+            for candidate_num in range(1, CANDIDATES_PER_QUERY + 1):
+                video_paths = fetch_video_material_by_search(
+                    search_queries=[query],
+                    max_videos=1,
+                    retry_searches=5,
+                    used_video_ids=used_video_ids
+                )
+                if not video_paths:
+                    print(f"No results for query '{query}', skipping...")
                     break
-            else:
-                decision = evaluation.get("decision") if evaluation else "unknown"
+
+                candidate_video = video_paths[0]
+                if candidate_video in rejected_videos or candidate_video in approved_videos:
+                    break   # the fetcher fell back to a file we already judged
+                try:
+                    ffmpeg.probe(candidate_video)
+                except Exception:
+                    print("Downloaded file is corrupt (ffprobe failed), skipping")
+                    rejected_videos.append(candidate_video)
+                    continue
+                print(f"Evaluating video (candidate {candidate_num}/{CANDIDATES_PER_QUERY})...")
+                try:
+                    evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT, script_items) or {}
+                except RuntimeError as e:
+                    print(f"Gemini evaluation failed for query '{query}': {e}, skipping")
+                    rejected_videos.append(candidate_video)
+                    continue
+
+                if script_items is None and evaluation.get("script_items"):
+                    script_items = [str(x) for x in evaluation["script_items"]][:6]
+                    print(f"Script items to cover: {script_items}")
+                known = {x.lower() for x in script_items or []}
+                shown = [str(x) for x in evaluation.get("items_shown") or [] if str(x).lower() in known]
+
+                reason = evaluation.get("reason", "")
+                decision = evaluation.get("decision", "unknown")
+                if decision == "post" and script_items and not shown:
+                    decision, reason = "reject", f"shows none of the script items. {reason}"
+                if decision == "post":
+                    print(f"Video {i + 1} approved! Shows {shown or 'n/a'}: {reason}")
+                    approved_videos.append(candidate_video)
+                    video_items[candidate_video] = shown
+                    break
                 print(f"Video rejected ({decision}): {reason}")
                 rejected_videos.append(candidate_video)
+
+            if len(approved_videos) >= MAX_SOURCE_VIDEOS:
+                print(f"Reached {MAX_SOURCE_VIDEOS} approved videos, skipping remaining queries.")
+                break
+
+        if script_items:
+            covered = {x.lower() for shown in video_items.values() for x in shown}
+            missing = [x for x in script_items if x.lower() not in covered]
+            if missing:
+                print(f"WARNING: no approved footage shows {missing}. Those lines will get loosely related shots; "
+                      f"add a YouTube query for each next time.")
 
         for path in rejected_videos:
             if path in approved_videos:
@@ -1655,7 +1736,7 @@ def run_manual_pipeline(data):
                 script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
                 script_segments.pop(m + 1)
             print(f"{len(script_segments)} clips planned, analyzing {len(approved_videos)} video(s)...")
-            scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL)
+            scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL, video_items)
 
             if len(scenes) < len(script_segments):
                 print(f"Gemini returned {len(scenes)} scenes for {len(script_segments)} segments, using available scenes only")
@@ -1726,8 +1807,9 @@ def run_manual_pipeline(data):
         if not music_path:
             print("Music generation failed, continuing without music.")
 
-        safe_subject = re.sub(r'[^A-Za-z0-9_-]+', '_', SUBJECT)[:80]
-        final_filename = f"Short_{safe_subject}_{random.randint(10, 99)}.mp4"
+        # Named after the title: SUBJECT is a long fact list that made filenames unreadable
+        safe_name = re.sub(r'[^A-Za-z0-9]+', '_', _hook_text(data.get("title", "")) or SUBJECT).strip('_')[:60]
+        final_filename = f"Short_{safe_name}_{random.randint(10, 99)}.mp4"
         punch_times = _match_punch_times(_punch_words, words_data) if (words_data and _punch_words) else []
         if punch_times:
             print(f"Punch SFX at: {punch_times}")

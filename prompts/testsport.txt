@@ -178,10 +178,11 @@ Write a CUSTOM music_prompt for THIS script, never a generic preset. It must inc
 
 MUSIC QUERY RULE:
 music_queries is an ARRAY of up to 3 YouTube searches, best first. The pipeline tries them in order; paid generation only runs if all fail, so fill all 3 when plausible tracks exist.
-1. A track tied to the star or the story mood (e.g. Champions League anthem instrumental, Formula One theme instrumental, a famous phonk instrumental).
-2. A broader theme from the same sport, or a hype theme.
+1. A track tied to the star or the story mood (e.g. a famous phonk instrumental, a hype trap beat).
+2. A broader hype or mood theme.
 3. A generic instrumental matching music_mood (e.g. luxury trap instrumental no copyright).
 Every query must target an INSTRUMENTAL: append instrumental, no lyrics, or no copyright when the track normally has vocals. Never pad with junk. If nothing plausible exists: [].
+NEVER search for an official league, tournament or broadcaster anthem (Champions League anthem, FIFA anthem, F1 theme, Premier League theme) or a remix of one. Their owners block videos that use them, and the pipeline rejects them anyway.
 
 ═══════════════════════════════════
 STEP 7 — FOOTAGE QUERIES
@@ -192,13 +193,13 @@ A pure physical description of the screen for the opening shot: the star's appea
 - Never describe live match or race action.
 
 YOUTUBE QUERIES:
-Exactly 6 queries, written the way a real fan types them: short, casual, 2 to 6 words. Every query chases the SAME story, each from a DIFFERENT pool:
-1. THE STAR OFF THE PITCH: e.g. Messi arriving airport, Hamilton paddock walk, Verstappen Mexico podium
-2. THE OBJECT OR PLACE (most important for countdowns): e.g. Messi private jet tour, Brabham fan car Goodwood, Ronaldo yacht
-3. NEWS REPORT: e.g. Grosjean crash Bahrain news
-4. INTERVIEW: the star talking about this story, e.g. Messi interview fear, Verstappen post race interview Mexico
-5. DOCUMENTARY / ARCHIVE: e.g. Lauda documentary, Messi documentary childhood
-6. STOCK / B-ROLL: e.g. private jet interior b roll, F1 garage b roll
+Exactly 6 queries, written the way a real fan types them: short, casual, 2 to 6 words. Every query chases the SAME story.
+COVERAGE FIRST: list every object, place and event the script names (for a countdown, each numbered item). Each one gets at least one query of its own, e.g. "Messi Fort Lauderdale mansion", "Messi Ibiza villa paint", "Messi private jet tour". The pipeline keeps at most 3 source videos, and a script item with no footage gets a random shot of something else.
+Fill the remaining slots from these pools, in this order:
+1. NEWS REPORT of the main event: e.g. Grosjean crash Bahrain news, Messi Ibiza house activists news
+2. THE STAR OFF THE PITCH, tied to an item: e.g. Messi arriving private jet, Hamilton paddock walk
+3. STOCK / B-ROLL for the hardest item to film: e.g. Fort Lauderdale waterfront mansion drone, private jet interior b roll
+NEVER use broad "documentary" or "interview" queries (Messi documentary, Messi interview family). They return hour-long videos or talking heads that show none of the script items and get rejected or go unused. Use an interview query ONLY if the script quotes the star's own words about this story.
 No jargon uploaders never write (isolated footage, no commentary, content ID safe). No near-duplicates. Replace every bracket with real names. No leftover brackets.
 
 ═══════════════════════════════════
@@ -207,12 +208,16 @@ USED VIDEOS (DO NOT REPEAT the star + format combo, the story, or the same joke)
 Order: oldest at the top, newest at the bottom. Format: title, views.
 
 
+Cristiano Ronaldo's 3 Most EXPENSIVE Purchases #football
+827 views
+
+
 Why Real Betis LOST To Lamine Yamal #football
-1K views
+1.1K views
 
 
 Lionel Messi Almost DIED #football
-628 views
+633 views
 
 
 Cristiano Ronaldo Almost DIED #football
@@ -220,7 +225,7 @@ Cristiano Ronaldo Almost DIED #football
 
 
 Did Ronaldo really get Rooney sent off? #football
-2.7K views
+2.8K views
 
 
 Why Khabib really jumped the cage #ufc
@@ -240,8 +245,7 @@ Jon Jones spider crawl explained #ufc
 
 
 Why feraris new car is punishing charles Lecrec?  #f1
-2.4K views
-
+2.4K view
 
 ═══════════════════════════════════
 OUTPUT
