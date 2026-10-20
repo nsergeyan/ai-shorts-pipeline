@@ -109,20 +109,71 @@ DEFAULT_CHANNEL = {
     "graphic_types": list(GRAPHIC_TYPES),
 }
 
-MANUAL_DATA ={
-"channel": "anime",
-"topic": "Jujutsu Kaisen",
-"specific_subject": "Toji Heavenly Restriction",
-"title": "Why Toji never gets trapped in domains in Jujutsu Kaisen",
-"youtube_queries": ["Toji vs Dagon full fight", "Toji Fushiguro domain goes hard", "Toji Fushiguro edit", "Jujutsu Kaisen episode 38 Toji scene", "Toji vs Dagon english dub", "Jujutsu Kaisen Toji official clip"],
-"scene_query": "Toji Fushiguro standing confidently inside a bright tropical beach setting, wearing a tight black short-sleeve shirt and light pants, holding a sharp weapon, looking extremely muscular and dangerous.",
-"footage_source": "stills_and_broll",
-"music_mood": "curious",
-"music_queries": ["Toji Fushiguro theme ost", "Jujutsu Kaisen season 2 tension ost", "dark ambient trap tension instrumental no lyrics"],
-"music_prompt": "dark atmospheric trap, 100 BPM, heavy synth bass and a ticking hi-hat, an intense but curious tension building, short-form video background, no lyrics, exclude: bright piano, upbeat brass",
-"voice_name": "animatoryoung",
-"spoken_word_count": 96,
-"script": "[thoughtful] Why Toji never gets trapped in domains.\nWe all remember his brutal fight inside that tropical beach domain.\nHe walked in through the hole Megumi tore in the barrier.\nA domain expansion is usually a trap you cannot escape.\n[curious] But Toji has exactly *zero* cursed energy.\n[flatly] Domains lock onto people through their cursed energy... so this one cannot see him at all.\nTo a barrier, his body counts as an object... just like a normal building.\nSo a domain cannot trap him unless he lets it.\n[light chuckle] The Sorcerer Killer is technically just a very angry chair."
+MANUAL_DATA =  {
+  "channel": "sports",
+  "sport": "football",
+  "lane": "fun_fact",
+  "format": "money_countdown",
+  "topic": "Cristiano Ronaldo's three most expensive purchases",
+  "specific_subject": "#3 Bugatti Centodieci (reportedly about $9M, only 10 built). #2 Quinta da Marinha mansion in Cascais (budget about €19.7M, final cost reportedly €35M, reportedly listed for sale weeks after completion over privacy). #1 Gulfstream G650 private jet (reportedly $73M, seats 19, CR7 initials and a Siuuu silhouette on the outside).",
+  "title": "Cristiano Ronaldo's 3 Most EXPENSIVE Purchases #football",
+  "verification": {
+    "event_date": "Evergreen fun fact. Centodieci purchase reported in 2020. G650 reported in December 2024. Cascais mansion completion and sale reported in January 2026.",
+    "sources": [
+      "Gulf News (Bugatti Centodieci): https://gulfnews.com/auto/car-culture/ron-of-a-kind-cristiano-ronaldo-buys-limited-edition-bugatti-centodieci--one-of-just-ten-models-built-1.1585478402755",
+      "Gulf News (Ronaldo luxury lifestyle): https://gulfnews.com/sport/football/a-peek-into-cristiano-ronaldos-earnings-luxury-lifestyle-and-spendings-1.500300240",
+      "WapCar (citing Corriere della Sera): https://www.wapcar.my/news/4730/amp",
+      "CarSpiritPK (citing Corriere della Sera): https://carspiritpk.com/cristiano-ronaldo-bugatti-centodieci",
+      "idealista (Cascais mansion €35M): https://www.idealista.pt/en/news/luxury-real-estate-in-portugal/2026/01/14/73335-cristiano-ronaldo-s-eu35-million-cascais-mansion-finally-ready-far-above",
+      "idealista Spain (mansion for sale over privacy): https://www.idealista.com/news/taxonomy/term/18428",
+      "Portugal.com (mansion listed for sale): https://www.portugal.com/news/ronaldo-lists-e35-million-cascais-mansion-just-weeks-after-completion-over-privacy-concerns/",
+      "Al Arabiya (G650 jet): https://english.alarabiya.net/sports/2024/12/16/cristiano-ronaldo-unveils-new-private-jet-worth-73-million",
+      "Robb Report (G650 jet): https://robbreport.com/motors/aviation/michael-jordan-cristiano-ronaldo-gulfstream-g650-1236124885/",
+      "Goal (G650 jet): https://www.goal.com/en/lists/cristiano-ronaldo-flies-style-al-nassr-star-buys-75m-private-jet-610mph-seat-19-passengers/bltb7edb2448d785397",
+      "SportBible (G650 $73M): https://www.sportbible.com/football/saudi-pro-league/cristiano-ronaldo-private-jet-saudi-arabia-al-nassr-270408-20241206"
+    ],
+    "claims_checked": [
+      "Ronaldo reportedly bought a Bugatti Centodieci -> Gulf News 2020, WapCar and CarSpiritPK (both citing Corriere della Sera); Bugatti never confirmed it, so the script says 'is said to own'",
+      "Centodieci reportedly around $9M -> Gulf News 2020 ($8.9M), Gulf News lifestyle piece (around $9M); WapCar and CarSpiritPK give about €8.5M",
+      "Bugatti built only 10 Centodieci -> Gulf News, WapCar, CarSpiritPK",
+      "Cascais mansion was meant as the family's home after Ronaldo retires -> idealista, Portugal.com",
+      "Mansion originally estimated at about €19.7M (script says about twenty million euros) -> idealista (EN and PT), idealista Spain",
+      "More than three years of construction -> idealista, idealista Spain",
+      "Final cost reportedly €35M -> idealista, Portugal.com, idealista Spain",
+      "Reportedly put up for sale weeks after completion over privacy, because neighbours could see directly into the house -> idealista Spain, Portugal.com",
+      "Ronaldo's private jet is a Gulfstream G650 -> Al Arabiya, Robb Report, Goal",
+      "The jet seats up to 19 passengers -> Al Arabiya, Robb Report, Goal",
+      "The exterior shows his CR7 initials and a silhouette of his Siuuu celebration -> Al Arabiya, Robb Report, Goal",
+      "Jet reportedly worth $73M -> Al Arabiya, SportBible (Robb Report says about $72M; Goal says $75M)",
+      "Total over $100M ($8.9M + €35M + $73M) -> arithmetic on the sourced reported figures, said as 'reportedly'"
+    ],
+    "footage_status": "GREEN",
+    "footage_note": "Ronaldo has plenty of airport, jet-arrival and Instagram footage. Videos of the CR7 G650 livery circulated widely in December 2024. The Bugatti Centodieci has official Bugatti launch and review video (generic model b-roll, not Ronaldo's own car). The Cascais mansion exists in Portuguese news reports and drone shots. No match footage is needed.",
+    "punch_markers": [
+      "neighbors -> the absurd flip; a €35M dream home sold because the neighbours could see in",
+      "seventy-three -> the biggest number, landing as the number one reveal"
+    ]
+  },
+  "youtube_queries": [
+    "Ronaldo arriving private jet",
+    "Ronaldo Gulfstream G650 jet",
+    "Ronaldo Cascais mansion news",
+    "Ronaldo talks about his cars",
+    "Ronaldo lifestyle documentary",
+    "Bugatti Centodieci b roll"
+  ],
+  "scene_query": "Cristiano Ronaldo in dark sunglasses and a black jacket walking down the steps of a sleek private jet with CR7 initials on the fuselage, on a sunny airport tarmac",
+  "footage_source": "official_or_press",
+  "music_mood": "flex",
+  "music_queries": [
+    "Champions League anthem instrumental",
+    "Ronaldo edit phonk instrumental",
+    "luxury trap instrumental no copyright"
+  ],
+  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 140 BPM half-time feel. Instruments: 808 bass, glossy piano stabs, and a cash-register cha-ching plus a jet-engine whoosh as accents. It starts confident and minimal under the hook, adds hi-hats and a car engine rev on number three, and builds tension with rising synth swells through the mansion twist on number two. It cuts to a one-beat silence before number one, then drops hard with the full 808 and a jet-engine swoosh on the seventy-three million reveal, riding out with a smug bounce into the loop. Sports short-form video background, no lyrics, exclude: sad piano ballad, horror suspense drones",
+  "voice_name": "animatoryoung",
+  "script": "Cristiano Ronaldo reportedly spent over one hundred million dollars on his three most expensive purchases. [curious] And at number three... a Bugatti Centodieci, reportedly around nine million dollars. Bugatti only built ten, and he's said to own one. [light chuckle] That makes it rarer than a legendary skin in Fortnite. [deadpan] But at number two... his retirement mansion in Portugal. It was supposed to cost about twenty million euros. After three years of building, the bill reportedly hit thirty-five million. Weeks after it was done, it reportedly went up for sale, cause the *neighbors* could see in. [thoughtful] But at number one... it doesn't touch the ground. It's his private jet, a Gulfstream that seats nineteen people. On the outside? His initials, and a silhouette of HIMSELF doing the Siuuu. The price... reportedly *seventy-three* million dollars. [content] His celebration literally flies, and that's why...",
+  "spoken_word_count": 138
 }
 
 
@@ -1035,12 +1086,14 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None):
     full_allowed = channel.get("allow_full_layout", True)
     graphic_rules = _graphic_prompt_rules(allowed_graphics)
 
-    # A file the fetcher cut short (MAX_SOURCE_SECONDS) ends mid-video, not on an outro,
-    # so its final 30 seconds are real footage and should stay usable.
+    # A file the fetcher cut (MAX_SOURCE_SECONDS) ends mid-video unless the cut reaches
+    # the real end, so its final 30 seconds are real footage and should stay usable.
     has_outro = []
     for vp, dur in zip(video_paths, video_durations):
-        source_duration = _read_source_meta(vp).get("source_duration")
-        has_outro.append(not (source_duration and source_duration > dur + 5))
+        meta = _read_source_meta(vp)
+        source_duration = meta.get("source_duration")
+        cut_end = meta.get("trim_start", 0) + dur
+        has_outro.append(not (source_duration and source_duration > cut_end + 5))
 
     videos_info = "\n".join(
         f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, ends with outro: {'yes' if has_outro[i] else 'no, cut from a longer video'})"

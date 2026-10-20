@@ -13,9 +13,6 @@ BROWSER = "chrome"  # Try: "chrome", "firefox", "safari", "edge"
 PROFILE = "Default"
 COOKIEFILE = ""
 
-# YouTube search filter for 4-20 minute videos
-YT_FILTER = "EgIYAw%3D%3D"
-
 # Download sanity thresholds. Real 360p runs well above 100 KB/s; SABR stubs
 # land near 0.5 KB/s, so 10 KB/s separates them with a wide margin on both sides.
 MIN_BYTES_PER_SEC = 10_000
@@ -157,14 +154,32 @@ def _rank_entries(entries: list, query: str) -> list:
     return [e for _, e in scored]
 
 
-def _write_source_meta(filepath: str, title: str, source_duration) -> None:
-    """Save sidecars next to the download: the title, and the full length of the
-    original upload so later steps know whether the file was cut short."""
+def _write_source_meta(filepath: str, title: str, source_duration, trim_start: float = 0.0) -> None:
+    """Save sidecars next to the download: the title, the full length of the
+    original upload and where the kept part starts, so later steps know whether
+    the file was cut short."""
     base = os.path.splitext(filepath)[0]
     with open(base + ".title.txt", "w") as tf:
         tf.write(title)
     with open(base + ".meta.json", "w") as mf:
-        json.dump({"source_duration": source_duration}, mf)
+        json.dump({"source_duration": source_duration, "trim_start": trim_start}, mf)
+
+
+def _best_window_start(heatmap, source_duration, window) -> float:
+    """Start of the `window`-second stretch viewers rewatch most, from YouTube's
+    "Most replayed" graph. yt-dlp gives it as ~100 {"start_time", "end_time", "value"}
+    segments with value 0-1. Returns 0 (the opening, as before) when there is no heatmap.
+    """
+    if not heatmap or not source_duration or source_duration <= window:
+        return 0.0
+
+    def score(start):
+        end = start + window
+        return sum(seg["value"] * max(0.0, min(end, seg["end_time"]) - max(start, seg["start_time"]))
+                   for seg in heatmap)
+
+    candidates = [min(seg["start_time"], source_duration - window) for seg in heatmap]
+    return max(candidates, key=score)
 
 
 def _make_opts_no_cookies(skip_download: bool):
@@ -245,8 +260,12 @@ def _discard(path: str) -> None:
         pass
 
 
-def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
-    """Cut a downloaded video down to max_duration seconds (stream copy, no re-encode)."""
+def _trim_video_after_download(input_path: str, max_duration: int = 300, start: float = 0.0) -> str:
+    """Cut a downloaded video down to max_duration seconds from `start` (stream copy, no re-encode).
+
+    -ss goes before -i so ffmpeg seeks straight there; with stream copy the cut
+    lands on the nearest keyframe, at most a couple of seconds early.
+    """
     if not os.path.exists(input_path):
         return input_path
 
@@ -266,14 +285,14 @@ def _trim_video_after_download(input_path: str, max_duration: int = 300) -> str:
         print(f"   Could not check duration: {e}")
         return input_path
 
-    print(f"   Trimming video from {current_duration:.0f}s to {max_duration}s...")
+    print(f"   Trimming video from {current_duration:.0f}s to {max_duration}s (from {start:.0f}s)...")
 
     base, ext = os.path.splitext(input_path)
     trimmed_path = f"{base}_trimmed{ext}"
 
     try:
         subprocess.run([
-            "ffmpeg", "-y", "-i", input_path,
+            "ffmpeg", "-y", "-ss", f"{start:.1f}", "-i", input_path,
             "-t", str(max_duration),
             "-c", "copy",
             trimmed_path
@@ -414,26 +433,29 @@ def _note_bot_check(errors, uses_cookies: bool) -> None:
         print("   YouTube bot check: skipping no-cookie methods for the rest of this run")
 
 
-def _try_download(label: str, opts: dict, url: str, uses_cookies: bool) -> Optional[str]:
-    """Run one yt-dlp download method quietly. Returns the file path, or None after printing why it failed."""
+def _try_download(label: str, opts: dict, url: str, uses_cookies: bool) -> tuple:
+    """Run one yt-dlp download method quietly. Returns (file path, "Most replayed" heatmap),
+    or (None, None) after printing why it failed."""
     log = _ErrorCollector()
     opts = {**opts, "logger": log, "quiet": True, "no_warnings": True}
     path = None
+    heatmap = None
     try:
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
             if info:
                 path = _final_filepath(ydl, info)
+                heatmap = info.get("heatmap")
     except Exception as e:
         log.errors.append(str(e))
 
     if path and _download_is_healthy(path):
         print(f"   {label}: ok")
-        return path
+        return path, heatmap
     reason = _short_error(log.errors[-1]) if log.errors else "no usable file"
     print(f"   {label} failed: {reason}")
     _note_bot_check(log.errors, uses_cookies)
-    return None
+    return None, None
 
 
 def _try_cli_download(vid_id: str, url: str) -> Optional[str]:
@@ -497,7 +519,6 @@ def fetch_video_material_by_search(
                 "extract_flat": "in_playlist",
                 "playlistend": max(SEARCH_RESULTS, max_videos * 5),
                 "ignoreerrors": True,
-                "extractor_args": {"youtube": {"search_filter": YT_FILTER}},
                 "source_address": "0.0.0.0",
             }
 
@@ -580,20 +601,20 @@ def fetch_video_material_by_search(
         print(f"\nDownloading: {title}")
         print(f"   URL: {webpage_url}")
 
-        filepath = None
+        filepath, heatmap = None, None
 
         # Cookie-less first; cookies only help with age-restricted videos.
         for use_cookies in (False, True):
             if filepath or (not use_cookies and _no_cookie_blocked):
                 continue
             label = "with cookies" if use_cookies else "no cookies"
-            filepath = _try_download(f"Method 1: HD up to {MAX_HEIGHT}p ({label})",
+            filepath, heatmap = _try_download(f"Method 1: HD up to {MAX_HEIGHT}p ({label})",
                                      _make_opts_hd(skip_download=False, use_cookies=use_cookies),
                                      webpage_url, uses_cookies=use_cookies)
 
         if not filepath and not _no_cookie_blocked:
             time.sleep(3)
-            filepath = _try_download("Method 2: no cookies (720p)",
+            filepath, heatmap = _try_download("Method 2: no cookies (720p)",
                                      _make_opts_no_cookies(skip_download=False),
                                      webpage_url, uses_cookies=False)
 
@@ -606,9 +627,12 @@ def fetch_video_material_by_search(
             file_size = os.path.getsize(filepath) / (1024 * 1024)
             print(f"   Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
 
-            filepath = _trim_video_after_download(filepath, max_duration=MAX_SOURCE_SECONDS)
+            start = _best_window_start(heatmap, e.get("duration"), MAX_SOURCE_SECONDS)
+            print(f"   Most replayed window starts at {start:.0f}s" if start else
+                  "   No most-replayed peak to use, keeping the opening")
+            filepath = _trim_video_after_download(filepath, MAX_SOURCE_SECONDS, start)
             paths.append(filepath)
-            _write_source_meta(filepath, title, e.get("duration"))
+            _write_source_meta(filepath, title, e.get("duration"), start)
         else:
             print(f"   All methods failed for: {vid_id}")
 
