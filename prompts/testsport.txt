@@ -138,14 +138,59 @@ PUNCTUATION FOR DELIVERY:
 Comma → short pause. Period → full stop. Question mark → questioning tone. Exclamation → emphasis. Ellipsis (...) → suspense pause before a reveal.
 CAPITALIZE at most one word per sentence. Save the strongest CAPS for number one or the reveal.
 
-PUNCH MARKER RULE (sound effect words, REQUIRED)
-Every script marks exactly one or two words with asterisks (*word*). Each marked word gets a sound effect the moment it is spoken, so pick the words the viewer should FEEL. Choose them from THIS script's strongest moments:
+SOUND EFFECT MARKER RULE (two to four, REQUIRED)
+Mark two to four words as *word:tag*. Each one gets a sound effect, so pick the words the viewer should FEEL. Cuts and transitions get their whoosh and flash sounds automatically from the code: never use a tag for a cut, a transition or a scene change, only for what a line says. Choose them from THIS script's strongest moments:
 - the word the twist or evidence lands on ("the club *banned* it")
 - a shocking number or detail ("he lost *four* million dollars")
 - the word that flips what came before (the loophole, the contradiction, the absurd fact)
 - the key word of the kicker
 Never mark: anything in the hook line, filler words (but, so, really, actually, very), or two words in the same sentence. Do not default to the same word every script.
-Single words only. Use a word that appears only once in the script. No tags inside the asterisks. Asterisks are stripped before voice generation. List the marked words and why you chose them in verification.punch_markers.
+Single words only. Use a word that appears only once in the script. No [bracketed] voice tags inside the asterisks. The asterisks and the :tag are stripped before voice generation. List the marked words, their tags, and why you chose them in verification.punch_markers.
+
+Every marker needs a tag from the list below; a plain *word* without a tag makes no sound. The code picks the sound file and the timing from the tag: you only choose the tag.
+
+Picture sounds play the moment the tagged word is spoken, under the voice. Give them to a word that names the thing the sound belongs to:
+
+pop        something appears: a sign, a label, an object
+hit        a collision, a tackle, a punch, a throw
+boom       a big reveal, the biggest number
+suspense   tension, time running out, something about to happen
+fight      a fight, a match or a round starts
+money      money, prices, salaries, prize money
+correct    the right answer, a good idea, a rule that works
+wrong      illegal, a mistake, a rule broken, "no"
+celebrate  a title, a trophy, a win
+join       someone arrives or joins: a signing, a new player
+leave      someone leaves: a retirement, a departure, a sending off
+
+Reaction sounds play AFTER the sentence that holds the tagged word, in a short pause the code adds, so they never cover a word. Give them to a line the viewer should react to:
+
+shock      an unbelievable fact
+sad        a painful, heartbreaking outcome: a lost final, an injury
+dumb       a stupid or silly outcome: an own goal, a pointless rule
+awkward    someone is embarrassed, caught out or humiliated in that moment:
+           a promise broken in public, a boast that backfires. NOT irony
+           or a fall from greatness ("a tiny kingdom for a man used to
+           conquering countries" is not awkward: leave it untagged)
+sus        something suspicious, a scandal, a conspiracy
+meme       one big comic moment
+
+Syntax examples:
+"climate activists broke in and *sprayed:sad* it red and black."
+"he reportedly paid *fifteen:money* million dollars for a Gulfstream V jet."
+
+Limits (the pipeline stops if you break the first three):
+two to four tagged sounds in the whole script
+at most 2 reaction sounds
+at most 1 of them is meme or sus
+reaction sounds about ten seconds (about twenty-five spoken words) apart or more
+
+Most lines have no sound. A sound is punctuation. Past the minimum of two, when unsure, leave it out.
+
+The sound reacts to the fact, it is not the joke. Tag what the line literally says (a tackle gets hit, a lost final gets sad). Never tag a plain setup line just to make it funnier.
+
+Keep the hook quiet: the first sentence gets no reaction sound and no marker of any kind. The hook plays on the voice alone.
+
 
 
 ELEVENLABS V4 AUDIO TAGS RULE:
@@ -160,7 +205,7 @@ Throat clear (max 1 per script, only right before correcting a myth or an awkwar
 Rules:
 - A tag goes at the START of its sentence and stays active until the next tag.
 - Max 2 tags in a row, only compatible ones. Never opposites like [whispers][shouts] or [calm][excited].
-- Never invent tags. Never put tags inside punch markers. Never repeat a tag in one script.
+- Never invent tags. Never put [bracketed] tags inside sound effect markers. Never repeat a tag in one script.
 
 
 ═══════════════════════════════════
@@ -266,7 +311,7 @@ Output ONLY this JSON, no text before or after:
     "claims_checked": ["claim -> source name or URL", "claim -> source name or URL"],
     "footage_status": "GREEN | YELLOW | RED",
     "footage_note": "",
-    "punch_markers": ["<word> -> <why the viewer should feel it>"]
+    "punch_markers": ["<word:tag> -> <why the viewer should feel it>"]
   },
   "youtube_queries": ["", "", "", "", "", ""],
   "scene_query": "",

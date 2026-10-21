@@ -7,36 +7,128 @@ import socket
 import subprocess
 import threading
 import urllib.parse
+import zlib
 from typing import List, Optional, Union
 
+import config
 from config import DATA_DIR, CTA_PATH, FINAL_DIR, THUMBNAIL_DIR
 
 SFX_DIR = os.path.join(DATA_DIR, "sfx")
 _WHOOSH_FILES = ["1 - Whoosh.MP3", "2 - Whoosh 2.MP3", "3 - Whoosh 3.MP3"]
 _FLASH_SFX = "21 - Camera Flash.MP3"
-_PUNCH_SFX_FILES = ["awkward_moment.mp3", "radio_peep.mp3"]
-# Per-file punch volume. awkward_moment is ~7 dB quieter than radio_peep,
-# so boost it to land at a similar perceived loudness.
-_PUNCH_SFX_VOLUME = {"awkward_moment.mp3": 0.7, "radio_peep.mp3": 0.35}
-_PUNCH_SFX_STATE_FILE = os.path.join(DATA_DIR, "_punch_sfx_state.json")
+_AUDIO_SUFFIXES = (".mp3", ".wav", ".m4a", ".aac", ".flac")
 
 
-def _next_punch_sfx() -> str:
-    """Alternate strictly between punch SFX files across runs (persisted to disk)."""
-    last_index = -1
-    try:
-        with open(_PUNCH_SFX_STATE_FILE) as f:
-            last_index = json.load(f).get("last_index", -1)
-    except Exception:
-        pass
-    next_index = (last_index + 1) % len(_PUNCH_SFX_FILES)
-    try:
-        with open(_PUNCH_SFX_STATE_FILE, "w") as f:
-            json.dump({"last_index": next_index}, f)
-    except Exception:
-        pass
-    return _PUNCH_SFX_FILES[next_index]
+def sfx_library() -> dict:
+    """Every tag folder under SFX_LIBRARY_DIR, with its audio files (absolute paths)."""
+    if not os.path.isdir(config.SFX_LIBRARY_DIR):
+        return {}
+    library = {}
+    for name in sorted(os.listdir(config.SFX_LIBRARY_DIR)):
+        folder = os.path.join(config.SFX_LIBRARY_DIR, name)
+        if name.startswith((".", "_")) or not os.path.isdir(folder):
+            continue
+        library[name] = sorted(
+            os.path.join(folder, f) for f in os.listdir(folder)
+            if os.path.splitext(f)[1].lower() in _AUDIO_SUFFIXES
+        )
+    return library
 
+
+def pick_sfx(files: List[str], seed: str, tag: str, occurrence: int) -> str:
+    """
+    The file for the Nth use of a tag in one video.
+
+    Starts at a per-video offset and then rotates, so the same tag twice in a
+    row never plays the same file (while the folder has more than one), and
+    re-rendering the same video picks the same files. zlib.crc32, not hash():
+    Python randomizes hash() for strings in every new process.
+    """
+    return files[(zlib.crc32(f"{seed}:{tag}".encode()) + occurrence) % len(files)]
+
+
+def sfx_play_seconds(path: str) -> float:
+    """How long an effect actually plays: its length, cut to SFX_MAX_SECONDS."""
+    return min(_probe_duration(path), config.SFX_MAX_SECONDS)
+
+
+def peak_loudness(path: str) -> Optional[float]:
+    """
+    The loudest 400ms of a sound (ebur128 momentary max), in LUFS.
+
+    Integrated loudness is meaningless for a 0.3s click (it needs seconds of
+    audio and mostly measures the silence around it), so effects are matched
+    on their loudest moment instead, the part that actually gets heard.
+    """
+    result = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-i", path, "-af", "apad=pad_dur=0.5,ebur128",
+         "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    loudest = None
+    for line in result.stderr.splitlines():
+        if " M:" in line:
+            try:
+                m = float(line.split(" M:")[1].split()[0])
+            except (ValueError, IndexError):
+                continue
+            loudest = m if loudest is None else max(loudest, m)
+    return loudest
+
+
+def find_silences(audio_path: str, noise_db: float = -40.0, min_seconds: float = 0.1) -> List[tuple]:
+    """(start, end) of every pause in a narration file, from ffmpeg silencedetect."""
+    result = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-i", audio_path,
+         "-af", f"silencedetect=noise={noise_db}dB:d={min_seconds}", "-f", "null", "-"],
+        capture_output=True, text=True,
+    )
+    silences, start = [], None
+    for line in result.stderr.splitlines():
+        if "silence_start:" in line:
+            start = float(line.split("silence_start:")[1].split()[0])
+        elif "silence_end:" in line and start is not None:
+            silences.append((start, float(line.split("silence_end:")[1].split()[0])))
+            start = None
+    return silences
+
+
+def splice_silence(audio_path: str, inserts: List[tuple]) -> None:
+    """
+    Insert silence into a narration file, in place. `inserts` is a list of
+    (time, seconds) on the ORIGINAL timeline. One ffmpeg call: the narration
+    is cut (atrim) at every insert time, a silent piece (anullsrc) goes
+    between the cuts, and concat joins them back up.
+    """
+    inserts = sorted(inserts)
+    info = json.loads(subprocess.run(
+        ["ffprobe", "-v", "quiet", "-select_streams", "a:0",
+         "-show_entries", "stream=sample_rate,channels", "-of", "json", audio_path],
+        capture_output=True, text=True, check=True,
+    ).stdout)["streams"][0]
+    rate, layout = info["sample_rate"], "mono" if info["channels"] == 1 else "stereo"
+
+    chains, labels, prev = [], [], 0.0
+    for k, (when, seconds) in enumerate(inserts):
+        chains.append(f"[0:a]atrim=start={prev:.3f}:end={when:.3f},asetpts=PTS-STARTPTS[a{k}]")
+        chains.append(f"anullsrc=r={rate}:cl={layout},atrim=duration={seconds:.3f}[z{k}]")
+        labels += [f"[a{k}]", f"[z{k}]"]
+        prev = when
+    chains.append(f"[0:a]atrim=start={prev:.3f},asetpts=PTS-STARTPTS[tail]")
+    labels.append("[tail]")
+    filters = ";".join(chains) + f";{''.join(labels)}concat=n={len(labels)}:v=0:a=1[out]"
+
+    # 192k: a lower bitrate is what made narration sound muffled before
+    tmp = audio_path + ".spliced.mp3"
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", audio_path, "-filter_complex", filters, "-map", "[out]",
+         "-c:a", "libmp3lame", "-b:a", "192k", tmp],
+        check=True, capture_output=True,
+    )
+    os.replace(tmp, audio_path)
+
+
+SHORTS_CAP_SECONDS = 82   # narration past this is cut when shorts_cap is on
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REMOTION_DIR = os.path.join(PROJECT_ROOT, "remotion")
@@ -213,8 +305,8 @@ def _graphics_before_cta(graphics: List[dict], cutoff: float) -> List[dict]:
     return kept
 
 
-def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float] = None) -> List[dict]:
-    """Assign SFX to each cut point and punch word timestamps."""
+def _build_sfx_events(clips: List[dict], base_url: str) -> List[dict]:
+    """Assign a whoosh or camera flash SFX to each cut point."""
     events = []
     accumulated = 0.0
     for i, clip in enumerate(clips[:-1]):
@@ -227,16 +319,37 @@ def _build_sfx_events(clips: List[dict], base_url: str, punch_times: List[float]
             rel = os.path.relpath(abs_path, PROJECT_ROOT)
             encoded = urllib.parse.quote(rel, safe="/")
             events.append({"time": round(accumulated, 3), "file": f"{base_url}/{encoded}", "volume": volume})
+    return events
 
-    for pt in (punch_times or []):
-        sfx_file = _next_punch_sfx()
-        abs_path = os.path.join(SFX_DIR, sfx_file)
-        if os.path.exists(abs_path):
-            rel = os.path.relpath(abs_path, PROJECT_ROOT)
-            encoded = urllib.parse.quote(rel, safe="/")
-            volume = _PUNCH_SFX_VOLUME.get(sfx_file, 0.4)
-            events.append({"time": round(pt, 3), "file": f"{base_url}/{encoded}", "volume": volume})
 
+def _build_tagged_sfx_events(tagged_sfx: List[dict], base_url: str, speech_lufs: float) -> List[dict]:
+    """
+    Remotion events for the tagged effects (placed by main.py _place_tagged_sfx).
+    Each sits SFX_UNDER_DB[kind] below the narration, measured by its loudest
+    moment, and carries its play length so Remotion can cut it with a fade.
+    """
+    events = []
+    for s in tagged_sfx:
+        level = peak_loudness(s["path"])
+        if level is None:
+            print(f"  [sfx] unreadable {os.path.basename(s['path'])}, skipped")
+            continue
+        gain_db = (speech_lufs - config.SFX_UNDER_DB[s["kind"]]) - level
+        volume = 10 ** (gain_db / 20)
+        if volume > 1.0:
+            # Remotion's volume tops out at 1 (the file's own level)
+            print(f"  [sfx] {os.path.basename(s['path'])} wants {gain_db:+.1f} dB, capped at 0 dB")
+            volume = 1.0
+        events.append({
+            "time": round(s["time"], 3),
+            # quoted: library names have spaces and brackets ("Angel - Sound Effect (HD).mp3")
+            "file": f"{base_url}/{urllib.parse.quote(os.path.relpath(s['path'], PROJECT_ROOT), safe='/')}",
+            "volume": round(volume, 4),
+            "duration": round(s["duration"], 3),
+            "fade": config.SFX_FADE_SECONDS,
+        })
+        print(f"  [sfx] {s['time']:6.1f}s  {s['kind']:8} {s['tag']:10} "
+              f"{os.path.basename(s['path'])}  ({gain_db:+.1f} dB)")
     return events
 
 
@@ -247,14 +360,14 @@ def merge_audio_video(
     target_w: int = 1080,
     target_h: int = 1920,
     shorts_cap: bool = True,
-    cap_seconds: float = 82,
+    cap_seconds: float = SHORTS_CAP_SECONDS,
     music_path: Optional[str] = None,
     music_lufs: float = -34.0,
     words_data: Optional[list] = None,
     cta_path: str = CTA_PATH,
-    punch_times: Optional[List[float]] = None,
     clip_meta: Optional[List[dict]] = None,
     graphics: Optional[List[dict]] = None,
+    tagged_sfx: Optional[List[dict]] = None,
     theme: Optional[dict] = None,
     frame_background: str = "blur",
     hook_text: str = "",
@@ -283,6 +396,18 @@ def merge_audio_video(
         clips = _build_clips(video_paths, total_dur, base_url, clip_meta)
         prepared_music = _prepare_music(music_path, total_dur, music_lufs) if music_path else None
 
+        sfx_events = _build_sfx_events(clips, base_url)
+        tagged_events = []
+        if tagged_sfx:
+            speech_lufs = _measure_lufs(audio_path)
+            if speech_lufs is None:
+                print("Could not measure narration loudness, skipping tagged sound effects")
+            else:
+                print(f"Tagged sound effects (narration {speech_lufs:.1f} LUFS):")
+                tagged_events = _build_tagged_sfx_events(
+                    [s for s in tagged_sfx if s["time"] < total_dur], base_url, speech_lufs)
+        sfx_events += tagged_events
+
         words_dicts: List[dict] = []
         if words_data:
             words_dicts = [
@@ -296,8 +421,11 @@ def merge_audio_video(
             "musicPath": _asset_url(prepared_music, base_url) if prepared_music else None,
             "musicVolume": 1.0,
             "wordsData": words_dicts,
-            "punchTimes": punch_times or [],
-            "sfxEvents": _build_sfx_events(clips, base_url, punch_times),
+            "sfxEvents": sfx_events,
+            # the music dips under tagged effects only, not under the cut whooshes
+            "sfxWindows": [[e["time"], e["time"] + e["duration"]] for e in tagged_events],
+            "duckDb": config.SFX_MUSIC_DUCK_DB,
+            "duckRampSec": config.SFX_DUCK_RAMP_SECONDS,
             "graphics": _graphics_before_cta(graphics or [], cta_start if has_cta else total_dur),
             "theme": theme or {},
             "frameBackground": frame_background,

@@ -37,6 +37,10 @@ export interface SfxEvent {
   time: number;
   file: string;
   volume?: number;
+  // Tagged effects only: play length in seconds (cut to SFX_MAX_SECONDS) and
+  // the fade out at its end. Cut whooshes leave these out and play 5s flat.
+  duration?: number;
+  fade?: number;
 }
 
 export interface ShortVideoProps {
@@ -46,6 +50,11 @@ export interface ShortVideoProps {
   musicVolume?: number;
   wordsData?: WordEntry[];
   sfxEvents?: SfxEvent[];
+  // [start, end] seconds of every tagged effect; the music dips by duckDb
+  // inside each, with a linear ramp of duckRampSec either side.
+  sfxWindows?: [number, number][];
+  duckDb?: number;
+  duckRampSec?: number;
   graphics?: GraphicData[];
   theme?: Partial<Theme>;
   frameBackground?: FrameBackground;
@@ -242,6 +251,9 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
   musicVolume = 0.07,
   wordsData = [],
   sfxEvents = [],
+  sfxWindows = [],
+  duckDb = 8,
+  duckRampSec = 0.15,
   graphics = [],
   theme: themeOverrides = {},
   frameBackground = "blur",
@@ -295,6 +307,19 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
     : 0;
   const subtitleWords = wordsData.filter((w) => w.start >= hookEnd);
 
+  // Ported from animationer _duck_expr: each window contributes 0..1 (ramping
+  // in and out), the sum is capped at 1, then turned into a dB dip.
+  const musicVolumeAt = (f: number) => {
+    const t = f / fps;
+    const r = duckRampSec;
+    const clip01 = (x: number) => Math.min(1, Math.max(0, x));
+    const amount = Math.min(
+      1,
+      sfxWindows.reduce((sum, [a, b]) => sum + clip01((t - (a - r)) / r) * clip01((b + r - t) / r), 0),
+    );
+    return musicVolume * Math.pow(10, (-duckDb * amount) / 20);
+  };
+
   // Every 3rd cut (starting at index 1) gets a flash, evenly spread, ~1 in 3
   const flashFrames = cutFrames.filter((_, i) => i % 3 === 1);
 
@@ -309,12 +334,34 @@ export const ShortVideo: React.FC<ShortVideoProps> = ({
       <FlashCut flashFrames={flashFrames} />
 
       {audioPath && <Audio src={audioPath} />}
-      {musicPath && <Audio src={musicPath} volume={musicVolume} />}
-      {sfxEvents.map((event, i) => (
-        <Sequence key={`sfx-${i}`} from={Math.round(event.time * fps)} durationInFrames={fps * 5}>
-          <Audio src={event.file} volume={event.volume ?? 0.35} />
-        </Sequence>
-      ))}
+      {musicPath && (
+        <Audio src={musicPath} volume={sfxWindows.length ? musicVolumeAt : musicVolume} />
+      )}
+      {sfxEvents.map((event, i) => {
+        const vol = event.volume ?? 0.35;
+        if (event.duration === undefined) {
+          return (
+            <Sequence key={`sfx-${i}`} from={Math.round(event.time * fps)} durationInFrames={fps * 5}>
+              <Audio src={event.file} volume={vol} />
+            </Sequence>
+          );
+        }
+        const frames = Math.max(1, Math.ceil(event.duration * fps));
+        const fadeFrames = Math.max(1, Math.min(Math.round((event.fade ?? 0.3) * fps), Math.floor(frames / 2)));
+        return (
+          <Sequence key={`sfx-${i}`} from={Math.round(event.time * fps)} durationInFrames={frames}>
+            <Audio
+              src={event.file}
+              volume={(f) =>
+                interpolate(f, [frames - fadeFrames, frames], [vol, 0], {
+                  extrapolateLeft: "clamp",
+                  extrapolateRight: "clamp",
+                })
+              }
+            />
+          </Sequence>
+        );
+      })}
       <GraphicLayer graphics={graphics} theme={theme} />
       {hookText && <HookCard text={hookText} endSec={hookEnd} accent={theme.accent} topPct={22} wordsData={wordsData} />}
       {subtitleWords.length > 0 && <WordHighlight wordsData={subtitleWords} accent={theme.accent} topPct={27} />}

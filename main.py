@@ -14,6 +14,7 @@ import ffmpeg
 
 subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
 
+import config
 from config import GEMINI_API_KEYS, DATA_DIR, CHANNELS_DIR
 
 if not GEMINI_API_KEYS:
@@ -82,7 +83,9 @@ try:
     from modules.video_material_fetcher import fetch_video_material_by_search
     from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
-    from modules.video_editor import merge_audio_video, render_thumbnail, append_thumbnail_frame
+    from modules.video_editor import (merge_audio_video, render_thumbnail, append_thumbnail_frame,
+                                      sfx_library, pick_sfx, sfx_play_seconds, splice_silence, find_silences,
+                                      _probe_duration, SHORTS_CAP_SECONDS)
     from modules.transcriber import transcribe_audio_to_words
 except ImportError as e:
     print(f"Error importing modules: {e}")
@@ -110,66 +113,31 @@ DEFAULT_CHANNEL = {
     "graphic_types": list(GRAPHIC_TYPES),
 }
 
-MANUAL_DATA =  {
-  "channel": "sports",
-  "sport": "football",
-  "lane": "fun_fact",
-  "format": "money_countdown",
-  "topic": "The three priciest things Lionel Messi has bought: a Florida mansion, an Ibiza villa and a private jet",
-  "specific_subject": "Lionel Messi: Fort Lauderdale Bay Colony mansion ($10.75M), Ibiza villa near Cala Tarida (reportedly about €11M, vandalised by climate activists in 2024), Gulfstream V private jet (reportedly $15M, number 10 on the tail, family names on the boarding steps)",
-  "title": "Lionel Messi's Most EXPENSIVE Purchases #football",
-  "verification": {
-    "event_date": "Fun fact lane, so the 72-hour rule does not apply. Jet bought 2018, Ibiza villa bought 2022, Fort Lauderdale mansion bought after his July 2023 move to Inter Miami, Ibiza vandalism on 6 August 2024. No F1 race in the last 72 hours (Singapore was 11 Oct, Austin is 25 Oct). The only fresh football news options were Betis 2-5 Barcelona on 17 Oct, which was already covered as Why Real Betis LOST To Lamine Yamal, and Real Madrid 4-1 Sevilla on 18 Oct, a tier-two Mbappe story with a low-shock why. F1 got a -2 sport-balance penalty because it was in 2 of the last 3 used videos. Messi plus money_countdown has never been used, so this scored highest.",
-    "sources": [
-      "https://www.cbsnews.com/miami/news/messi-buys-10-75-million-dollar-mansion-in-fort-lauderdale-officially-a-south-florida-resident/",
-      "https://www.orlandoweekly.com/news/lionel-messi-buys-waterfront-florida-mansion-for-1075-million-35058031/",
-      "https://www.thelocal.es/20240806/climate-activists-target-messis-mansion-in-spains-ibiza",
-      "https://www.goal.com/en-sg/lists/lionel-messi-illegal-ibiza-mansion-vandalised-by-climate-activists/blt51c25df3b4eecb64",
-      "https://www.goal.com/de/meldungen/lionel-messi-privatjet-13-millionen-euro/5buynarpgqme1ah0zajdmjzq8",
-      "https://www.theweek.in/news/sports/2025/12/13/meet-lionel-messi-s-gulfstream-v-private-jet-price-specs-and-more.amp.html",
-      "https://www.lafm.com.co/deportes/futbol/messi-adquirio-un-avion-privado-por-15-millones-de-dolares",
-      "https://m.scmp.com/magazines/style/celebrity/article/3196240/2-trips-3-months-lionel-messis-excessive-private-jet-use"
-    ],
-    "claims_checked": [
-      "Messi bought a waterfront mansion in Fort Lauderdale for $10.75 million -> CBS News Miami; Orlando Weekly; Forbes Australia (agents confirmed the price)",
-      "The mansion has eight bedrooms -> CBS News Miami; Orlando Weekly; South Florida Agent Magazine",
-      "Messi owns an Ibiza villa reportedly bought for around €11 million -> AFP via The Local Spain; Goal; Majorca Daily Bulletin (spoken as reportedly)",
-      "The Ibiza villa has a spa and a cinema room -> AFP via The Local Spain; AFP via Free Malaysia Today",
-      "In 2024 climate activists broke in and sprayed the villa red and black -> Goal (activists broke into the property and painted it red and black); AFP via The Local Spain (6 Aug 2024, red and black paint on the facade); Majorca Daily Bulletin",
-      "In 2018 Messi reportedly paid $15 million for a Gulfstream V jet -> Goal Germany citing AS (2018, $15M); The Week India; 100knots citing Marca (acquired 2018, about $15M) (spoken as reportedly)",
-      "16 seats that convert into beds -> La FM; Goal Germany (16 passengers); SCMP citing Marca (16 seats into eight beds)",
-      "His number 10 is on the jet's tail -> La FM; Goal Germany; The Week India",
-      "Every step of the jet's boarding stairs carries a family name: Leo, Antonela, Thiago, Mateo, Ciro -> La FM; Goal Germany citing AS; El Heraldo Honduras",
-      "Hook total of over $35 million: $10.75M + about $12M (AFP converts €11M to about $12M) + $15M = about $37.75M -> sum of the sourced figures above, spoken as reportedly",
-      "Not claimed: that these are his three most expensive purchases ever. The hook says three things only, because the price of the earlier Embraer jet is not reliably sourced. Also cut: Messi's €50,000 compensation claim against the activists, which has only one source."
-    ],
-    "footage_status": "GREEN",
-    "footage_note": "Messi is filmed constantly stepping off the white Gulfstream with the 10 on the tail, including the widely covered December 2025 India tour arrival. Local TV news (CBS Miami, WSVN, NBC6) aired listing photos and aerials of the Fort Lauderdale mansion. Futuro Vegetal's own vandalism video of the Ibiza villa was rebroadcast by AFP and Spanish outlets. No match footage is needed.",
-    "punch_markers": [
-      "sprayed -> the twist on number two, where the eleven million euro dream villa gets vandalised",
-      "stairs -> the kicker that pays off the family names on every step and loops back into the hook"
-    ]
-  },
-  "youtube_queries": [
-    "Messi Fort Lauderdale mansion",
-    "Messi Ibiza house activists paint",
-    "Messi private jet tour",
-    "Messi arriving private jet",
-    "Messi jet family names stairs",
-    "Fort Lauderdale waterfront mansion drone"
-  ],
-  "scene_query": "Lionel Messi in a dark jacket walking down the boarding stairs of a white private jet with a large number 10 on its tail, on an airport tarmac",
-  "footage_source": "official_or_press",
-  "music_mood": "flex",
-  "music_queries": [
-    "Messi edit phonk instrumental no copyright",
-    "luxury lifestyle hip hop beat instrumental",
-    "flex trap beat no copyright"
-  ],
-  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 92 BPM, deep 808 bass, glossy piano stabs and crisp hi-hat rolls with a cash-register style riser. Starts confident and bouncy under number three, adds a tense filtered break for the activist twist at number two, then drops hard into a full-bass section on the jet reveal at number one before cutting to near silence on the final line. Sports short-form video background, no lyrics, exclude: horror suspense drones, cheerful acoustic ukulele",
-  "voice_name": "animatoryoung",
-  "script": "Lionel Messi reportedly spent over thirty-five million dollars on just three things. [curious] And at number three... a Fort Lauderdale mansion, for ten point seven five million dollars. [deadpan] Eight bedrooms, like a house straight out of GTA Vice City. But at number two... an Ibiza villa, reportedly around eleven million euros, with a spa and cinema room. [sighs] But in twenty twenty-four, climate activists broke in and *sprayed* it red and black. [thoughtful] But at number one... something that FLIES. In twenty eighteen, he reportedly paid fifteen million dollars for a Gulfstream V jet. Sixteen seats that turn into beds, and his number ten on the tail. But the crazy part... every step onto the plane has a family name on it. Leo, Antonela, Thiago, Mateo and Ciro. [quietly] So Messi never flies without his family, not even on the *stairs*. And that's why",
-  "spoken_word_count": 139
+MANUAL_DATA = {
+"channel": "anime",
+"topic": "Attack on Titan",
+"specific_subject": "Mikasa's Headaches",
+"title": "The real reason Mikasa gets headaches in Attack on Titan",
+"youtube_queries": [
+  "Mikasa headache scenes",
+  "Mikasa Ackerman goes hard",
+  "Ymir the Founder 4k",
+  "Attack on Titan episode eighty Mikasa",
+  "Mikasa headache english dub",
+  "Attack on Titan official trailer"
+],
+"scene_query": "Mikasa holding her head in extreme pain while wearing her Survey Corps uniform. Flashbacks to Ymir the Founder as a young girl standing alone in the glowing sand of the Paths dimension staring blankly.",
+"footage_source": "stills_and_broll",
+"music_mood": "curious",
+"music_queries": [
+  "Attack on Titan Ymir theme OST instrumental",
+  "Attack on Titan Call of Silence instrumental",
+  "chill dark ambient mystery instrumental no copyright"
+],
+"music_prompt": "lo-fi curiosity bed, dark ambient synth, ninety BPM, atmospheric pads, deep cello, subtle ticking, quiet tension building slowly, short-form video background, no lyrics, exclude: aggressive beats, bright acoustic instruments",
+"voice_name": "animatoryoung",
+"spoken_word_count": 95,
+"script": "The real reason Mikasa gets headaches.\n[curious] A lot of fans blamed her Ackerman blood.\n[calm] But the last chapter *explains:suspense* it.\nYmir the Founder was looking into her mind the whole *time:shock*.\n[thoughtful] Ymir spent two thousand years as a slave to her love for King Fritz.\nWhen Mikasa was torn between Eren and the world, Ymir saw herself.\n[deadpan] Every headache was Ymir watching to see what Mikasa would choose.\nAnd Mikasa chose to cut off Eren's *head:hit* herself.\n[understated] Ymir could never do that to the man she loved. Mikasa did, and it finally set Ymir free."
 }
 
 
@@ -202,34 +170,179 @@ def _punch_key(word: str):
     return nums.pop() if len(nums) == 1 else _norm_word(word)
 
 
+_MARKER = re.compile(r'\*([^*]+)\*')
+
+
+def _split_marker(inner: str):
+    """'sprayed:sad' -> ('sprayed', 'sad'); 'stairs' -> ('stairs', None).
+    The tag must be letters only, so a time like *10:30* stays a plain word."""
+    m = re.fullmatch(r'(.+?):([A-Za-z_]+)', inner.strip())
+    return (m.group(1), m.group(2).lower()) if m else (inner, None)
+
+
 def _strip_punch_markers(script: str):
-    """Strip *word* markers from script. Returns (clean_script, [(word, n), ...]).
+    """Strip *word* and *word:tag* markers from script.
+    Returns (clean_script, [(word, n, tag), ...]); tag is None for a plain *word*,
+    which makes no sound (only tagged words get one).
     n is which copy of the word was marked (0 = first time it appears in the script),
     so a marked second "dead" doesn't get matched to the first one.
-    The word content (e.g. BUT!) stays in the script for TTS emphasis; only * is removed."""
-    marker = re.compile(r'\*([^*]+)\*')
+    The word content (e.g. BUT!) stays in the script for TTS emphasis; the asterisks
+    and the :tag are removed, so a tag never reaches ElevenLabs."""
     punch_words = []
+    def _unmark(text):
+        return _MARKER.sub(lambda m: _split_marker(m.group(1))[0], text)
     def _replace(m):
-        word = _punch_key(m.group(1))
-        before = marker.sub(r'\1', script[:m.start()])
-        n = sum(1 for w in before.split() if _punch_key(w) == word)
-        punch_words.append((word, n))
-        return m.group(1)
-    clean_script = marker.sub(_replace, script)
+        spoken, tag = _split_marker(m.group(1))
+        word = _punch_key(spoken)
+        n = sum(1 for w in _unmark(script[:m.start()]).split() if _punch_key(w) == word)
+        punch_words.append((word, n, tag))
+        return spoken
+    clean_script = _MARKER.sub(_replace, script)
     return clean_script, punch_words
 
 
-def _match_punch_times(punch_words: list, words_data: list) -> list:
-    """Match each punch word to the Whisper timestamp of the same copy of that word."""
-    times = []
-    for target, n in punch_words:
-        hits = [start for word, start, _end in words_data if _punch_key(word) == target]
-        if not hits:
-            print(f"Punch word '{target}' not found in transcript, skipping")
+def _check_sfx_tags(punch_words: list):
+    """Stop before any download or API call if a tag is wrong or over a limit,
+    so a typo costs one second instead of ten minutes and API quota."""
+    plain = [str(w) for w, _n, t in punch_words if not t]
+    if plain:
+        print(f"Plain *word* markers make no sound, only *word:tag* does: {plain}")
+    tags = [t for _w, _n, t in punch_words if t]
+    if not config.SFX_ENABLED:
+        return
+    if len(tags) < config.SFX_MIN_TAGGED:
+        print(f"WARNING: only {len(tags)} tagged sound(s), the prompt asks for at least {config.SFX_MIN_TAGGED}")
+    if not tags:
+        return
+    library = sfx_library()
+    allowed = [t for t in config.SFX_PICTURE_TAGS + config.SFX_AFTER_TAGS if library.get(t)]
+    errors = []
+    for t in tags:
+        if t not in config.SFX_PICTURE_TAGS + config.SFX_AFTER_TAGS:
+            errors.append(f"unknown tag '{t}'")
+        elif not library.get(t):
+            errors.append(f"tag '{t}' has no files in {config.SFX_LIBRARY_DIR}/{t}")
+    if len(tags) > config.SFX_MAX_TAGGED:
+        errors.append(f"{len(tags)} tagged sounds, max {config.SFX_MAX_TAGGED}")
+    after = [t for t in tags if t in config.SFX_AFTER_TAGS]
+    if len(after) > config.SFX_MAX_AFTER:
+        errors.append(f"{len(after)} after reactions {after}, max {config.SFX_MAX_AFTER}")
+    rare = [t for t in tags if t in config.SFX_RARE_TAGS]
+    if len(rare) > config.SFX_MAX_RARE:
+        errors.append(f"{len(rare)} rare tags {rare}, max {config.SFX_MAX_RARE}")
+    if errors:
+        print("Sound effect tags in the script are wrong:")
+        for e in errors:
+            print(f"  - {e}")
+        print(f"Allowed tags: picture {[t for t in config.SFX_PICTURE_TAGS if t in allowed]}, "
+              f"after {[t for t in config.SFX_AFTER_TAGS if t in allowed]}")
+        sys.exit(1)
+    print(f"Sound effect tags OK: {tags}")
+
+
+def _marker_index(target, n: int, words_data: list):
+    """Index in words_data of the nth copy of a marked word, or None."""
+    hits = [i for i, (word, _s, _e) in enumerate(words_data) if _punch_key(word) == target]
+    if not hits:
+        return None
+    # Whisper can drop a word, so fall back to the last copy it heard
+    return hits[min(n, len(hits) - 1)]
+
+
+def _sentence_pause(silences: list, word_start: float, word_end: float, reach: float = 1.2) -> float:
+    """
+    Where to splice a reaction's pause after a sentence's last word: inside the
+    longest real pause between that word's Whisper start and `reach` seconds past
+    its Whisper end (the sentence-end pause is the longest one around there).
+    Falls back to the Whisper end time when the audio has no pause in that range.
+    """
+    near = [(a, b) for a, b in silences if b > word_start and a < word_end + reach]
+    if not near:
+        print(f"No pause found after {word_end:.2f}s, splicing at the Whisper end time")
+        return word_end
+    a, b = max(near, key=lambda g: g[1] - g[0])
+    # a little into the pause, so the word's tail is never cut off
+    return round(max(a, word_start) + min(0.05, (b - a) / 2), 3)
+
+
+def _place_tagged_sfx(punch_words: list, words_data: list, audio_path: str, seed: str):
+    """
+    Pick a file for every *word:tag* and decide when it plays.
+
+    picture: on the tagged word's start, under the voice.
+    after:   SFX_AFTER_GAP after the end of the sentence holding the word, in a
+             pause of SFX_AFTER_GAP + the effect's length spliced into the
+             narration. Files in SFX_VOICE_FILES always count as after.
+    The splice shifts every later word, so this returns the shifted
+    words_data: run it before segment_by_sentences and everything downstream
+    (clips, cards, subtitles) uses the new timeline.
+    Returns (words_data, [{time, path, kind, tag, duration}]).
+    """
+    library = sfx_library()
+    placed, counts = [], {}
+    for target, n, tag in punch_words:
+        if not tag:
             continue
-        # Whisper can drop a word, so fall back to the last copy it heard
-        times.append(round(hits[min(n, len(hits) - 1)], 3))
-    return sorted(times)
+        i = _marker_index(target, n, words_data)
+        if i is None:
+            print(f"Sound effect word '{target}' ({tag}) not found in transcript, skipping")
+            continue
+        path = pick_sfx(library[tag], seed, tag, counts.get(tag, 0))
+        counts[tag] = counts.get(tag, 0) + 1
+        voice = os.path.basename(path) in config.SFX_VOICE_FILES
+        kind = "after" if tag in config.SFX_AFTER_TAGS or voice else "picture"
+        placed.append({"index": i, "path": path, "kind": kind, "tag": tag,
+                       "duration": sfx_play_seconds(path)})
+
+    # Each after sound waits for the end of its sentence (same rule as segment_by_sentences).
+    # Whisper's word ends can run half a second early, so the splice goes into the
+    # real pause the audio has there, not at Whisper's end time: cutting at the
+    # Whisper time once split "real de- [awww] -feat" in half.
+    silences = find_silences(audio_path) if any(s["kind"] == "after" for s in placed) else []
+    for s in placed:
+        if s["kind"] != "after":
+            continue
+        j = s["index"]
+        while j < len(words_data) - 1 and not words_data[j][0].rstrip().endswith(('.', '?', '!')):
+            j += 1
+        s["end_index"] = j
+        s["at"] = _sentence_pause(silences, words_data[j][1], words_data[j][2])
+        s["pause"] = config.SFX_AFTER_GAP + s["duration"]
+
+    after = sorted((s for s in placed if s["kind"] == "after"), key=lambda s: s["at"])
+    if after:
+        splice_silence(audio_path, [(s["at"], s["pause"]) for s in after])
+        # Shift by position, not by time: every word after a sentence that got a
+        # pause moves by that pause, whatever Whisper said its time was.
+        words_data = [
+            (w, round(a + shift, 3), round(b + shift, 3))
+            for k, (w, a, b) in enumerate(words_data)
+            for shift in [sum(s["pause"] for s in after if s["end_index"] < k)]
+        ]
+        added = sum(s["pause"] for s in after)
+        new_dur = _probe_duration(audio_path)
+        print(f"Spliced {len(after)} pause(s) into the narration at "
+              f"{[round(s['at'], 2) for s in after]}s, +{added:.2f}s, now {new_dur:.1f}s")
+        if new_dur > SHORTS_CAP_SECONDS:
+            print(f"WARNING: narration is now past the {SHORTS_CAP_SECONDS}s Shorts cap, the end will be cut")
+
+    tagged = []
+    for s in placed:
+        if s["kind"] == "picture":
+            when = words_data[s["index"]][1]
+        else:
+            # the effect starts in its own pause: after every pause spliced in before it
+            when = s["at"] + sum(o["pause"] for o in after[:after.index(s)]) + config.SFX_AFTER_GAP
+        tagged.append({"time": round(when, 3), "path": s["path"], "kind": s["kind"],
+                       "tag": s["tag"], "duration": s["duration"]})
+    tagged.sort(key=lambda s: s["time"])
+
+    after_times = [s["time"] for s in tagged if s["kind"] == "after"]
+    for a, b in zip(after_times, after_times[1:]):
+        if b - a < config.SFX_MIN_AFTER_GAP_SECONDS:
+            print(f"WARNING: reactions at {a:.1f}s and {b:.1f}s are under "
+                  f"{config.SFX_MIN_AFTER_GAP_SECONDS:.0f}s apart")
+    return words_data, tagged
 
 
 def _ffprobe_fails(path):
@@ -856,6 +969,30 @@ def segment_by_sentences(words_data):
         })
 
     return segments
+
+
+def _set_cut_durations(segments, tagged_sfx, total_dur):
+    """
+    Give each segment a "cut_duration": how long its clip stays on screen.
+
+    Clips are laid end to end, so a cut lands at the sum of the clips before
+    it. Each clip runs until the next segment's first word, so the pause
+    between sentences is counted and cuts don't drift early. A reaction sound
+    in that pause holds the shot until it ends, so the cut and its whoosh come
+    after the reaction instead of on top of it.
+    """
+    boundary = 0.0
+    for i, seg in enumerate(segments):
+        if i + 1 < len(segments):
+            nxt = segments[i + 1]
+            end = nxt["start"]
+            for s in tagged_sfx or []:
+                if s["kind"] == "after" and seg["end"] - 0.01 <= s["time"] < nxt["end"]:
+                    end = max(end, s["time"] + s["duration"])
+        else:
+            end = total_dur
+        seg["cut_duration"] = max(0.1, end - boundary)
+        boundary = end
 
 
 def merge_short_segments(segments, min_duration):
@@ -1615,6 +1752,7 @@ def run_manual_pipeline(data):
         CHANNEL = load_channel(data.get('channel'))
         VOICE_NAME = data.get('voice_name') or CHANNEL['voice_name']
         SCRIPT_TEXT, _punch_words = _strip_punch_markers(data['script'])
+        _check_sfx_tags(_punch_words)
 
         print(f"PROCESSING MANUAL ORDER: {SUBJECT}")
         print(f"topic: {TOPIC}")
@@ -1722,6 +1860,14 @@ def run_manual_pipeline(data):
         else:
             words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
 
+        tagged_sfx = []
+        if config.SFX_ENABLED and any(t for _w, _n, t in _punch_words):
+            if words_data:
+                words_data, tagged_sfx = _place_tagged_sfx(
+                    _punch_words, words_data, audio_path, data.get("title") or TOPIC)
+            else:
+                print("No word timestamps, skipping tagged sound effects")
+
         clip_paths = []
         clip_meta = []      # per clip: layout, focusX, fullUntil (aligned with clip_paths)
         graphics = []       # narration graphics with absolute start/end times
@@ -1735,6 +1881,7 @@ def run_manual_pipeline(data):
                 a, b = script_segments[m], script_segments[m + 1]
                 script_segments[m] = {"text": a["text"] + " " + b["text"], "start": a["start"], "end": b["end"], "duration": b["end"] - a["start"]}
                 script_segments.pop(m + 1)
+            _set_cut_durations(script_segments, tagged_sfx, _probe_duration(audio_path))
             print(f"{len(script_segments)} clips planned, analyzing {len(approved_videos)} video(s)...")
             scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL, video_items)
 
@@ -1753,7 +1900,7 @@ def run_manual_pipeline(data):
                     output_file=clip_path,
                     ai_start=start,
                     prepad=0.0,
-                    max_duration=max(segment["duration"], MIN_CLIP_DURATION),
+                    max_duration=max(segment["cut_duration"], MIN_CLIP_DURATION),
                     crop=crops[source_video],
                 )
                 if success is not False and os.path.exists(clip_path):
@@ -1810,9 +1957,6 @@ def run_manual_pipeline(data):
         # Named after the title: SUBJECT is a long fact list that made filenames unreadable
         safe_name = re.sub(r'[^A-Za-z0-9]+', '_', _hook_text(data.get("title", "")) or SUBJECT).strip('_')[:60]
         final_filename = f"Short_{safe_name}_{random.randint(10, 99)}.mp4"
-        punch_times = _match_punch_times(_punch_words, words_data) if (words_data and _punch_words) else []
-        if punch_times:
-            print(f"Punch SFX at: {punch_times}")
 
         print("Starting video editing...")
         final_path = merge_audio_video(
@@ -1823,7 +1967,7 @@ def run_manual_pipeline(data):
             music_path=music_path,
             music_lufs=MUSIC_LUFS,
             words_data=words_data,
-            punch_times=punch_times,
+            tagged_sfx=tagged_sfx,
             clip_meta=clip_meta,
             graphics=graphics,
             theme=CHANNEL["theme"],

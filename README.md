@@ -40,7 +40,7 @@ Then:
 The finished video lands in `data/final/` and the thumbnail in `data/thumbnails/`. Whisper `large-v3` (~3 GB) and Chrome Headless Shell download automatically on the first run.
 
 **Optional assets:**
-- **Sound effects:** put them in `data/sfx/` (filenames are in `modules/video_editor.py`). Any missing file is skipped.
+- **Sound effects:** cut whooshes and the camera flash go in `data/sfx/` (filenames are in `modules/video_editor.py`); any missing file is skipped. Tagged effects go in `data/sfx_library/<tag>/`, one folder per tag, copied from the animationer library. Files must be trimmed (no silence before or after the sound).
 - **YouTube cookies:** once YouTube shows its "confirm you're not a bot" check, downloads switch to the cookies of a signed-in Chrome profile (`BROWSER` / `PROFILE` in `modules/video_material_fetcher.py`). Use a spare Google account for this, not the one that owns your channel.
 
 ## What it does
@@ -59,7 +59,8 @@ The finished video lands in `data/final/` and the thumbnail in `data/thumbnails/
 **Look and sound**
 - Word-by-word subtitles in the channel's accent colour, 3 words per line, shrunk to fit the width. They move lower during full-screen shots so they don't cover faces.
 - Whip-pan transitions on every cut. Every 3rd cut also gets a white flash and a chromatic glitch.
-- Whoosh and camera-flash sound effects on cuts. A punch sound fires on words marked `*like this*` in the script; the asterisks are stripped before text-to-speech.
+- Whoosh and camera-flash sound effects on cuts.
+- Tagged sound effects: `*word:tag*` (for example `*sprayed:sad*`) names a sound from `data/sfx_library/`. Picture tags (`pop`, `hit`, `money`...) play on the word. Reaction tags (`shock`, `sad`, `dumb`...) play after the sentence, in a pause spliced into the narration, and every later timestamp shifts to match. The pause goes into the real gap in the audio (`silencedetect`), not at Whisper's end time, which can run early, and the shot holds until the reaction ends. A plain `*word*` makes no sound. Each effect is levelled against the narration by its loudest moment, and the music dips under it. Unknown tags or going over the limits in `config.py` stop the run before any download or API call.
 - Narration uses ElevenLabs `eleven_v4` through `text_to_dialogue`, so emotion tags like `[sarcastic]` work, and is sped up 1.1x. Russian and Spanish use `eleven_multilingual_v2`.
 - Music is normalised to -34 LUFS under the voice.
 - The green-screen follow button is chroma-keyed over the last 4.6 s. The 8 s clip has its static middle cut out.
@@ -121,7 +122,7 @@ python modules/tiktok_checker.py
 - **Cards only show what the narration says.** The number check runs in code, so a made-up stat can never reach the screen.
 - **FFmpeg chromakey for the CTA.** Remotion's `OffthreadVideo` does not reliably handle VP9 alpha in Chrome Headless Shell, while FFmpeg keys the green screen cleanly as a post-process.
 - **Effects only on every 3rd cut.** The flash and glitch stay punctuation, not wallpaper.
-- **Punch sounds instead of zoom punches.** A sound on the spoken word draws attention to the narration without moving the picture.
+- **Sounds instead of zoom punches.** A sound on the spoken word draws attention to the narration without moving the picture.
 - **Voice before scene finding.** Gemini gets real sentence timings from Whisper, so cuts follow the narration rhythm.
 - **Whisper `large-v3`.** Smaller models gave word timestamps too loose for word-level subtitles.
 - **`text_to_dialogue` for English.** The plain text-to-speech endpoint ignores bracketed emotion tags.
