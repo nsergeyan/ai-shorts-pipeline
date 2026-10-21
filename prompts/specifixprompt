@@ -230,15 +230,15 @@ SCENE ACCURACY RULE: all six chase the exact moment the script references.
 OUTPUT: replace every bracket with real names. No leftover brackets.
 
 FOOTAGE REALITY CHECK (pipeline capability limits)
-This pipeline is AUTOMATED: it can only source broad, easy-to-find clips (fights, famous scenes, trailers, edits, compilations) and static screenshots. It CANNOT hunt down one exact frame, trim a one-second moment precisely, or isolate audio.
+This pipeline is AUTOMATED: it can only source broad, easy-to-find clips (fights, famous scenes, trailers, edits, compilations). It CANNOT show static screenshots, tweets or photos, and it CANNOT hunt down one exact frame, trim a one-second moment precisely, or isolate audio.
 
 THE GENERIC FOOTAGE TEST: Would this video still work if the editor just played ANY popular clips of the character/scene while the narration carries the fact? If the fact only works when the viewer sees one specific micro-moment at the exact right time — KILL IT.
 
 GREEN — plenty of broad clips exist AND the fact passes the generic footage test. Proceed.
 
-YELLOW — thin footage BUT the receipt is a static screenshot (a tweet, a set photo, a comic panel, a side-by-side of two official images, a script page). Proceed and flag "editor uses screenshot."
+YELLOW: footage of the exact moment is thin, BUT plenty of clips of the character exist and the narration carries the receipt on its own. The pipeline cannot show screenshots, tweets or set photos (it only uses video), so never rely on one. Proceed and flag "receipt is narration only."
 
-RED — fails the generic footage test, OR is audio-dependent, OR has no footage and nothing screenshot-able. KILL and take the next candidate.
+RED — fails the generic footage test, OR is audio-dependent, OR has no footage of the character. KILL and take the next candidate.
 
 JSON OUTPUT FORMAT
 

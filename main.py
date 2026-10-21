@@ -113,31 +113,64 @@ DEFAULT_CHANNEL = {
     "graphic_types": list(GRAPHIC_TYPES),
 }
 
-MANUAL_DATA = {
-"channel": "anime",
-"topic": "Attack on Titan",
-"specific_subject": "Mikasa's Headaches",
-"title": "The real reason Mikasa gets headaches in Attack on Titan",
-"youtube_queries": [
-  "Mikasa headache scenes",
-  "Mikasa Ackerman goes hard",
-  "Ymir the Founder 4k",
-  "Attack on Titan episode eighty Mikasa",
-  "Mikasa headache english dub",
-  "Attack on Titan official trailer"
-],
-"scene_query": "Mikasa holding her head in extreme pain while wearing her Survey Corps uniform. Flashbacks to Ymir the Founder as a young girl standing alone in the glowing sand of the Paths dimension staring blankly.",
-"footage_source": "stills_and_broll",
-"music_mood": "curious",
-"music_queries": [
-  "Attack on Titan Ymir theme OST instrumental",
-  "Attack on Titan Call of Silence instrumental",
-  "chill dark ambient mystery instrumental no copyright"
-],
-"music_prompt": "lo-fi curiosity bed, dark ambient synth, ninety BPM, atmospheric pads, deep cello, subtle ticking, quiet tension building slowly, short-form video background, no lyrics, exclude: aggressive beats, bright acoustic instruments",
-"voice_name": "animatoryoung",
-"spoken_word_count": 95,
-"script": "The real reason Mikasa gets headaches.\n[curious] A lot of fans blamed her Ackerman blood.\n[calm] But the last chapter *explains:suspense* it.\nYmir the Founder was looking into her mind the whole *time:shock*.\n[thoughtful] Ymir spent two thousand years as a slave to her love for King Fritz.\nWhen Mikasa was torn between Eren and the world, Ymir saw herself.\n[deadpan] Every headache was Ymir watching to see what Mikasa would choose.\nAnd Mikasa chose to cut off Eren's *head:hit* herself.\n[understated] Ymir could never do that to the man she loved. Mikasa did, and it finally set Ymir free."
+MANUAL_DATA =  {
+  "channel": "sports",
+  "sport": "ufc",
+  "lane": "fun_fact",
+  "format": "banned_countdown",
+  "topic": "Arman Tsarukyan punched at a fan on his UFC 300 walkout and was banned nine months by the Nevada commission",
+  "specific_subject": "Arman Tsarukyan",
+  "title": "Arman Tsarukyan Got BANNED For 9 Months #ufc",
+  "verification": {
+    "event_date": "13 Apr 2024 (UFC 300 walkout incident); suspension announced 25 Jun 2024 and running to 12 Jan 2025. This is an evergreen fun fact, so the 72-hour rule does not apply. Note: Tsarukyan is a UFC fighter, outside the football and F1 tier lists, so this video was made at the user's request. The format value is the closest match to the banned topic, but it is a single story rather than a countdown, so it is written in story shape.",
+    "sources": [
+      "CBS Sports: Arman Tsarukyan suspended nine months by Nevada commission after punching fan at UFC 300",
+      "Reuters via Field Level Media / Panorama.am: UFC fighter Arman Tsarukyan suspended 9 months for punching fan",
+      "theScore: Tsarukyan suspended 9 months after altercation with fan at UFC 300",
+      "Yahoo Sports: Fan apologizes for provoking Arman Tsarukyan at UFC 300, won't file lawsuit after punch",
+      "Fox News: UFC, Arman Tsarukyan avoid potential lawsuit after fan speaks out",
+      "Sherdog: Fan apologizes to Arman Tsarukyan, doesn't plan to sue UFC"
+    ],
+    "claims_checked": [
+      "Incident happened during Tsarukyan's walkout at UFC 300 in Las Vegas on 13 April 2024 -> CBS Sports; Field Level Media (Reuters)",
+      "The fight was a title eliminator against Charles Oliveira -> CBS Sports; Cageside Press",
+      "A fan flipped him off and Tsarukyan threw punches at the fan -> CBS Sports; Yahoo Sports",
+      "Security ushered him toward the cage -> Fox News",
+      "Tsarukyan beat Oliveira by split decision, his fourth straight win -> Field Level Media (Reuters); Yahoo Sports",
+      "Nevada commission issued a nine-month suspension (through 12 Jan 2025), announced 25 June 2024 -> Field Level Media (Reuters); Panorama.am; CBS Sports",
+      "$25,000 fine -> Field Level Media (Reuters); theScore",
+      "Ban put his hoped-for title fight with champion Islam Makhachev in danger -> CBS Sports; theScore",
+      "Fan Obed Ardon apologized and said he would not sue -> Yahoo Sports; Sherdog",
+      "Tsarukyan said he would give the fan a ticket to UFC 303 -> CBS Sports (the UFC reportedly also gave the fan tickets)"
+    ],
+    "footage_status": "YELLOW",
+    "footage_note": "Do not use raw UFC walkout or fight broadcast footage, because the UFC blocks it. Lean on news-report coverage, the post-fight press scrum, stills, and stock b-roll of the Las Vegas arena. Makhachev face-off clips and the fan's statement coverage are the best fillers.",
+    "punch_markers": [
+      "punches:hit -> the physical moment: Tsarukyan swings at a fan",
+      "ban:wrong -> the rule is broken and the punishment lands here",
+      "fine:money -> the fine amount, a second blow right after the ban"
+    ]
+  },
+  "youtube_queries": [
+    "Tsarukyan walkout fan UFC 300",
+    "Tsarukyan vs Oliveira highlights",
+    "UFC 300 fan Obed Ardon speaks out",
+    "Tsarukyan UFC 300 post fight press conference",
+    "T-Mobile Arena Las Vegas drone",
+    "Islam Makhachev Tsarukyan face off"
+  ],
+  "scene_query": "Arman Tsarukyan in a black UFC t-shirt speaking at a post-fight press conference table with microphones and a UFC backdrop",
+  "footage_source": "stills_and_broll",
+  "music_mood": "hype",
+  "music_queries": [
+    "fight walkout phonk instrumental no copyright",
+    "aggressive trap beat instrumental no lyrics",
+    "hype trap instrumental no copyright"
+  ],
+  "music_prompt": "Aggressive dark trap, sub-genre fight-night phonk, 145 BPM, with heavy 808 bass, a distorted cowbell loop and a roaring arena crowd swell. It starts tense and driving through the walkout and the punch, hits a deep impact boom on the ban, and cools into a quieter bass-only tail for the fan twist and the loop line. Sports short-form video background, no lyrics, exclude: [soft acoustic guitar, orchestral choir]",
+  "voice_name": "animatoryoung",
+  "script": "[curious] Arman Tsarukyan won the biggest fight of his life, then got banned for nine months. Rewind to UFC three hundred in Las Vegas. He's walking out for a title eliminator against Charles Oliveira, and a fan flips him off. [deadpan] So Tsarukyan stops and throws *punches:hit* at the guy, like he's chasing a five star GTA wanted level. [understated] Security shoves him toward the cage, and he still beats Oliveira by split decision. But in June, the Nevada commission hands him a nine-month *ban:wrong*. Plus a twenty-five thousand dollar *fine:money*. [thoughtful] And the ban puts his title shot against champion Islam Makhachev in danger. The fan? He says sorry and says he won't sue. Tsarukyan even offers him a ticket to UFC three oh three. [quietly] All of that over one middle finger, and that's why",
+  "spoken_word_count": 132
 }
 
 
@@ -669,6 +702,146 @@ def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: st
     return generate_music(music_prompt)
 
 
+def _video_title(video_path):
+    """The YouTube title saved next to a download, or the file name."""
+    title_file = os.path.splitext(video_path)[0] + ".title.txt"
+    if os.path.exists(title_file):
+        with open(title_file) as tf:
+            return tf.read().strip()
+    return os.path.basename(video_path)
+
+
+def _labeled_videos(uploaded_files, video_paths):
+    """Contents for a multi-video call: a 'Video i' label right before each file.
+    Without the labels Gemini has to guess which file is which, and it mixed them
+    up: it described a shot from Video 0 and returned it as Video 1."""
+    parts = []
+    for i, (uf, vp) in enumerate(zip(uploaded_files, video_paths)):
+        parts.append(f'Video {i}: "{_video_title(vp)}". The file right after this line is Video {i}.')
+        parts.append(uf)
+    return parts
+
+
+def _frame_jpeg(video_path, t, crop=None):
+    """One frame of a video as JPEG bytes (640 px wide), or None."""
+    vf = (f"crop={crop}," if crop else "") + "scale=640:-2"
+    try:
+        out = subprocess.run(
+            ["ffmpeg", "-v", "error", "-ss", f"{max(t, 0):.2f}", "-i", video_path,
+             "-frames:v", "1", "-vf", vf, "-f", "image2pipe", "-vcodec", "mjpeg", "-q:v", "4", "-"],
+            capture_output=True, check=True,
+        ).stdout
+        return out or None
+    except subprocess.CalledProcessError:
+        return None
+
+
+def _check_frames(client, checks, subject):
+    """
+    Independent look at real frames: for each check {"id", "frames": [jpeg bytes],
+    "should_show": text}, does the footage really show it, cleanly?
+
+    The edit plan's own visual_check is written by the same call that picked the
+    timestamp, so it confirms itself; it said "Tsarukyan walking out" over a
+    frame of a different fighter's bird coop. This call only sees the frames.
+    Returns {id: {"ok", "shows", "problem"}}; a check Gemini skips counts as failed.
+    Returns None when the call itself fails, so callers keep what they had
+    instead of rejecting everything over an API error.
+    """
+    from google.genai import types
+    contents = []
+    for c in checks:
+        contents.append(f'CHECK {c["id"]}: should show: {c["should_show"]}')
+        contents += [types.Part.from_bytes(data=f, mime_type="image/jpeg") for f in c["frames"] if f]
+    contents.append(f"""
+You are checking frames grabbed from source footage for a short video about: {subject}.
+Each CHECK above has one or two frames and what they should show.
+
+ok = true only when the frames show real footage (a filmed moment, broadcast, interview,
+press conference, anime scene or game footage) of the subject or of what "should show" names.
+ok = false when ANY of these is true:
+- a different person, character or story than the subject
+- a news or recap channel graphic: headline banners, lower thirds, quote cards, tweet
+  screenshots, or a photo placed inside a designed template
+- burned-in captions that transcribe a narrator, host or commentator (small original
+  dialogue subtitles of a show itself are fine)
+- a host, YouTuber or commentator who is not the subject
+- a channel watermark or logo covering a large part of the frame
+- a black screen, title card, intro, outro, end screen or subscribe screen
+Be strict. When unsure, ok = false.
+
+Return ONLY JSON: {{"checks": [{{"id": "<id>", "ok": true, "shows": "<what you actually see, under 12 words>", "problem": "<the rule it breaks, or empty>"}}]}}
+""")
+    for attempt in range(1, 6):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=contents,
+                config={"thinking_config": {"thinking_budget": 2048}, "response_mime_type": "application/json"},
+            )
+            break
+        except Exception as e:
+            if "503" in str(e) and attempt < 5:
+                print(f"Gemini 503 (frame check), retrying in 20s... (attempt {attempt}/5)")
+                time.sleep(20)
+            elif "429" in str(e) and attempt < 5:
+                print(f"Gemini 429 (frame check), rotating key... (attempt {attempt}/5)")
+                client = _gemini_client()
+                time.sleep(5)
+            else:
+                print(f"Frame check failed ({e}), keeping these picks unchecked")
+                return None
+    try:
+        rows = json.loads(response.text).get("checks", [])
+        return {str(r.get("id")): r for r in rows}
+    except Exception as e:
+        print(f"Frame check returned bad JSON ({e}), keeping these picks unchecked")
+        return None
+
+
+MIN_SUBJECT_SHARE = 0.3   # below this, most of the source is about something else
+
+
+def _enforce_evaluation(evaluation, video_path, client):
+    """
+    Apply the evaluation's own rules in code, then spot-check its evidence.
+
+    Gemini approved a nine-minute news roundup that was mostly other fighters,
+    because the subject appeared in it once. So: a low subject_share rejects,
+    and the frames at the claimed evidence timestamps must really show the
+    items. An item whose moment fails the check no longer counts as shown.
+    """
+    if evaluation.get("decision") != "post":
+        return evaluation
+    share = evaluation.get("subject_share")
+    if isinstance(share, (int, float)) and share < MIN_SUBJECT_SHARE:
+        evaluation["decision"] = "reject"
+        evaluation["reason"] = f"subject on screen only {share:.0%} of the video. {evaluation.get('reason', '')}"
+        return evaluation
+
+    evidence = [e for e in evaluation.get("evidence") or []
+                if isinstance(e, dict) and isinstance(e.get("at"), (int, float))][:3]
+    if not evidence:
+        return evaluation
+    checks = [{"id": str(k), "should_show": e.get("item", ""),
+               "frames": [_frame_jpeg(video_path, e["at"]), _frame_jpeg(video_path, e["at"] + 1.5)]}
+              for k, e in enumerate(evidence)]
+    results = _check_frames(client, checks, _video_title(video_path))
+    if results is None:
+        return evaluation
+    passed = [e["item"] for k, e in enumerate(evidence) if results.get(str(k), {}).get("ok")]
+    for k, e in enumerate(evidence):
+        r = results.get(str(k), {})
+        print(f"   Spot check {e['at']:.0f}s '{e.get('item')}': {'ok' if r.get('ok') else 'FAIL'} ({r.get('shows', 'no answer')})")
+    if not passed:
+        evaluation["decision"] = "reject"
+        evaluation["reason"] = f"spot check failed, the claimed moments do not show the items. {evaluation.get('reason', '')}"
+    else:
+        failed = {e["item"] for k, e in enumerate(evidence) if not results.get(str(k), {}).get("ok")}
+        evaluation["items_shown"] = [x for x in evaluation.get("items_shown") or [] if x not in failed]
+    return evaluation
+
+
 def evaluate_video_with_genai(video_path, script_text, script_items=None):
     """Upload a video to Gemini and score it for relevance, hook potential, and technical quality.
 
@@ -709,8 +882,11 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     B) Reaction/commentary video — a YouTuber or creator watches clips and reacts, talks to camera, or narrates with their own voice over the footage. REJECT IMMEDIATELY.
     C) Fan compilation with heavy custom editing, custom music, or a creator's voiceover throughout. REJECT IMMEDIATELY.
     D) Podcast/interview clip where someone is talking about the subject but not showing real action. REJECT IMMEDIATELY.
+    E) News or recap channel video: built from a designed template (headline banners, lower thirds, quote cards,
+       tweet screenshots, photos placed inside graphics), or a roundup that covers several different stories or
+       people. The subject showing up for a few seconds inside it does not make it raw footage. REJECT IMMEDIATELY.
 
-    If type B, C, or D → set decision = "reject", technical_score = 1, and stop evaluating.
+    If type B, C, D or E → set decision = "reject", technical_score = 1, and stop evaluating.
 
     STEP 0.7 — SCRIPT ITEMS:
     script_items = the concrete things the script talks about that footage could show: places, objects,
@@ -718,6 +894,12 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     {items_rule}
     items_shown = the script_items clearly visible somewhere in THIS footage. REQUIRED_SUBJECT alone on
     screen does not count as showing an item, unless the item is the subject in that exact state or place.
+    evidence = for each item in items_shown, the timestamp in seconds of its clearest moment. These frames
+    are grabbed and checked afterwards, so only list a moment you actually saw.
+
+    STEP 0.8 — SUBJECT SHARE:
+    subject_share = the fraction of the runtime (0.0-1.0) that shows real footage of REQUIRED_SUBJECT.
+    Photos inside graphics, thumbnails, tweets and other people's segments do not count.
 
     EVALUATION (1-10):
 
@@ -735,7 +917,8 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     3. Raw Technical Quality (technical_score)
        - 8-10: clean broadcast/official footage, minimal watermarks, clear enough to crop for phone.
        - 5-7: slightly blurry or minor subtitles/watermarks, still usable.
-       - 1-4: heavily pixelated, ruined by editing/watermarks, has a creator's face or persistent voiceover, unwatchable.
+       - 1-4: heavily pixelated, ruined by editing/watermarks, has a creator's face or persistent voiceover, unwatchable,
+         or burned-in captions that transcribe a narrator or commentator over most of the footage.
 
     DECISION RULES (apply in order):
     - "reject": content type is B, C, or D (reaction/commentary/podcast → automatic reject)
@@ -743,6 +926,7 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     - "reject": relevance_score <= 6  (subject barely visible, wrong character, or wrong show → reject)
     - "reject": technical_score <= 4
     - "reject": items_shown is empty (the subject is there, but nothing the script actually talks about)
+    - "reject": subject_share < 0.3 (most of the video is about something else)
     - "post":   items_shown is not empty AND relevance_score >= 7 AND hook_score >= 5 AND technical_score >= 5 AND subject_present = true
     - "revise": anything else / unsure
     
@@ -754,6 +938,8 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
       "subject_present": <true|false>,
       "script_items": ["<item>", ...],
       "items_shown": ["<items from script_items visible in this footage>"],
+      "evidence": [{{"item": "<an item from items_shown>", "at": <seconds>}}],
+      "subject_share": <0.0-1.0>,
       "relevance_score": <1-10>,
       "hook_score": <1-10>,
       "technical_score": <1-10>,
@@ -793,7 +979,7 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
             clean_text = clean_text[clean_text.find("{"):]
         if not clean_text.endswith("}"):
             clean_text = clean_text[:clean_text.rfind("}") + 1]
-        return json.loads(clean_text)
+        return _enforce_evaluation(json.loads(clean_text), video_path, client)
     except Exception as e:
         print(f"Failed to parse GenAI JSON: {e}")
         print("Raw response:", raw_text)
@@ -1186,6 +1372,22 @@ def _intro_ban(video_path, duration):
     return round(min(10.0, max(3.0, duration * 0.05)), 1)
 
 
+def _clamp_backups(backups, video_durations, intro_bans, has_outro, outro_ban):
+    """Keep the edit plan's backup picks that point inside a video's usable range."""
+    kept = []
+    for b in backups or []:
+        try:
+            vi, start = int(b["video_index"]), float(b["start"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not 0 <= vi < len(video_durations):
+            continue
+        hi = video_durations[vi] - (outro_ban if has_outro[vi] else 0.0) - 2.0
+        if intro_bans[vi] <= start <= hi:
+            kept.append({"video_index": vi, "start": round(start, 2)})
+    return kept[:2]
+
+
 def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_items=None):
     """
     Upload all approved source videos to Gemini in one call.
@@ -1253,14 +1455,7 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_it
          for i, s in enumerate(script_segments)],
         indent=2
     )
-    video_titles = []
-    for vp in video_paths:
-        title_file = os.path.splitext(vp)[0] + ".title.txt"
-        if os.path.exists(title_file):
-            with open(title_file) as tf:
-                video_titles.append(tf.read().strip())
-        else:
-            video_titles.append(os.path.basename(vp))
+    video_titles = [_video_title(vp) for vp in video_paths]
 
     channel = channel or DEFAULT_CHANNEL
     allowed_graphics = [t for t in channel.get("graphic_types", []) if t in GRAPHIC_TYPES]
@@ -1419,6 +1614,11 @@ TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
 VISUAL CHECK — required per scene:
 For each scene, look at the exact frame at `start` and write a short `visual_check` string confirming what is actually visible there. It must explicitly rule out every HARD BAN: no watermark/logo dominating the frame, no text/title card, no third-party commentator/reactor talking about the subject, no replay indicator, no black screen or transition, not in the banned intro/outro window. Remember: the subject themselves appearing in real footage (interview, press conference, broadcast moment) is fine — only flag a "talking head" if it's someone OTHER than the subject. If you notice a genuine banned element while writing this, pick a different timestamp before outputting — do not describe a violation and keep the timestamp.
 
+BACKUPS — required per scene:
+Also give `backups`: up to 2 other (video_index, start) moments that would work for the same segment,
+best first, each at least 5 seconds away from `start`. Every pick is checked on its real frames
+afterwards, and a backup replaces a pick that fails, so only give moments you actually saw.
+
 RELEVANCE NOTE — required per scene:
 Also write a short `relevance_note` string: name the exact word or phrase from that segment's text, and one sentence on how the frame at `start` visually supports it. If you cannot honestly connect the frame to specific words in the segment, that is a signal to pick a different timestamp before outputting — do not write a vague or generic relevance_note and keep the timestamp.
 
@@ -1426,8 +1626,8 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
 {{
   "scenes": [
-    {{"index": 0, "video_index": 0, "start": 12.5, "layout": "full", "focus_x": 0.42, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'pulls out a sharp V-shaped guitar', frame shows him mid-draw pulling the guitar from its case"}},
-    {{"index": 1, "video_index": 1, "start": 8.0, "layout": "framed", "focus_x": 0.5, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'strict old man who hates anything modern', frame shows him in a stern, traditional pose"}},
+    {{"index": 0, "video_index": 0, "start": 12.5, "layout": "full", "focus_x": 0.42, "visual_check": "clear action shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'pulls out a sharp V-shaped guitar', frame shows him mid-draw pulling the guitar from its case", "backups": [{{"video_index": 1, "start": 40.0}}, {{"video_index": 0, "start": 71.5}}]}},
+    {{"index": 1, "video_index": 1, "start": 8.0, "layout": "framed", "focus_x": 0.5, "visual_check": "clear mid-shot of the subject, no watermark, no text, no third-party commentator, no replay indicator", "relevance_note": "segment says 'strict old man who hates anything modern', frame shows him in a stern, traditional pose", "backups": [{{"video_index": 0, "start": 33.0}}]}},
     ...
   ],
   "graphics": [
@@ -1437,7 +1637,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 }}
 """
 
-    contents = uploaded_files + [prompt]
+    contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
 
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
@@ -1462,7 +1662,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                     _upload_and_wait(client, vp, label=f"Video {i}")
                     for i, vp in enumerate(video_paths)
                 ]
-                contents = uploaded_files + [prompt]
+                contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
                 time.sleep(5)
             else:
                 raise
@@ -1491,6 +1691,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
             asked = float(scene.get("start", 0.0))
             scene["start"] = round(min(max(asked, lo), hi), 2)
+            scene["backups"] = _clamp_backups(scene.get("backups"), video_durations, intro_bans, has_outro, OUTRO_BAN_SEC)
             if abs(scene["start"] - asked) > 1.0:
                 print(f"Scene {scene.get('index')}: Gemini start {asked:.1f}s is outside video {vi}'s usable range, "
                       f"moved to {scene['start']:.1f}s (Gemini did not check this frame)")
@@ -1519,6 +1720,67 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             start = 10.0 + 15.0 * (i // len(video_paths))
             fallback.append({"index": i, "video_index": vi, "start": round(min(start, max(dur - 12.0, 0.0)), 2)})
         return fallback, [], video_paths, uploaded_files, client
+
+
+def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject):
+    """
+    Check every planned clip on its real frames and swap in a backup when it fails.
+
+    Round 1 checks each scene's pick, later rounds check the next backup of the
+    scenes that failed. A scene with no passing candidate reuses the nearest
+    passing scene's shot: the same shot twice beats a clip of another story.
+    Starts are snapped to shot cuts here, so the frames checked are the frames used.
+    """
+    candidates = {s["index"]: [{"video_index": s["video_index"], "start": s["start"],
+                                "layout": s.get("layout"), "focus_x": s.get("focus_x")}]
+                  + [{**b, "layout": "framed"} for b in s.get("backups") or []]
+                  for s in scenes}
+    segment_by_index = dict(enumerate(script_segments))
+    chosen, last_shows = {}, {}
+    for rnd in range(3):
+        todo = [s for s in scenes if s["index"] not in chosen and rnd < len(candidates[s["index"]])]
+        if not todo:
+            break
+        checks, picks = [], {}
+        for s in todo:
+            c = dict(candidates[s["index"]][rnd])
+            video = video_paths[c["video_index"]]
+            c["start"] = _snap_to_shot_cut(video, c["start"], max_back=0.5 if s["index"] == 0 else 1.5)
+            seg = segment_by_index.get(s["index"], {})
+            mid = c["start"] + max(1.0, min(seg.get("duration", 4.0), 6.0) / 2)
+            crop = crops.get(video)
+            checks.append({"id": str(s["index"]), "should_show": f'a shot for the line "{seg.get("text", "")}"',
+                           "frames": [_frame_jpeg(video, c["start"] + 0.3, crop), _frame_jpeg(video, mid, crop)]})
+            picks[str(s["index"])] = c
+        results = _check_frames(client, checks, subject)
+        if results is None:
+            # The check itself failed: keep the remaining first picks as they are.
+            for s in todo:
+                chosen.setdefault(s["index"], picks[str(s["index"])])
+            break
+        for sid, c in picks.items():
+            r = results.get(sid, {})
+            label = "pick" if rnd == 0 else f"backup {rnd}"
+            print(f"Scene {sid} {label} (video {c['video_index']} @ {c['start']:.1f}s): "
+                  f"{'ok' if r.get('ok') else 'FAIL'}, {r.get('shows', 'no answer')}")
+            if r.get("ok"):
+                chosen[int(sid)] = c
+            else:
+                last_shows[int(sid)] = r.get("shows", "")
+
+    for s in scenes:
+        i = s["index"]
+        if i not in chosen and chosen:
+            near = min(chosen, key=lambda k: abs(k - i))
+            print(f"WARNING: scene {i} has no clean shot ({last_shows.get(i, '')}), reusing scene {near}'s shot")
+            chosen[i] = dict(chosen[near])
+        c = chosen.get(i)
+        if c:
+            s.update(video_index=c["video_index"], start=c["start"], snapped=True,
+                     layout=c.get("layout") or "framed", focus_x=c.get("focus_x") or 0.5)
+    if not chosen:
+        print("WARNING: no planned shot passed the frame check, using Gemini's picks unchecked")
+    return scenes
 
 
 MIN_FULL_SHOT = 1.0       # a full-screen crop shorter than this before the first cut isn't worth it
@@ -1662,7 +1924,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 {{"video_index": 0, "start": 12.5, "hook_lines": [{{"text": "LINE ONE", "color": "#FFE000"}}, {{"text": "LINE TWO", "color": "#FF3B30"}}]}}
 """
 
-    contents = uploaded_files + [prompt]
+    contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
 
     max_attempts = 5
     response = None
@@ -1685,7 +1947,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                     _upload_and_wait(client, vp, label=f"Video {i}")
                     for i, vp in enumerate(video_paths)
                 ]
-                contents = uploaded_files + [prompt]
+                contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
                 time.sleep(5)
             else:
                 print(f"Thumbnail selection failed: {e}")
@@ -1888,12 +2150,14 @@ def run_manual_pipeline(data):
             if len(scenes) < len(script_segments):
                 print(f"Gemini returned {len(scenes)} scenes for {len(script_segments)} segments, using available scenes only")
             crops = {v: _detect_crop(v) for v in valid_videos}
+            print("Checking every planned shot on its real frames...")
+            scenes = _verify_scenes(gemini_client, scenes, script_segments, valid_videos, crops, SUBJECT)
             for scene, segment in zip(scenes, script_segments):
                 vi = min(scene.get("video_index", 0), len(valid_videos) - 1)
                 source_video = valid_videos[vi]
                 # The hook must open on the action, so it may only back up a little.
-                start = _snap_to_shot_cut(source_video, scene["start"],
-                                          max_back=0.5 if scene["index"] == 0 else 1.5)
+                start = scene["start"] if scene.get("snapped") else _snap_to_shot_cut(
+                    source_video, scene["start"], max_back=0.5 if scene["index"] == 0 else 1.5)
                 clip_path = f"clip_{scene['index']}_{uuid.uuid4().hex[:6]}.mp4"
                 success = trim_video_to_end(
                     input_file=source_video,

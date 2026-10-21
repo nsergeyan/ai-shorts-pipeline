@@ -65,6 +65,12 @@ PENALTY_WORDS = (
     "ranking", "explained", "explaining", "breakdown", "analysis", "theory",
     "theories", "commentary", "first time", "top 10", "top 5", "iceberg", "lore",
 )
+# Title words that usually mean a news roundup: several stories in one video, with
+# the subject in only one of them (and often cut out by the most-replayed trim).
+ROUNDUP_WORDS = (
+    "breaking", "morning report", "news roundup", "roundup", "recap", "weekly",
+    "this week", "daily", "news update", "headlines",
+)
 # Title words that usually mean clean, original footage.
 BONUS_WORDS = (
     "official", "4k", "1080p", "hd", "remastered", "creditless", "no commentary",
@@ -123,6 +129,18 @@ def _has_word(text: str, word: str) -> bool:
     return re.search(rf"\b{re.escape(word)}\b", text) is not None
 
 
+def _is_roundup(title: str, query_tokens: list) -> bool:
+    """
+    True when a title packs a second, unrelated story: split on "+", "|" and
+    "!", a part of 3+ words that shares no word with the query is another
+    story ("Tsarukyan SUSPENDED + FINED! Robert Whittaker had EMERGENCY SURGERY!").
+    """
+    parts = [p.strip() for p in re.split(r"[+|!]", title) if p.strip()]
+    if len(parts) < 2:
+        return False
+    return any(len(p.split()) >= 3 and not any(_has_word(p, t) for t in query_tokens) for p in parts[1:])
+
+
 def _score_entry(entry: dict, query: str, position: int) -> float:
     """Score a search result from its title and views, before anything is downloaded.
 
@@ -138,6 +156,9 @@ def _score_entry(entry: dict, query: str, position: int) -> float:
 
     score -= 5 * sum(_has_word(title, w) for w in PENALTY_WORDS if not _has_word(query, w))
     score += min(sum(_has_word(title, w) for w in BONUS_WORDS), 2)
+    score -= 4 * sum(_has_word(title, w) for w in ROUNDUP_WORDS if not _has_word(query, w))
+    if _is_roundup(title, query_tokens):
+        score -= 4
 
     views = entry.get("view_count") or 0
     score += math.log10(views + 1) * 0.3

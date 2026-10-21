@@ -65,8 +65,8 @@ STEP 3 — FOOTAGE REALITY CHECK (MANDATORY BEFORE LOCKING)
 ═══════════════════════════════════
 FUN FACT formats are built to work WITHOUT match or race broadcasts. NEWS videos are the hardest: the moment that decided it is broadcast footage, so build them from podiums, celebrations, post-race and post-match interviews, press conferences, fan footage from the stands, and photos. The footage is the star off the pitch or out of the car, and the things in the story.
 
-- GREEN: the star exists in interviews, arrivals, paddock walks, training, red carpets or his own social posts, AND the objects or places in the story exist on video (the car model, the yacht, the mansion tour, the plane, the banned F1 car in a museum or at a festival, news reports of the crash). Proceed.
-- YELLOW: the objects exist only as photos or generic b-roll of the same model. Proceed, but flag that the editor must lean on stills and model b-roll.
+- GREEN: the star exists in interviews, arrivals, paddock walks, training, red carpets or his own social posts, AND the objects or places in the story exist on video (the car model, the yacht, the mansion tour, the plane, the banned F1 car in a museum or at a festival, broadcast or fan footage of the crash). Proceed.
+- YELLOW: the objects exist only as generic b-roll of the same model. Proceed, but flag that the editor must lean on model b-roll. Photos, tweets and news graphics cannot be used: the pipeline rejects them.
 - RED: nothing usable. Kill it and move on.
 
 COPYRIGHT: never plan a beat that only works with live match or race footage (goals, skills, fouls, overtakes, onboard laps). FIFA, UEFA, the Premier League and Formula One block it. A star at training, in the paddock, at a car launch, a demo run or a press event is fine. Historic F1 cars at Goodwood, museums and festivals are safe.
@@ -241,7 +241,10 @@ YOUTUBE QUERIES:
 Exactly 6 queries, written the way a real fan types them: short, casual, 2 to 6 words. Every query chases the SAME story.
 COVERAGE FIRST: list every object, place and event the script names (for a countdown, each numbered item). Each one gets at least one query of its own, e.g. "Messi Fort Lauderdale mansion", "Messi Ibiza villa paint", "Messi private jet tour". The pipeline keeps at most 3 source videos, and a script item with no footage gets a random shot of something else.
 Fill the remaining slots from these pools, in this order:
-1. NEWS REPORT of the main event: e.g. Grosjean crash Bahrain news, Messi Ibiza house activists news
+1. THE MOMENT ITSELF, the way people upload it (fan phone video, broadcast highlights, the club's
+   or league's own channel): e.g. Grosjean crash Bahrain, Tsarukyan walkout fan, Messi Ibiza house paint.
+   Never add "news", "breaking", "update", "reaction" or "explained": those return news-channel
+   recaps with templates, tweet screenshots and burned-in captions, which the pipeline rejects.
 2. THE STAR OFF THE PITCH, tied to an item: e.g. Messi arriving private jet, Hamilton paddock walk
 3. STOCK / B-ROLL for the hardest item to film: e.g. Fort Lauderdale waterfront mansion drone, private jet interior b roll
 NEVER use broad "documentary" or "interview" queries (Messi documentary, Messi interview family). They return hour-long videos or talking heads that show none of the script items and get rejected or go unused. Use an interview query ONLY if the script quotes the star's own words about this story.
