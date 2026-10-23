@@ -113,64 +113,66 @@ DEFAULT_CHANNEL = {
     "graphic_types": list(GRAPHIC_TYPES),
 }
 
-MANUAL_DATA =  {
+MANUAL_DATA = {
   "channel": "sports",
-  "sport": "ufc",
+  "sport": "f1",
   "lane": "fun_fact",
-  "format": "banned_countdown",
-  "topic": "Arman Tsarukyan punched at a fan on his UFC 300 walkout and was banned nine months by the Nevada commission",
-  "specific_subject": "Arman Tsarukyan",
-  "title": "Arman Tsarukyan Got BANNED For 9 Months #ufc",
+  "format": "almost_died",
+  "topic": "Max Verstappen's 51G crash at the 2021 British Grand Prix",
+  "specific_subject": "Max Verstappen, lap one collision with Lewis Hamilton at Copse, Silverstone, 18 July 2021",
+  "title": "Max Verstappen Survived A 51G CRASH #f1",
   "verification": {
-    "event_date": "13 Apr 2024 (UFC 300 walkout incident); suspension announced 25 Jun 2024 and running to 12 Jan 2025. This is an evergreen fun fact, so the 72-hour rule does not apply. Note: Tsarukyan is a UFC fighter, outside the football and F1 tier lists, so this video was made at the user's request. The format value is the closest match to the banned topic, but it is a single story rather than a countdown, so it is written in story shape.",
+    "event_date": "2021-07-18",
     "sources": [
-      "CBS Sports: Arman Tsarukyan suspended nine months by Nevada commission after punching fan at UFC 300",
-      "Reuters via Field Level Media / Panorama.am: UFC fighter Arman Tsarukyan suspended 9 months for punching fan",
-      "theScore: Tsarukyan suspended 9 months after altercation with fan at UFC 300",
-      "Yahoo Sports: Fan apologizes for provoking Arman Tsarukyan at UFC 300, won't file lawsuit after punch",
-      "Fox News: UFC, Arman Tsarukyan avoid potential lawsuit after fan speaks out",
-      "Sherdog: Fan apologizes to Arman Tsarukyan, doesn't plan to sue UFC"
+      "https://www.planetf1.com/news/max-verstappen-hospital-checks",
+      "https://www.the-race.com/formula-1/verstappen-taken-to-hospital-after-british-gp-crash/",
+      "https://www.skysports.com/f1/news/12040/12358522/",
+      "https://f1technical.net/news/23340",
+      "https://africa.espn.com/f1/story/_/id/40590355/max-verstappen-reveals-raced-blurred-vision-silverstone-crash-2021",
+      "https://motorsportweek.com/?p=171737"
     ],
     "claims_checked": [
-      "Incident happened during Tsarukyan's walkout at UFC 300 in Las Vegas on 13 April 2024 -> CBS Sports; Field Level Media (Reuters)",
-      "The fight was a title eliminator against Charles Oliveira -> CBS Sports; Cageside Press",
-      "A fan flipped him off and Tsarukyan threw punches at the fan -> CBS Sports; Yahoo Sports",
-      "Security ushered him toward the cage -> Fox News",
-      "Tsarukyan beat Oliveira by split decision, his fourth straight win -> Field Level Media (Reuters); Yahoo Sports",
-      "Nevada commission issued a nine-month suspension (through 12 Jan 2025), announced 25 June 2024 -> Field Level Media (Reuters); Panorama.am; CBS Sports",
-      "$25,000 fine -> Field Level Media (Reuters); theScore",
-      "Ban put his hoped-for title fight with champion Islam Makhachev in danger -> CBS Sports; theScore",
-      "Fan Obed Ardon apologized and said he would not sue -> Yahoo Sports; Sherdog",
-      "Tsarukyan said he would give the fan a ticket to UFC 303 -> CBS Sports (the UFC reportedly also gave the fan tickets)"
+      "The impact measured 51G -> Planet F1, The Race, Sky Sports",
+      "Crash happened on lap one at Silverstone in 2021 after contact with Hamilton at Copse -> The Race, AP via KSAT/WSLS",
+      "Hamilton's tyre touched the rear of Verstappen's Red Bull -> Sky Sports (tyre-to-tyre contact), Planet F1 (contact with the rear wheel)",
+      "Verstappen went through the gravel trap and hit the barrier -> Planet F1, Sky Sports",
+      "Speed over 150 mph (sources say 160 and 180 mph, so the script says over one hundred and fifty) -> Planet F1 (Horner, 160 mph; separate Planet F1 article, 180 mph)",
+      "Verstappen climbed out wobbly -> AP via ClickOnDetroit",
+      "Verstappen was badly winded -> The Race (Horner, severely winded), Planet F1",
+      "Race was stopped (red-flagged) -> AP via ClickOnDetroit, Planet F1",
+      "Verstappen was taken to hospital by helicopter -> f1technical (Red Bull statement, Coventry Hospital), Planet F1 (Horner, airlifted)",
+      "Hamilton won despite a ten-second penalty -> AP via WSLS, Sky Sports",
+      "Verstappen was released from hospital that evening with no major injuries -> f1technical, Beyond the Flag",
+      "Verstappen later said he struggled with blurred vision at some races after the crash -> ESPN, Motorsport Week"
     ],
     "footage_status": "YELLOW",
-    "footage_note": "Do not use raw UFC walkout or fight broadcast footage, because the UFC blocks it. Lean on news-report coverage, the post-fight press scrum, stills, and stock b-roll of the Las Vegas arena. Makhachev face-off clips and the fan's statement coverage are the best fillers.",
+    "footage_note": "Verstappen exists in paddock walks, press events and Red Bull launches. The crash itself only exists as broadcast or fan footage, which Formula One may block, so the editor should lean on fan-shot Copse and Silverstone footage plus helicopter, hospital and Silverstone track b-roll. Photos, tweets and news graphics are rejected by the pipeline. Title says Survived rather than Almost DIED because every source says he was released the same night with no major injuries.",
     "punch_markers": [
-      "punches:hit -> the physical moment: Tsarukyan swings at a fan",
-      "ban:wrong -> the rule is broken and the punishment lands here",
-      "fine:money -> the fine amount, a second blow right after the ban"
+      "barrier:hit -> the moment the car slams into the wall",
+      "helicopter:suspense -> the clock starts and the viewer fears how bad it is",
+      "blurred:sad -> the lasting cost of the crash years later"
     ]
   },
   "youtube_queries": [
-    "Tsarukyan walkout fan UFC 300",
-    "Tsarukyan vs Oliveira highlights",
-    "UFC 300 fan Obed Ardon speaks out",
-    "Tsarukyan UFC 300 post fight press conference",
-    "T-Mobile Arena Las Vegas drone",
-    "Islam Makhachev Tsarukyan face off"
+    "Verstappen Silverstone crash 2021",
+    "Verstappen Hamilton Copse crash fan video",
+    "Verstappen 51G crash",
+    "Verstappen helicopter Coventry hospital",
+    "Max Verstappen paddock walk Silverstone",
+    "Silverstone Copse corner drone"
   ],
-  "scene_query": "Arman Tsarukyan in a black UFC t-shirt speaking at a post-fight press conference table with microphones and a UFC backdrop",
+  "scene_query": "Max Verstappen in a navy Red Bull race suit and cap walking through the Silverstone paddock past team garages",
   "footage_source": "stills_and_broll",
-  "music_mood": "hype",
+  "music_mood": "suspense",
   "music_queries": [
-    "fight walkout phonk instrumental no copyright",
-    "aggressive trap beat instrumental no lyrics",
-    "hype trap instrumental no copyright"
+    "dark cinematic suspense trap instrumental no copyright",
+    "tense sports documentary background music instrumental",
+    "suspense trap beat instrumental no copyright"
   ],
-  "music_prompt": "Aggressive dark trap, sub-genre fight-night phonk, 145 BPM, with heavy 808 bass, a distorted cowbell loop and a roaring arena crowd swell. It starts tense and driving through the walkout and the punch, hits a deep impact boom on the ban, and cools into a quieter bass-only tail for the fan twist and the loop line. Sports short-form video background, no lyrics, exclude: [soft acoustic guitar, orchestral choir]",
+  "music_prompt": "Cinematic suspense with dark trap undertones, 128 BPM, ticking clock, tense string tremolo and a deep impact boom. Starts quiet and tight through the lap one setup, tension builds as the spin starts, then drops hard on the barrier hit and the helicopter line, and fades to a low brooding hum for the blurred vision reveal. sports short-form video background, no lyrics, exclude: [upbeat pop, comedic sound effects]",
   "voice_name": "animatoryoung",
-  "script": "[curious] Arman Tsarukyan won the biggest fight of his life, then got banned for nine months. Rewind to UFC three hundred in Las Vegas. He's walking out for a title eliminator against Charles Oliveira, and a fan flips him off. [deadpan] So Tsarukyan stops and throws *punches:hit* at the guy, like he's chasing a five star GTA wanted level. [understated] Security shoves him toward the cage, and he still beats Oliveira by split decision. But in June, the Nevada commission hands him a nine-month *ban:wrong*. Plus a twenty-five thousand dollar *fine:money*. [thoughtful] And the ban puts his title shot against champion Islam Makhachev in danger. The fan? He says sorry and says he won't sue. Tsarukyan even offers him a ticket to UFC three oh three. [quietly] All of that over one middle finger, and that's why",
-  "spoken_word_count": 132
+  "script": "Max Verstappen hit a wall with fifty-one times the force of gravity. [calm] It's lap one at Silverstone in twenty twenty-one, and Max is fighting Lewis Hamilton into Copse. [curious] Hamilton's tyre clips the back of the Red Bull. [deadpan] Max spins like he hit a banana peel in Mario Kart, except there's no respawn. He goes through the gravel and into the *barrier:hit* at over one hundred and fifty miles an hour. [quietly] The crash measures fifty-one G, and he climbs out wobbly and badly winded. They fly him to hospital by *helicopter:suspense* while the race is stopped. Hamilton STILL wins, even with a ten-second penalty. [thoughtful] Max is released that night with NO major injuries. But years later, he admitted he sometimes raced with *blurred:sad* vision afterward. He climbs back in and keeps racing, and that's why...",
+  "spoken_word_count": 134
 }
 
 
@@ -793,10 +795,19 @@ Return ONLY JSON: {{"checks": [{{"id": "<id>", "ok": true, "shows": "<what you a
                 return None
     try:
         rows = json.loads(response.text).get("checks", [])
-        return {str(r.get("id")): r for r in rows}
     except Exception as e:
         print(f"Frame check returned bad JSON ({e}), keeping these picks unchecked")
         return None
+    # Gemini sometimes echoes the prompt label ("CHECK 0") instead of the bare id.
+    results = {}
+    for r in rows:
+        if isinstance(r, dict):
+            m = re.search(r"\d+", str(r.get("id", "")))
+            results[m.group() if m else str(r.get("id"))] = r
+    if not any(str(c["id"]) in results for c in checks):
+        print(f"Frame check answered none of the checks ({len(rows)} rows), keeping these picks unchecked")
+        return None
+    return results
 
 
 MIN_SUBJECT_SHARE = 0.3   # below this, most of the source is about something else
@@ -819,8 +830,14 @@ def _enforce_evaluation(evaluation, video_path, client):
         evaluation["reason"] = f"subject on screen only {share:.0%} of the video. {evaluation.get('reason', '')}"
         return evaluation
 
+    try:
+        duration = _probe_duration(video_path)
+    except Exception:
+        duration = float("inf")
+    # A timestamp past the end has no frame to grab, so it can't prove anything either way.
     evidence = [e for e in evaluation.get("evidence") or []
-                if isinstance(e, dict) and isinstance(e.get("at"), (int, float))][:3]
+                if isinstance(e, dict) and isinstance(e.get("at"), (int, float))
+                and 0 <= e["at"] < duration - 1.5][:3]
     if not evidence:
         return evaluation
     checks = [{"id": str(k), "should_show": e.get("item", ""),
@@ -831,13 +848,16 @@ def _enforce_evaluation(evaluation, video_path, client):
         return evaluation
     passed = [e["item"] for k, e in enumerate(evidence) if results.get(str(k), {}).get("ok")]
     for k, e in enumerate(evidence):
-        r = results.get(str(k), {})
-        print(f"   Spot check {e['at']:.0f}s '{e.get('item')}': {'ok' if r.get('ok') else 'FAIL'} ({r.get('shows', 'no answer')})")
+        r = results.get(str(k))
+        verdict = "unchecked" if r is None else ("ok" if r.get("ok") else "FAIL")
+        print(f"   Spot check {e['at']:.0f}s '{e.get('item')}': {verdict} ({(r or {}).get('shows', 'no answer')})")
     if not passed:
         evaluation["decision"] = "reject"
         evaluation["reason"] = f"spot check failed, the claimed moments do not show the items. {evaluation.get('reason', '')}"
     else:
-        failed = {e["item"] for k, e in enumerate(evidence) if not results.get(str(k), {}).get("ok")}
+        # Only a real "no" removes an item; a check Gemini skipped proves nothing.
+        failed = {e["item"] for k, e in enumerate(evidence)
+                  if str(k) in results and not results[str(k)].get("ok")}
         evaluation["items_shown"] = [x for x in evaluation.get("items_shown") or [] if x not in failed]
     return evaluation
 
@@ -1759,10 +1779,12 @@ def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject)
                 chosen.setdefault(s["index"], picks[str(s["index"])])
             break
         for sid, c in picks.items():
-            r = results.get(sid, {})
+            r = results.get(sid)
             label = "pick" if rnd == 0 else f"backup {rnd}"
+            verdict = "unchecked" if r is None else ("ok" if r.get("ok") else "FAIL")
             print(f"Scene {sid} {label} (video {c['video_index']} @ {c['start']:.1f}s): "
-                  f"{'ok' if r.get('ok') else 'FAIL'}, {r.get('shows', 'no answer')}")
+                  f"{verdict}, {(r or {}).get('shows', 'no answer')}")
+            r = r or {"ok": True}   # a check Gemini skipped proves nothing, keep the pick
             if r.get("ok"):
                 chosen[int(sid)] = c
             else:
