@@ -126,3 +126,9 @@ python modules/tiktok_checker.py
 - **Voice before scene finding.** Gemini gets real sentence timings from Whisper, so cuts follow the narration rhythm.
 - **Whisper `large-v3`.** Smaller models gave word timestamps too loose for word-level subtitles.
 - **`text_to_dialogue` for English.** The plain text-to-speech endpoint ignores bracketed emotion tags.
+
+## License
+
+Licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Free for noncommercial use. Commercial use requires permission. For commercial licensing, contact sergeyan.narek@gmail.com.
+
+Versions released before this change remain under the MIT License.
