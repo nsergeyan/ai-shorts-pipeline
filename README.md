@@ -1,3 +1,4 @@
+[![XERJ Corpus Hub contributor](https://hub.xerj.org/contributors/nsergeyan/badge.svg)](https://hub.xerj.org/contributors/nsergeyan)
 # AI Shorts Pipeline
 
 Turns one structured JSON script into a finished 1080x1920 YouTube Short / TikTok, with no manual editing. It finds and vets footage on YouTube, generates narration and music, cuts the clips to the narration, adds word-level subtitles and on-screen graphics, and renders the result with Remotion and FFmpeg. A matching thumbnail comes out alongside the video.
