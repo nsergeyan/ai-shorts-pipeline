@@ -8,6 +8,7 @@ from modules.video_material_fetcher import (
 )
 
 MUSIC_LENGTH_MS = 90_000
+MAX_MUSIC_SOURCE_SECONDS = 600
 
 
 def generate_music(prompt: str) -> str | None:
@@ -66,6 +67,10 @@ def fetch_music_from_youtube(query: str) -> str | None:
             "preferredquality": "192",
         }],
         "noplaylist": True,
+        # Skip hour-long mixes: at the 3 MB/s rate limit they take minutes to download
+        # and are too long for Gemini to evaluate. Take the first result under 10 min.
+        "match_filter": yt_dlp.utils.match_filter_func(f"duration < {MAX_MUSIC_SOURCE_SECONDS}"),
+        "max_downloads": 1,
         "quiet": True,
         "no_warnings": True,
         **POLITE_OPTS,
@@ -80,7 +85,9 @@ def fetch_music_from_youtube(query: str) -> str | None:
         label = "with cookies" if use_cookies else "no cookies"
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([f"ytsearch1:{query}"])
+                ydl.download([f"ytsearch5:{query}"])
+        except yt_dlp.utils.MaxDownloadsReached:
+            pass   # raised after the first file is saved, it is the normal stop
         except Exception as e:
             log.errors.append(str(e))
 

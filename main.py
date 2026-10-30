@@ -115,64 +115,63 @@ DEFAULT_CHANNEL = {
 
 MANUAL_DATA = {
   "channel": "sports",
-  "sport": "f1",
+  "sport": "football",
   "lane": "fun_fact",
-  "format": "almost_died",
-  "topic": "Max Verstappen's 51G crash at the 2021 British Grand Prix",
-  "specific_subject": "Max Verstappen, lap one collision with Lewis Hamilton at Copse, Silverstone, 18 July 2021",
-  "title": "Max Verstappen Survived A 51G CRASH #f1",
+  "format": "secret_weakness",
+  "topic": "Cristiano Ronaldo's racing heart surgery at fifteen",
+  "specific_subject": "At fifteen, in the Sporting CP academy, Ronaldo was diagnosed with tachycardia (a racing heart, even at rest) that could have ended his career. Doctors used a laser to burn the faulty spot. He went in that morning, came out that afternoon, and was back training within days. At eighteen, Manchester United signed him.",
+  "title": "Cristiano Ronaldo's SECRET Heart Surgery #football",
   "verification": {
-    "event_date": "2021-07-18",
+    "event_date": "Not a news item. The surgery happened at age fifteen, around 2000 (Ronaldo was born 5 February 1985). News lane check: El Clasico (25 Oct) is outside 72 hours. Midweek Carabao Cup games (27 and 28 Oct) had no tier one or tier two names deciding them, so every news candidate was killed on NAME POWER.",
     "sources": [
-      "https://www.planetf1.com/news/max-verstappen-hospital-checks",
-      "https://www.the-race.com/formula-1/verstappen-taken-to-hospital-after-british-gp-crash/",
-      "https://www.skysports.com/f1/news/12040/12358522/",
-      "https://f1technical.net/news/23340",
-      "https://africa.espn.com/f1/story/_/id/40590355/max-verstappen-reveals-raced-blurred-vision-silverstone-crash-2021",
-      "https://motorsportweek.com/?p=171737"
+      "https://olympics.com/fr/athletes/cristiano-ronaldo-dos-santos-aveiro",
+      "https://republicworld.com/sports/football/how-cristiano-ronaldo-heart-surgery-at-15-almost-derailed-his-career (cites Dolores Aveiro, Daily Mail 2009)",
+      "https://sportskeeda.com/football/news-cristiano-ronaldo-s-heart-surgery-at-15-almost-derailed-his-career",
+      "https://portugoal.net/portuguese-abroad/1559-a-few-non-football-facts-about-cristiano-ronaldo",
+      "https://www.citizen.co.za/south-coast-herald/sports-news/2017/12/08/cristiano-ronaldo-football-miracle-that-almost-never-was-heres-why/",
+      "Times of India via news.talkwithrattan.com (tachycardia, laser ablation, Sporting youth academy)"
     ],
     "claims_checked": [
-      "The impact measured 51G -> Planet F1, The Race, Sky Sports",
-      "Crash happened on lap one at Silverstone in 2021 after contact with Hamilton at Copse -> The Race, AP via KSAT/WSLS",
-      "Hamilton's tyre touched the rear of Verstappen's Red Bull -> Sky Sports (tyre-to-tyre contact), Planet F1 (contact with the rear wheel)",
-      "Verstappen went through the gravel trap and hit the barrier -> Planet F1, Sky Sports",
-      "Speed over 150 mph (sources say 160 and 180 mph, so the script says over one hundred and fifty) -> Planet F1 (Horner, 160 mph; separate Planet F1 article, 180 mph)",
-      "Verstappen climbed out wobbly -> AP via ClickOnDetroit",
-      "Verstappen was badly winded -> The Race (Horner, severely winded), Planet F1",
-      "Race was stopped (red-flagged) -> AP via ClickOnDetroit, Planet F1",
-      "Verstappen was taken to hospital by helicopter -> f1technical (Red Bull statement, Coventry Hospital), Planet F1 (Horner, airlifted)",
-      "Hamilton won despite a ten-second penalty -> AP via WSLS, Sky Sports",
-      "Verstappen was released from hospital that evening with no major injuries -> f1technical, Beyond the Flag",
-      "Verstappen later said he struggled with blurred vision at some races after the crash -> ESPN, Motorsport Week"
+      "Ronaldo had heart surgery at age fifteen -> Olympics.com; Sportskeeda; Citizen.co.za",
+      "He was in the Sporting academy and had moved to Lisbon, away from his family in Madeira -> Olympics.com; Times of India",
+      "About twenty-six years ago -> derived: born Feb 1985, age fifteen = 2000, and 2026 minus 2000 = 26",
+      "His heart raced even when he was not running or was at rest -> Sportskeeda (Dolores Aveiro quote); Times of India",
+      "The condition is called tachycardia (racing heart) -> Olympics.com; Times of India; Sportskeeda",
+      "It could have ended his career -> Olympics.com; Khelnow",
+      "His mother was worried he might have to give up football -> Republic World citing Dolores Aveiro to the Daily Mail, 2009; Bollywoodshaadis citing the same interview",
+      "Doctors used a laser to burn (cauterise) the source of the problem -> Sportskeeda (Dolores Aveiro quote); Times of India",
+      "Operated on in the morning, out by the end of the afternoon -> Sportskeeda (Dolores Aveiro quote); Republic World",
+      "Back at training within a few days -> Portugoal; Citizen.co.za; Republic World",
+      "Manchester United signed him at eighteen (2003) -> his Wikipedia biography as summarised in the Steemit history; Olympics.com mentions the move to Manchester United"
     ],
     "footage_status": "YELLOW",
-    "footage_note": "Verstappen exists in paddock walks, press events and Red Bull launches. The crash itself only exists as broadcast or fan footage, which Formula One may block, so the editor should lean on fan-shot Copse and Silverstone footage plus helicopter, hospital and Silverstone track b-roll. Photos, tweets and news graphics are rejected by the pipeline. Title says Survived rather than Almost DIED because every source says he was released the same night with no major injuries.",
+    "footage_note": "Ronaldo is fully covered: old teenage Sporting CP clips, his 2003 Manchester United unveiling, and current training footage. The surgery itself exists only as generic medical b-roll, so the editor must lean on cardiac ablation and hospital b-roll for the laser beat. No live match footage is needed anywhere.",
     "punch_markers": [
-      "barrier:hit -> the moment the car slams into the wall",
-      "helicopter:suspense -> the clock starts and the viewer fears how bad it is",
-      "blurred:sad -> the lasting cost of the crash years later"
+      "laser:pop -> the moment the tool that saves his career appears on screen",
+      "afternoon:shock -> the unbelievable fact: heart surgery in the morning, home by the afternoon",
+      "sign:join -> the payoff arrival at Manchester United, the kid who almost quit becomes a signing"
     ]
   },
   "youtube_queries": [
-    "Verstappen Silverstone crash 2021",
-    "Verstappen Hamilton Copse crash fan video",
-    "Verstappen 51G crash",
-    "Verstappen helicopter Coventry hospital",
-    "Max Verstappen paddock walk Silverstone",
-    "Silverstone Copse corner drone"
+    "young Ronaldo Sporting academy",
+    "Ronaldo 16 years old Sporting",
+    "Ronaldo Manchester United unveiling 2003",
+    "Ronaldo training Al Nassr",
+    "cardiac ablation procedure",
+    "hospital heart monitor b roll"
   ],
-  "scene_query": "Max Verstappen in a navy Red Bull race suit and cap walking through the Silverstone paddock past team garages",
+  "scene_query": "A skinny teenage Cristiano Ronaldo with spiky dark hair in a green and white Sporting Lisbon training kit, jogging and doing ball drills on a youth academy training pitch",
   "footage_source": "stills_and_broll",
-  "music_mood": "suspense",
+  "music_mood": "dramatic",
   "music_queries": [
-    "dark cinematic suspense trap instrumental no copyright",
-    "tense sports documentary background music instrumental",
-    "suspense trap beat instrumental no copyright"
+    "Time Hans Zimmer instrumental",
+    "emotional football edit piano instrumental no copyright",
+    "dramatic cinematic piano instrumental no copyright"
   ],
-  "music_prompt": "Cinematic suspense with dark trap undertones, 128 BPM, ticking clock, tense string tremolo and a deep impact boom. Starts quiet and tight through the lap one setup, tension builds as the spin starts, then drops hard on the barrier hit and the helicopter line, and fades to a low brooding hum for the blurred vision reveal. sports short-form video background, no lyrics, exclude: [upbeat pop, comedic sound effects]",
+  "music_prompt": "Emotional cinematic underscore with a modern trap edge, 85 BPM. A soft heartbeat-style kick drum pulses through the setup, a tense string tremolo builds as the racing heart and career threat land, and a lone piano melody takes over for the surgery reveal. Deep 808 bass and swelling strings rise when he is back training and signing for the big club, then fade into a quiet hopeful piano note for the loop. Sports short-form video background, no lyrics, exclude: goofy comedic sound effects, aggressive phonk cowbells",
   "voice_name": "animatoryoung",
-  "script": "Max Verstappen hit a wall with fifty-one times the force of gravity. [calm] It's lap one at Silverstone in twenty twenty-one, and Max is fighting Lewis Hamilton into Copse. [curious] Hamilton's tyre clips the back of the Red Bull. [deadpan] Max spins like he hit a banana peel in Mario Kart, except there's no respawn. He goes through the gravel and into the *barrier:hit* at over one hundred and fifty miles an hour. [quietly] The crash measures fifty-one G, and he climbs out wobbly and badly winded. They fly him to hospital by *helicopter:suspense* while the race is stopped. Hamilton STILL wins, even with a ten-second penalty. [thoughtful] Max is released that night with NO major injuries. But years later, he admitted he sometimes raced with *blurred:sad* vision afterward. He climbs back in and keeps racing, and that's why...",
-  "spoken_word_count": 134
+  "script": "Cristiano Ronaldo had heart surgery when he was just fifteen years old. [curious] Rewind about twenty-six years. Ronaldo is a skinny kid at the Sporting academy, far from home. His heart is racing. Not after a sprint, but while he's just resting. [thoughtful] Doctors call it tachycardia, basically a heart stuck in fast mode, and it could END his career before it starts. His mom later said she was worried he would have to quit football. [understated] So doctors use a *laser:pop* to burn the tiny spot causing the problem. And the crazy part... he goes in that morning and walks out the same *afternoon:shock*. [deadpan] A few days later he's back at training, like a FIFA career mode player skipping the injury screen. At eighteen, Manchester United *sign:join* him. [softly] The heart that almost ended his career never stopped him, and that's why...",
+  "spoken_word_count": 139
 }
 
 
@@ -702,6 +701,29 @@ def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: st
     if queries:
         print("No YouTube music approved, falling back to ElevenLabs")
     return generate_music(music_prompt)
+
+
+def _prepare_narration(script_text: str, voice_name: str, punch_words: list, sfx_seed: str):
+    """Voice, word timestamps and tagged sound effects. Needs only the script, so it runs
+    in the background while footage is searched. Returns (audio_path, words_data, tagged_sfx)."""
+    print(f"Generating voice ({voice_name})...")
+    audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
+    audio_path = generate_voice(script_text, audio_filename, voice_name, LANGUAGE)
+
+    print("Transcribing for scene sync...")
+    if LANGUAGE == "es":
+        print("Spanish detected, skipping subtitles.")
+        words_data = None
+    else:
+        words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
+
+    tagged_sfx = []
+    if config.SFX_ENABLED and any(t for _w, _n, t in punch_words):
+        if words_data:
+            words_data, tagged_sfx = _place_tagged_sfx(punch_words, words_data, audio_path, sfx_seed)
+        else:
+            print("No word timestamps, skipping tagged sound effects")
+    return audio_path, words_data, tagged_sfx
 
 
 def _video_title(video_path):
@@ -2042,6 +2064,12 @@ def run_manual_pipeline(data):
         print(f"topic: {TOPIC}")
         print(f"   Script Length: {len(SCRIPT_TEXT)} chars")
 
+        # Voice and Whisper only need the script, so they run while footage is searched
+        print("Starting voice in background...")
+        voice_executor = ThreadPoolExecutor(max_workers=1)
+        voice_future = voice_executor.submit(
+            _prepare_narration, SCRIPT_TEXT, VOICE_NAME, _punch_words, data.get("title") or TOPIC)
+
         print("Fetching visuals...")
 
         rejected_videos = []
@@ -2132,25 +2160,10 @@ def run_manual_pipeline(data):
         executor = ThreadPoolExecutor(max_workers=1)
         music_future = executor.submit(_resolve_music, MUSIC_QUERIES, MUSIC_PROMPT, TOPIC, SCRIPT_TEXT)
 
-        # Voice must come before scene finding so Whisper timestamps drive the cuts
-        print(f"Generating voice ({VOICE_NAME})...")
-        audio_filename = f"narration_{random.randint(1000, 9999)}.mp3"
-        audio_path = generate_voice(SCRIPT_TEXT, audio_filename, VOICE_NAME, LANGUAGE)
-
-        print("Transcribing for scene sync...")
-        if LANGUAGE == "es":
-            print("Spanish detected, skipping subtitles.")
-            words_data = None
-        else:
-            words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
-
-        tagged_sfx = []
-        if config.SFX_ENABLED and any(t for _w, _n, t in _punch_words):
-            if words_data:
-                words_data, tagged_sfx = _place_tagged_sfx(
-                    _punch_words, words_data, audio_path, data.get("title") or TOPIC)
-            else:
-                print("No word timestamps, skipping tagged sound effects")
+        # Voice must be done before scene finding so Whisper timestamps drive the cuts
+        print("Waiting for voice...")
+        audio_path, words_data, tagged_sfx = voice_future.result()
+        voice_executor.shutdown(wait=False)
 
         clip_paths = []
         clip_meta = []      # per clip: layout, focusX, fullUntil (aligned with clip_paths)
@@ -2244,6 +2257,13 @@ def run_manual_pipeline(data):
         safe_name = re.sub(r'[^A-Za-z0-9]+', '_', _hook_text(data.get("title", "")) or SUBJECT).strip('_')[:60]
         final_filename = f"Short_{safe_name}_{random.randint(10, 99)}.mp4"
 
+        # The thumbnail is one frame, so render it alongside the main video instead of after it
+        thumb_executor = ThreadPoolExecutor(max_workers=1)
+        thumb_future = None
+        if thumb_frame_path and os.path.exists(thumb_frame_path):
+            thumb_filename = os.path.splitext(final_filename)[0] + ".png"
+            thumb_future = thumb_executor.submit(render_thumbnail, thumb_frame_path, thumb_hook_lines, thumb_filename)
+
         print("Starting video editing...")
         final_path = merge_audio_video(
             video_paths=clip_paths,
@@ -2263,10 +2283,10 @@ def run_manual_pipeline(data):
 
         print(f"\nDONE! Saved to: {final_path}")
 
-        if thumb_frame_path and os.path.exists(thumb_frame_path):
+        if thumb_future:
             try:
-                thumb_filename = os.path.splitext(final_filename)[0] + ".png"
-                thumb_png = render_thumbnail(thumb_frame_path, thumb_hook_lines, thumb_filename)
+                thumb_png = thumb_future.result()
+                thumb_executor.shutdown(wait=False)
                 if EMBED_THUMBNAIL_FRAME:
                     append_thumbnail_frame(final_path, thumb_png, THUMBNAIL_FRAME_DURATION, THUMBNAIL_FRAME_POSITION)
             except Exception as e:

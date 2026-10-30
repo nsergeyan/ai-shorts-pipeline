@@ -451,7 +451,7 @@ def merge_audio_video(
                 "--fps", "30",
                 "--codec", "h264",
                 "--jpeg-quality", "95",
-                "--concurrency", "4",
+                "--concurrency", "8",
             ],
             check=True,
             cwd=REMOTION_DIR,
