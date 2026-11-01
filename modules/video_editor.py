@@ -149,7 +149,7 @@ def _start_asset_server(serve_dir: str):
     def handler(*args, **kwargs):
         return _SilentFileServer(*args, directory=serve_dir, **kwargs)
 
-    httpd = http.server.HTTPServer(("127.0.0.1", port), handler)
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", port), handler)
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
     return httpd, port
@@ -452,6 +452,7 @@ def merge_audio_video(
                 "--codec", "h264",
                 "--jpeg-quality", "95",
                 "--concurrency", "8",
+                "--timeout", "60000",
             ],
             check=True,
             cwd=REMOTION_DIR,

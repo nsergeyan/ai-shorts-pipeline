@@ -115,63 +115,67 @@ DEFAULT_CHANNEL = {
 
 MANUAL_DATA = {
   "channel": "sports",
-  "sport": "football",
-  "lane": "fun_fact",
-  "format": "secret_weakness",
-  "topic": "Cristiano Ronaldo's racing heart surgery at fifteen",
-  "specific_subject": "At fifteen, in the Sporting CP academy, Ronaldo was diagnosed with tachycardia (a racing heart, even at rest) that could have ended his career. Doctors used a laser to burn the faulty spot. He went in that morning, came out that afternoon, and was back training within days. At eighteen, Manchester United signed him.",
-  "title": "Cristiano Ronaldo's SECRET Heart Surgery #football",
+  "sport": "f1",
+  "lane": "news",
+  "format": "news_why",
+  "topic": "Lewis Hamilton takes his first Ferrari pole at the 2026 Mexico City Grand Prix by 0.009s",
+  "specific_subject": "Lewis Hamilton, Mexico City GP qualifying, 31 October 2026: he was fourth after the first Q3 runs and behind Charles Leclerc all weekend, then beat George Russell's new top time on the final run by 0.009s",
+  "title": "How Lewis Hamilton Got His First Ferrari POLE #f1",
   "verification": {
-    "event_date": "Not a news item. The surgery happened at age fifteen, around 2000 (Ronaldo was born 5 February 1985). News lane check: El Clasico (25 Oct) is outside 72 hours. Midweek Carabao Cup games (27 and 28 Oct) had no tier one or tier two names deciding them, so every news candidate was killed on NAME POWER.",
+    "event_date": "2026-10-31 (Mexico City GP qualifying, Autodromo Hermanos Rodriguez). About 19 hours before the brief's real date of 2026-11-01, so inside the 72-hour window and also inside 24 hours, which exempts it from the lane-balance penalty. The race itself starts at 14:00 local on 1 November and had not run when this was written.",
     "sources": [
-      "https://olympics.com/fr/athletes/cristiano-ronaldo-dos-santos-aveiro",
-      "https://republicworld.com/sports/football/how-cristiano-ronaldo-heart-surgery-at-15-almost-derailed-his-career (cites Dolores Aveiro, Daily Mail 2009)",
-      "https://sportskeeda.com/football/news-cristiano-ronaldo-s-heart-surgery-at-15-almost-derailed-his-career",
-      "https://portugoal.net/portuguese-abroad/1559-a-few-non-football-facts-about-cristiano-ronaldo",
-      "https://www.citizen.co.za/south-coast-herald/sports-news/2017/12/08/cristiano-ronaldo-football-miracle-that-almost-never-was-heres-why/",
-      "Times of India via news.talkwithrattan.com (tachycardia, laser ablation, Sporting youth academy)"
+      "https://www.formula1.com/en/latest/article/hamilton-clinches-first-pole-with-ferrari-in-qualifying-at-the-mexico-city-gp.4GffzFhlnOxOjbHHMc0AJI",
+      "https://www.formula1.com/en/results/2026/races/1298/mexico/qualifying",
+      "https://www.skysports.com/f1/news/13606015/mexico-city-gp-qualifying-lewis-hamilton-claims-first-pole-position-for-ferrari-by-edging-out-mercedes-george-russell",
+      "https://www.skysports.com/f1/news/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp",
+      "https://www.the-race.com/formula-1/hamilton-takes-first-ferrari-gp-pole-in-mexico/",
+      "https://www.gpfans.com/en/f1-news/1092267/f1-qualifying-results-2026-mexican-grand-prix-positions-times/",
+      "https://www.motorsport.com/f1/news/f1-mexico-gp-quali-report/10870286/",
+      "https://www.manilatimes.net/2026/11/01/sports/hamilton-takes-record-105th-pole-and-first-for-ferrari-as-antonelli-lurks/2458837"
     ],
     "claims_checked": [
-      "Ronaldo had heart surgery at age fifteen -> Olympics.com; Sportskeeda; Citizen.co.za",
-      "He was in the Sporting academy and had moved to Lisbon, away from his family in Madeira -> Olympics.com; Times of India",
-      "About twenty-six years ago -> derived: born Feb 1985, age fifteen = 2000, and 2026 minus 2000 = 26",
-      "His heart raced even when he was not running or was at rest -> Sportskeeda (Dolores Aveiro quote); Times of India",
-      "The condition is called tachycardia (racing heart) -> Olympics.com; Times of India; Sportskeeda",
-      "It could have ended his career -> Olympics.com; Khelnow",
-      "His mother was worried he might have to give up football -> Republic World citing Dolores Aveiro to the Daily Mail, 2009; Bollywoodshaadis citing the same interview",
-      "Doctors used a laser to burn (cauterise) the source of the problem -> Sportskeeda (Dolores Aveiro quote); Times of India",
-      "Operated on in the morning, out by the end of the afternoon -> Sportskeeda (Dolores Aveiro quote); Republic World",
-      "Back at training within a few days -> Portugoal; Citizen.co.za; Republic World",
-      "Manchester United signed him at eighteen (2003) -> his Wikipedia biography as summarised in the Steemit history; Olympics.com mentions the move to Manchester United"
+      "Hamilton took pole at the 2026 Mexico City GP, his first grand prix pole with Ferrari -> formula1.com report; Sky Sports; The Race",
+      "Pole margin over George Russell was 0.009s (1:16.514 vs 1:16.523) -> formula1.com official qualifying results; Sky Sports; Motorsport.com; The Race",
+      "Leclerc topped both Friday practice sessions -> formula1.com report (Leclerc held P1 in FP1 and FP2; Ferrari strongest on Friday); Sky Sports (Hamilton was outpaced by Leclerc all weekend)",
+      "On the first Q3 runs Leclerc went more than four tenths clear of Hamilton -> formula1.com report (Hamilton 1:17.069, Leclerc then went P1 by more than four tenths); GPFans (Hamilton was P4 after the first Q3 runs)",
+      "Hamilton was fourth after his first Q3 run -> GPFans; The Race (he messed up his banker lap early in Q3)",
+      "On the final runs Russell jumped to P1 before Hamilton beat it -> formula1.com report; Motorsport.com (Russell took provisional pole from Leclerc on his final lap)",
+      "Hamilton produced his best lap on the final attempt -> Sky Sports (best lap when it mattered most, end of Q3); The Race (no mistake on his final attempt); GPFans (pole set on his second Q3 run)",
+      "105th career pole, an F1 record -> formula1.com report; Sky Sports; Manila Times (AFP); The Race",
+      "First pole since the 2023 Hungarian GP -> formula1.com report; GPFans; Manila Times (AFP); Sky Sports (first since July 2023)",
+      "Hamilton is 41 and the oldest pole-sitter since 1982 (Mario Andretti) -> The Race; Sky Sports; GPFans; Manila Times (AFP)",
+      "Hamilton and Russell are the only drivers who can stop Kimi Antonelli clinching the title in Sunday's race -> Sky Sports; Manila Times (AFP); formula1.com (Antonelli needs ninth to secure the title)",
+      "Mario Kart photo-finish line is a comparison joke, not a factual claim -> no source needed",
+      "Faster than you can blink: 0.009s is about 9 milliseconds, shorter than a human blink. This is a comparison, not a sourced statistic, and is kept general on purpose"
     ],
-    "footage_status": "YELLOW",
-    "footage_note": "Ronaldo is fully covered: old teenage Sporting CP clips, his 2003 Manchester United unveiling, and current training footage. The surgery itself exists only as generic medical b-roll, so the editor must lean on cardiac ablation and hospital b-roll for the laser beat. No live match footage is needed anywhere.",
+    "footage_status": "GREEN",
+    "footage_note": "Do not use broadcast qualifying laps or onboard footage. Use Hamilton's parc ferme celebration filmed by fans in the stadium section, Ferrari's own social clips of the garage celebration, the top-three press conference (Hamilton, Russell, Leclerc), paddock walks by Leclerc and Antonelli, and stadium and grandstand b-roll of the Autodromo Hermanos Rodriguez. The team radio can only be shown as a subtitle over off-track footage. For the Mario Kart line, use generic kart-racing b-roll or skip the cutaway.",
     "punch_markers": [
-      "laser:pop -> the moment the tool that saves his career appears on screen",
-      "afternoon:shock -> the unbelievable fact: heart surgery in the morning, home by the afternoon",
-      "sign:join -> the payoff arrival at Manchester United, the kid who almost quit becomes a signing"
+      "last:suspense -> the ticking-clock moment when Hamilton has one lap left and Russell has just gone top, so the viewer feels the pressure",
+      "blink:shock -> the unbelievable fact: the pole was won by less time than a blink. It is the only reaction sound and sits well clear of the other markers",
+      "hundred:celebrate -> lands the record 105th pole, a milestone that deserves a trophy-style sound"
     ]
   },
   "youtube_queries": [
-    "young Ronaldo Sporting academy",
-    "Ronaldo 16 years old Sporting",
-    "Ronaldo Manchester United unveiling 2003",
-    "Ronaldo training Al Nassr",
-    "cardiac ablation procedure",
-    "hospital heart monitor b roll"
+    "Hamilton first Ferrari pole Mexico",
+    "Hamilton pole celebration Mexico fans",
+    "Russell Hamilton Leclerc Mexico press conference",
+    "Leclerc Ferrari garage Mexico 2026",
+    "Antonelli Mexico City paddock",
+    "Autodromo Hermanos Rodriguez stadium crowd"
   ],
-  "scene_query": "A skinny teenage Cristiano Ronaldo with spiky dark hair in a green and white Sporting Lisbon training kit, jogging and doing ball drills on a youth academy training pitch",
-  "footage_source": "stills_and_broll",
-  "music_mood": "dramatic",
+  "scene_query": "Lewis Hamilton in a red Ferrari race suit climbing onto his red Ferrari in parc ferme, both fists raised, packed stadium grandstands behind him under a sunny Mexico City sky",
+  "footage_source": "official_or_press",
+  "music_mood": "hype",
   "music_queries": [
-    "Time Hans Zimmer instrumental",
-    "emotional football edit piano instrumental no copyright",
-    "dramatic cinematic piano instrumental no copyright"
+    "racing phonk instrumental no copyright",
+    "epic hype trap beat instrumental no lyrics",
+    "sports hype trap instrumental no copyright"
   ],
-  "music_prompt": "Emotional cinematic underscore with a modern trap edge, 85 BPM. A soft heartbeat-style kick drum pulses through the setup, a tense string tremolo builds as the racing heart and career threat land, and a lone piano melody takes over for the surgery reveal. Deep 808 bass and swelling strings rise when he is back training and signing for the big club, then fade into a quiet hopeful piano note for the loop. Sports short-form video background, no lyrics, exclude: goofy comedic sound effects, aggressive phonk cowbells",
+  "music_prompt": "Dark cinematic trap with an Italian-opera edge, 142 BPM. Rumbling 808 bass, staccato string ostinato and a distant V6 turbo engine whine. Keep it low and tense through the Leclerc setup and Hamilton sitting fourth. Add a ticking hi-hat build on the last-chance line, cut to near silence for a beat, then drop hard with cinematic brass hits and a stadium crowd swell when he beats Russell. Ride the drop under the record stats and settle into a looping groove for the ending. Sports short-form video background, no lyrics, exclude: soft acoustic guitar, cheerful ukulele.",
   "voice_name": "animatoryoung",
-  "script": "Cristiano Ronaldo had heart surgery when he was just fifteen years old. [curious] Rewind about twenty-six years. Ronaldo is a skinny kid at the Sporting academy, far from home. His heart is racing. Not after a sprint, but while he's just resting. [thoughtful] Doctors call it tachycardia, basically a heart stuck in fast mode, and it could END his career before it starts. His mom later said she was worried he would have to quit football. [understated] So doctors use a *laser:pop* to burn the tiny spot causing the problem. And the crazy part... he goes in that morning and walks out the same *afternoon:shock*. [deadpan] A few days later he's back at training, like a FIFA career mode player skipping the injury screen. At eighteen, Manchester United *sign:join* him. [softly] The heart that almost ended his career never stopped him, and that's why...",
-  "spoken_word_count": 139
+  "script": "Lewis Hamilton grabbed his first Ferrari pole by nine thousandths of a second, without being the fastest Ferrari. [curious] So how? Charles Leclerc topped both Friday practices, and in the final shootout he went more than four tenths clear of Lewis. [understated] Lewis sat fourth after his first run. Not exactly pole energy. But then George Russell rockets to the top with a monster lap. Lewis is still out there, *last:suspense* chance. And he beats Russell by nine THOUSANDTHS. [deadpan] That's faster than you can *blink:shock*, closer than a photo finish in Mario Kart. [thoughtful] He saved his best lap for the only one that counted. It's his *hundred:celebrate* and fifth pole, his first since twenty twenty-three. And at forty-one, he's the oldest polesitter since nineteen eighty-two. [softly] Tonight, only Lewis and Russell can stop Kimi Antonelli taking the title, and that's why.",
+  "spoken_word_count": 138
 }
 
 
@@ -264,6 +268,12 @@ def _check_sfx_tags(punch_words: list):
     rare = [t for t in tags if t in config.SFX_RARE_TAGS]
     if len(rare) > config.SFX_MAX_RARE:
         errors.append(f"{len(rare)} rare tags {rare}, max {config.SFX_MAX_RARE}")
+    repeated = sorted({t for t in tags if tags.count(t) > 1})
+    if repeated:
+        errors.append(f"tag(s) {repeated} used more than once, each tag once per script")
+    big = [t for t in tags if t in config.SFX_BIG_TAGS]
+    if len(big) > config.SFX_MAX_BIG:
+        errors.append(f"{len(big)} big tags {big}, max {config.SFX_MAX_BIG} of {list(config.SFX_BIG_TAGS)}")
     if errors:
         print("Sound effect tags in the script are wrong:")
         for e in errors:
@@ -2278,7 +2288,7 @@ def run_manual_pipeline(data):
             graphics=graphics,
             theme=CHANNEL["theme"],
             frame_background=CHANNEL["frame_background"],
-            hook_text=_hook_text(data.get("title", "")),
+            hook_text=_hook_text(data.get("hook") or data.get("title", "")),
         )
 
         print(f"\nDONE! Saved to: {final_path}")

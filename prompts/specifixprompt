@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE attack on titan idea.
+Find ONE cyberpunk egderunners season two anime idea.
 
 It must be either:
 
@@ -59,9 +59,16 @@ Formats: "Why did [character] [do famous thing] in [MOVIE/SERIES]?" / "The real 
 Sentence case, casual, no clickbait ALL-CAPS, no emoji. Question marks are allowed.
 
 TITLE CANDIDATES
-Before picking the title, write FOUR different titles for the same idea, using at least two different formats from the list above. Check each one against the HOOK rule: ten spoken words at most without the series name, character name and curiosity word in the first four words, answer withheld. Drop any that fail. From the rest, pick the one a fan could least answer in their head. That one goes in the "title" field.
+Before picking the title, write FOUR different titles for the same idea, using at least two different formats from the list above. Check each one: names the character and series, answer withheld. Drop any that fail. From the rest, pick the one a fan could least answer in their head. That one goes in the "title" field.
 
 The title asks, the video answers. Never put the answer in the title.
+
+HOOK RULE
+Output a separate "hook" field: the punchy opener shown on screen as a big card and spoken as the script's first line, word for word.
+Two to six words, under thirty characters. No series name, no hashtags, no emoji.
+Name the character, place or stake. It may be a short question ("Why is Night City still standing?") or a statement that creates tension ("Trigger is holding back..."). A curiosity word is optional when the statement itself raises the question.
+Withhold the answer. The full title is NOT the hook: it is too long to read in the first second.
+Example: title "Why can't Trigger destroy Night City in Cyberpunk Edgerunners 2?" -> hook "Trigger could destroy Night City..."
 
 Pillar G format: "The [X] controversy explained in sixty seconds or less"
 
@@ -131,21 +138,20 @@ Every marker needs a tag from the list below; a plain *word* without a tag makes
 Picture sounds play the moment the tagged word is spoken, under the voice. Give them to a word that names the thing the sound belongs to:
 
 pop        something appears: a sign, a label, an object
-hit        a collision, a tackle, a punch, a throw
-boom       a big reveal, the biggest number
+hit        a punch, a slash, a body hitting the ground
+boom       the ONE biggest reveal of the script
 suspense   tension, time running out, something about to happen
-fight      a fight, a match or a round starts
-money      money, prices, salaries, prize money
+fight      a battle or a duel starts
+money      money, a price, a bounty, a debt
 correct    the right answer, a good idea, a rule that works
 wrong      illegal, a mistake, a rule broken, "no"
 celebrate  a title, a trophy, a win
-join       someone arrives or joins: a signing, a new player
-leave      someone leaves: a retirement, a departure, a sending off
+join       someone joins a team, a crew or a side
+leave      someone leaves, quits, betrays or is kicked out
 
 Reaction sounds play AFTER the sentence that holds the tagged word, in a short pause the code adds, so they never cover a word. Give them to a line the viewer should react to:
 
 shock      an unbelievable fact
-sad        a painful, heartbreaking outcome: a lost final, an injury
 dumb       a stupid or silly outcome: an own goal, a pointless rule
 awkward    someone is embarrassed, caught out or humiliated in that moment:
            a promise broken in public, a boast that backfires. NOT irony
@@ -155,8 +161,14 @@ sus        something suspicious, a scandal, a conspiracy
 meme       one big comic moment
 
 Syntax examples:
-"climate activists broke in and *sprayed:sad* it red and black."
+"then he *betrayed:leave* the whole crew."
 "he reportedly paid *fifteen:money* million dollars for a Gulfstream V jet."
+
+TAG VARIETY RULE (the pipeline stops if you break the first two bullets)
+Pick the tag from what the WORD is, not from how dramatic the line feels. Most dramatic lines are NOT shock or boom: a punch is hit, a betrayal is leave, a bounty is money, a failed plan is wrong.
+- Use each tag at most once per script.
+- At most one of shock and boom per script.
+- At least one marker must be a picture tag other than boom.
 
 Limits (the pipeline stops if you break the first three):
 two to four tagged sounds in the whole script
@@ -166,7 +178,7 @@ reaction sounds about ten seconds (about twenty-five spoken words) apart or more
 
 Most lines have no sound. A sound is punctuation. Past the minimum of two, when unsure, leave it out.
 
-The sound reacts to the fact, it is not the joke. Tag what the line literally says (a tackle gets hit, a lost final gets sad). Never tag a plain setup line just to make it funnier.
+The sound reacts to the fact, it is not the joke. Tag what the line literally says (a punch gets hit, a betrayal gets leave). Never tag a plain setup line just to make it funnier.
 
 Keep the hook quiet: the first sentence gets no reaction sound and no marker of any kind. The hook plays on the voice alone.
 
@@ -180,8 +192,7 @@ Spoken text, tags excluded: ninety to one hundred words for Format A, one hundre
 
 SCRIPT STRUCTURE (Format A)
 
-HOOK (first line): the title, spoken, but DROP the series name at the end ("in Attack on Titan").
-Ten spoken words at most. The character name and the curiosity word (why, real reason, only, never) must land in the first four words. No greeting, no intro. The written title keeps the series name, because it is shown on screen as a big hook card while the voice speaks.
+HOOK (first line): the "hook" field, spoken word for word. Two to six words. No greeting, no intro.
 
 THE SETUP (one to two lines): anchor to the scene viewers remember ("We all remember when..." / "Remember that scene where..."), then pick ONE of these:
 - MYTH BUST, only if a real, widespread wrong belief about this exact question exists (you could point to fans actually saying it in comments, Reddit, or popular videos). Name it and shoot it down ("Most fans think it's X, but that makes zero sense").
@@ -195,7 +206,7 @@ ESCALATION (one to two lines): why it's weirder/darker/funnier than it sounds; s
 PUNCHLINE (last line): an ironic twist or one-sentence reframe that hits harder than the answer itself, and calls back to the title so the video comes full circle (style only, do not reuse: title "This is the luckiest Titan in Attack on Titan" ends with "In the end, the only one who found freedom was a Titan nobody cared about."). You may add one very short question after it ("did you catch that?"). NEVER an open loop like "and that's not even the strangest part" (the video ends, so the loop never pays off), NEVER "follow for more", never a flat summary.
 
 SCRIPT STRUCTURE (Format B)
-HOOK (title, word for word) → number three → number two → "But number one is..." → PUNCHLINE. One short sentence of setup at most. Every item gets its own receipt and stays about the same character or arc.
+HOOK (the hook field, word for word) → number three → number two → "But number one is..." → PUNCHLINE. One short sentence of setup at most. Every item gets its own receipt and stays about the same character or arc.
 
 SCENE QUERY (for visual search)
 scene_query is a pure physical description of the receipt moment — what the screen looks like:
@@ -248,6 +259,7 @@ JSON
 "topic": "",
 "specific_subject": "",
 "title": "",
+"hook": "",
 "youtube_queries": ["", "", "", "", "", ""],
 "scene_query": "",
 "footage_source": "official_or_press | stills_and_broll | single_rare_source",
@@ -274,7 +286,7 @@ VERIFICATION BOX
 ☐ Language Standard: B1 Simple English verified
 ☐ Spoken Word Count: [Number] spoken words (tags excluded; A: 90-100, B: 110-130)
 ☐ Number Check: Zero digit characters used, at least one concrete verified number spoken as words
-☐ First Line Check: First line is the title without the series name, ten words max, character + curiosity word in the first four, answer withheld (no greeting)
+☐ Hook Check: First line is the "hook" field word for word, two to six words, under thirty characters, answer withheld (no greeting). Three hook candidates: [...] -> picked [number]
 ☐ Title Candidates: [all four titles, one per line] -> picked [number] because [one short reason]
 ☐ Receipt Point: Direct visual reference included without frame-precise demands
 ☐ Footage Test: Passes Generic Footage Test ([GREEN / YELLOW])
@@ -282,21 +294,30 @@ VERIFICATION BOX
 ☐ Ending Check: Ends on a punchline or ironic twist that calls back to the title, optional short question (NO open loop, NO "follow for more")
 ☐ Roast Line: At least one, sitting on a real fact
 ☐ Audio Tags: [Number] ElevenLabs v4 tags used (Min 4)
-☐ Sound Effects: [2 to 4] marked: [word:tag] -> [why each one is a moment the viewer should feel]; tags within the limits (2 to 4 tagged, max 2 reactions, max 1 meme/sus), none in the hook
+☐ Sound Effects: [2 to 4] marked: [word:tag] -> [why each one is a moment the viewer should feel]; tags within the limits (2 to 4 tagged, max 2 reactions, max 1 meme/sus, no tag twice, max 1 of shock/boom), none in the hook
 
 [JSON OUTPUT HERE]
 
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-1. why does yuta wear a white uniform in jujutsu kaisen? #jjk
-2. why did david keep upgrading his body in cyberpunk edgerunners? #cyberpunk
-3. why toji never gets trapped in domains in jujutsu kaise #jjk #toji
-4. the real reason levi holds his cup weirdly in attack on titan #aot  #leviackerman
-5. why did soichiro see light's lifespan in death note? #deathnote
-6. why did erwin smile when he learned titans were humans in attack on titan? #aot
-7. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
-8. the real reason l never sits normally in death note. #deathnote
-9. why light never just guessed l's name in death note #deathnote
-10. the jaw titan curse in attack on titan #aot
-11. why did sukuna save megumi in jujutsu kaisen? #jjk
+1. the real reason roman has no backstory in cyberpunk edgerunners 2 #cyberpunk
+2. the real reason d never got his revenge in cyberpunk edgerunners 2 #cyberpunk
+3. why did king survive the cyberpsycho meltdown in cyberpunk edgerunners? #cyberpunk
+4. why did gojo get trapped by a tiny box in jujutsu kaisen? #jjk #jujutsukaisen #gojo
+5. why did nanami leave his job? #jjk #jujutsukaisenmanga
+6. why does anya hate studying #spyxfamilyedit
+7. the real reason mikasa gets headaches in attack on titan #aot #mikasa
+8. the real reason sukuna has four arms in jujutsu kaisen #sukuna
+9. why did gojo use a zero point two second domain in jujutsu kaisen? #jjk
+10. why does yuta wear a white uniform in jujutsu kaisen? #jjk
+11. why did david keep upgrading his body in cyberpunk edgerunners? #cyberpunk
+12. why toji never gets trapped in domains in jujutsu kaise #jjk #toji
+13. the real reason levi holds his cup weirdly in attack on titan #aot  #leviackerman
+14. why did soichiro see light's lifespan in death note? #deathnote
+15. why did erwin smile when he learned titans were humans in attack on titan? #aot
+16. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
+17. the real reason l never sits normally in death note. #deathnote
+18. why light never just guessed l's name in death note #deathnote
+19. the jaw titan curse in attack on titan #aot
+20. why did sukuna save megumi in jujutsu kaisen? #jjk

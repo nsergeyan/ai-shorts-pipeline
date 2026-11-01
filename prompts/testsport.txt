@@ -43,7 +43,7 @@ C) BANNED COUNTDOWN: three things banned in the sport or banned for one star. Nu
    Football: accessories, kits, cars, celebrations, foods, habits.
    F1: cars and tricks that were "technically not cheating" until they got banned (the fan car, the six-wheeler, the double diffuser, the F-duct, DAS steering). Each F1 trick gets ONE everyday analogy so anyone gets it (the fan car worked like a vacuum cleaner sucking the car to the road).
 D) SECRET WEAKNESS: one star's fear, diet, illness or habit, the cost of it (money, health or races), and what he did about it. "Lionel Messi's forty million dollar fear."
-Write each candidate as one line: sport, format, star, the hook sentence with its number, the number one item or the final reveal.
+Write each candidate as one line: sport, format, star, the hook (two to six words), the big number, the number one item or the final reveal.
 
 ═══════════════════════════════════
 STEP 2 — SCORE AND PICK
@@ -95,10 +95,14 @@ TITLE RULE: copy these title shapes, in Title Case, with ONE word in caps where 
 - NEWS: "How Max Verstappen WON In Mexico", "Why Real Madrid LOST El Clasico", "The Mistake That Cost Ferrari The WIN"
 Use the star's or team's FULL name in the title. Digits are fine in the title. No emoji.
 
-THE HOOK is the first sentence, spoken: the title as a sentence plus the big number, twenty words at most. "Lionel Messi spent over two hundred and fifty million dollars on his three most expensive purchases."
+THE HOOK goes in a separate "hook" field: the punchy opener shown on screen as a big card and spoken as the script's first sentence, word for word.
+Two to six words, under thirty characters. No hashtags, no emoji, no digits (it is spoken). The star's short name is fine here ("Messi", "Verstappen").
+Withhold the answer. The full title is NOT the hook: it is too long to read in the first second.
+Examples: "Ronaldo almost died." / "Messi's craziest purchases." / "Verstappen wasn't the fastest." / "Ferrari threw this away."
+The big number goes in the SECOND sentence, right after the hook: "He spent over two hundred and fifty million dollars on just three of them."
 
 COUNTDOWN SHAPE (formats A and C):
-1. HOOK: the title with the total number.
+1. HOOK: the hook field, then one sentence with the total number.
 2. NUMBER THREE (about 30 words): "And at number three..." the item, its price or penalty, one wild detail.
 3. NUMBER TWO (about 35 words): "But at number two..." a bigger item WITH a mini-story or rivalry twist.
 4. NUMBER ONE (about 40 words): "But at number one..." the biggest and weirdest item. Build to the reveal of what it is, then hit the number.
@@ -106,14 +110,14 @@ COUNTDOWN SHAPE (formats A and C):
 For an F1 banned countdown, each item is: the trick, the analogy, what it gained, and why it got banned, in that order.
 
 NEWS SHAPE (format N):
-1. HOOK: the result plus a doubt. "Max Verstappen won in Mexico, but not because he was fastest."
+1. HOOK: the hook field, a doubt about the result. "Verstappen wasn't the fastest."
 2. RESULT (about 20 words): who won, the score or the gap, one number that shows how close or how big it was.
 3. THE WHY (about 45 words): the one moment or decision that decided it, explained as a chain from cause to result, with one everyday analogy if it is technical (an undercut is like jumping the queue while the other guy is still paying).
 4. PROOF (about 30 words): the number or detail that proves the why (laps on old tyres, the minute of the substitution, seconds gained).
 5. LOOP: what it means (the title fight, the table, a record), then "and that's why".
 
 STORY SHAPE (formats B, D):
-1. HOOK: the title as a sentence. "Cristiano Ronaldo almost died."
+1. HOOK: the hook field. "Ronaldo almost died."
 2. SETUP (about 25 words): rewind to the moment. Where he was, what he was rushing for.
 3. TENSION (about 40 words): the ticking clock and the moment it goes wrong, in short punchy sentences. One "but this time he should have..." line foreshadows the danger.
 4. REVEAL (about 30 words): how close it was, or the chilling detail that shows it.
@@ -166,7 +170,6 @@ leave      someone leaves: a retirement, a departure, a sending off
 Reaction sounds play AFTER the sentence that holds the tagged word, in a short pause the code adds, so they never cover a word. Give them to a line the viewer should react to:
 
 shock      an unbelievable fact
-sad        a painful, heartbreaking outcome: a lost final, an injury
 dumb       a stupid or silly outcome: an own goal, a pointless rule
 awkward    someone is embarrassed, caught out or humiliated in that moment:
            a promise broken in public, a boast that backfires. NOT irony
@@ -176,8 +179,14 @@ sus        something suspicious, a scandal, a conspiracy
 meme       one big comic moment
 
 Syntax examples:
-"climate activists broke in and *sprayed:sad* it red and black."
+"he was *sent:leave* off in the final minute."
 "he reportedly paid *fifteen:money* million dollars for a Gulfstream V jet."
+
+TAG VARIETY RULE (the pipeline stops if you break the first two bullets)
+Pick the tag from what the WORD is, not from how dramatic the line feels. Most dramatic lines are NOT shock or boom: a tackle is hit, a transfer is join, a red card is leave, a salary is money.
+- Use each tag at most once per script.
+- At most one of shock and boom per script.
+- At least one marker must be a picture tag other than boom.
 
 Limits (the pipeline stops if you break the first three):
 two to four tagged sounds in the whole script
@@ -187,7 +196,7 @@ reaction sounds about ten seconds (about twenty-five spoken words) apart or more
 
 Most lines have no sound. A sound is punctuation. Past the minimum of two, when unsure, leave it out.
 
-The sound reacts to the fact, it is not the joke. Tag what the line literally says (a tackle gets hit, a lost final gets sad). Never tag a plain setup line just to make it funnier.
+The sound reacts to the fact, it is not the joke. Tag what the line literally says (a tackle gets hit, a transfer gets join). Never tag a plain setup line just to make it funnier.
 
 Keep the hook quiet: the first sentence gets no reaction sound and no marker of any kind. The hook plays on the voice alone.
 
@@ -255,9 +264,36 @@ USED VIDEOS (DO NOT REPEAT the star + format combo, the story, or the same joke)
 ═══════════════════════════════════
 Order: oldest at the top, newest at the bottom. Format: title, views.
 
+Cristiano Ronaldo's SECRET Heart Surgery #football
+2 views
+
+
+How Kylian Mbappé WON El Clasico #football
+1.3K views
+
+
+Why Kylian Mbappé LOST The Ballon d'Or #football
+1.1K views
+
+
+Max Verstappen Survived A 51G CRASH #f1
+1.9K views
+
+
+Why Barcelona LOST To Paris Saint-Germain #football
+1.3K views
+
+
+Arman Tsarukyan Got BANNED For 9 Months #ufc
+2K views
+
+
+Lionel Messi's Most EXPENSIVE Purchases #football
+73 views
+
 
 Cristiano Ronaldo's 3 Most EXPENSIVE Purchases #football
-827 views
+1.1K views
 
 
 Why Real Betis LOST To Lamine Yamal #football
@@ -265,7 +301,7 @@ Why Real Betis LOST To Lamine Yamal #football
 
 
 Lionel Messi Almost DIED #football
-633 views
+631 views
 
 
 Cristiano Ronaldo Almost DIED #football
@@ -293,8 +329,7 @@ Jon Jones spider crawl explained #ufc
 
 
 Why feraris new car is punishing charles Lecrec?  #f1
-2.4K view
-
+2.4K views
 ═══════════════════════════════════
 OUTPUT
 ═══════════════════════════════════
@@ -308,6 +343,7 @@ Output ONLY this JSON, no text before or after:
   "topic": "",
   "specific_subject": "",
   "title": "",
+  "hook": "",
   "verification": {
     "event_date": "",
     "sources": ["", ""],
@@ -328,4 +364,5 @@ Output ONLY this JSON, no text before or after:
 }
 
 title: under 60 characters, in the KickFlix title shapes from Step 5, followed by #football or #f1. Example: Cristiano Ronaldo Almost DIED #football
+hook: two to six words, spoken word for word as the script's first sentence. Example: Ronaldo almost died.
 GIVE JSON FORMAT

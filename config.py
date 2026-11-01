@@ -44,7 +44,7 @@ SFX_ENABLED = True
 SFX_LIBRARY_DIR = os.path.join(DATA_DIR, "sfx_library")
 SFX_PICTURE_TAGS = ("pop", "hit", "boom", "suspense", "fight", "money",
                     "correct", "wrong", "celebrate", "join", "leave")
-SFX_AFTER_TAGS = ("shock", "sad", "dumb", "awkward", "sus", "meme")
+SFX_AFTER_TAGS = ("shock", "dumb", "awkward", "sus", "meme")
 
 # Limits, so the sounds stay punctuation and do not turn into a laugh track.
 # Scaled down from animationer's 3-minute videos to a 45-60s Short. Going over
@@ -56,6 +56,10 @@ SFX_MAX_TAGGED = 4
 SFX_MAX_AFTER = 2                  # "after" reactions per video
 SFX_RARE_TAGS = ("meme", "sus")    # work because they are rare
 SFX_MAX_RARE = 1
+# The scripts kept landing on shock + boom every time, so every video sounded
+# the same. Each tag once per script, and only one of these "big" tags.
+SFX_BIG_TAGS = ("shock", "boom")
+SFX_MAX_BIG = 1
 SFX_MIN_AFTER_GAP_SECONDS = 10.0   # between two reactions
 
 # Timing, in seconds.
