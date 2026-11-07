@@ -125,6 +125,7 @@ STEP B - OFFICIAL OST: does [MOVIE/SERIES] have a recognizable official OST/inst
 STEP C - GENRE FALLBACK: add one broad, non-copyrighted instrumental search matching the music_mood (e.g. "dark ambient tension instrumental no copyright", "quirky documentary background music no lyrics"). This slot is almost always fillable, so use it.
 
 Every query must target an INSTRUMENTAL. Append "instrumental" / "no lyrics" / "OST" whenever the track normally has vocals, because Gemini auto-rejects anything with singing. Skip a step that gives you nothing, never pad with junk. If all three come up empty, music_queries: [].
+The music plays UNDER the narration, so pick the calm side of the mood: Gemini rejects tracks with loud drums or a busy lead that fight the voice. When a track has a calmer version, search for it ("slowed", "ambient", "piano version", "lofi").
 
 ELEVENLABS V4 AUDIO TAGS RULE
 Insert 4 to 6 [bracketed] performance tags in the script. Tags are not spoken and do NOT count toward the word limit.

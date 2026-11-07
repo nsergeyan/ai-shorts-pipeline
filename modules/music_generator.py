@@ -9,6 +9,8 @@ from modules.video_material_fetcher import (
 
 MUSIC_LENGTH_MS = 90_000
 MAX_MUSIC_SOURCE_SECONDS = 600
+MUSIC_SEARCH_RESULTS = 5
+MIX_SECTION = (60, 240)   # seconds kept from a long mix: past its intro, enough for any Short
 
 
 def generate_music(prompt: str) -> str | None:
@@ -49,14 +51,36 @@ def generate_music(prompt: str) -> str | None:
     return None
 
 
-def fetch_music_from_youtube(query: str) -> str | None:
+def fetch_music_from_youtube(query: str, skip_ids: set | None = None) -> str | None:
     """Search YouTube for the query and download the first result as an MP3 audio file.
+
+    Results whose id is in `skip_ids` are passed over, and the downloaded id is added
+    to it, so calling again with the same set gets the next result.
 
     Uses the same anti-bot setup as the video downloader: cookie-less first, then
     browser cookies, and straight to cookies once the run has hit YouTube's bot check.
     """
     os.makedirs(MUSIC_DIR, exist_ok=True)
     output_template = os.path.join(MUSIC_DIR, f"yt_music_{random.randint(10000, 99999)}")
+    skip_ids = set() if skip_ids is None else skip_ids
+    downloaded = []
+
+    def _usable(info, *, incomplete=False):
+        return "already tried" if info.get("id") in skip_ids else None
+
+    def _section(info, _ydl):
+        # Generic mood searches ("dark cyberpunk ambient") return only hour-long mixes.
+        # Downloading all of one took minutes and was too long for Gemini, and skipping
+        # them left nothing, so only a 3-minute stretch of a long mix is fetched.
+        duration = info.get("duration") or 0
+        if duration > MAX_MUSIC_SOURCE_SECONDS:
+            yield {"start_time": MIX_SECTION[0], "end_time": MIX_SECTION[1]}
+        else:
+            yield {"start_time": 0, "end_time": duration or MAX_MUSIC_SOURCE_SECONDS}
+
+    def _remember(d):
+        if d.get("status") == "finished":
+            downloaded.append(d.get("info_dict", {}).get("id"))
 
     base_opts = {
         "format": "bestaudio/best",
@@ -67,9 +91,9 @@ def fetch_music_from_youtube(query: str) -> str | None:
             "preferredquality": "192",
         }],
         "noplaylist": True,
-        # Skip hour-long mixes: at the 3 MB/s rate limit they take minutes to download
-        # and are too long for Gemini to evaluate. Take the first result under 10 min.
-        "match_filter": yt_dlp.utils.match_filter_func(f"duration < {MAX_MUSIC_SOURCE_SECONDS}"),
+        "match_filter": _usable,
+        "download_ranges": _section,
+        "progress_hooks": [_remember],
         "max_downloads": 1,
         "quiet": True,
         "no_warnings": True,
@@ -85,12 +109,13 @@ def fetch_music_from_youtube(query: str) -> str | None:
         label = "with cookies" if use_cookies else "no cookies"
         try:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([f"ytsearch5:{query}"])
+                ydl.download([f"ytsearch{MUSIC_SEARCH_RESULTS}:{query}"])
         except yt_dlp.utils.MaxDownloadsReached:
             pass   # raised after the first file is saved, it is the normal stop
         except Exception as e:
             log.errors.append(str(e))
 
+        skip_ids.update(i for i in downloaded if i)
         if os.path.exists(output_path) and os.path.getsize(output_path) > 5000:
             size_mb = os.path.getsize(output_path) / (1024 * 1024)
             print(f"YouTube music downloaded ({label}): {os.path.basename(output_path)} ({size_mb:.2f} MB)")

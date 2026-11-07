@@ -239,6 +239,7 @@ music_queries is an ARRAY of up to 3 YouTube searches, best first. The pipeline 
 2. A broader hype or mood theme.
 3. A generic instrumental matching music_mood (e.g. luxury trap instrumental no copyright).
 Every query must target an INSTRUMENTAL: append instrumental, no lyrics, or no copyright when the track normally has vocals. Never pad with junk. If nothing plausible exists: [].
+The music plays UNDER the narration: keep the beat, but avoid tracks with a loud lead or vocal chops that fight the voice. When a famous track has a calmer version, search for it ("slowed", "instrumental only").
 NEVER search for an official league, tournament or broadcaster anthem (Champions League anthem, FIFA anthem, F1 theme, Premier League theme) or a remix of one. Their owners block videos that use them, and the pipeline rejects them anyway.
 
 ═══════════════════════════════════

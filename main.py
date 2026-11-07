@@ -748,32 +748,59 @@ def _clean_music_queries(value) -> list:
     return cleaned
 
 
+MUSIC_TRACKS_PER_QUERY = 2   # one too-busy first result used to throw away the whole query
+INSTRUMENTAL_WORDS = ("instrumental", "no lyrics", "no vocals", "karaoke", "ost", "soundtrack",
+                      "ambient", "beat", "no copyright", "background music")
+
+
+def _instrumental_query(query):
+    """Add "instrumental" to a query with no word that keeps singing out: a bare song
+    name returns the song with vocals, and Gemini rejects it."""
+    q = query.lower()
+    return query if any(w in q for w in INSTRUMENTAL_WORDS) else f"{query} instrumental"
+
+
+def _try_youtube_track(query, tried_ids, topic, script_text):
+    """Download the next untried result of `query` and let Gemini judge it.
+    Returns (path or None, downloaded): the path when approved, downloaded False when
+    nothing new could be fetched, so the caller moves on to the next query."""
+    yt_path = fetch_music_from_youtube(query, tried_ids)
+    if not yt_path:
+        return None, False
+
+    print("Evaluating YouTube music with Gemini...")
+    try:
+        result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
+        reason = result.get("reason", "")
+        if result.get("is_league_anthem"):
+            reason = f"league anthem, gets videos blocked. {reason}"
+        elif result.get("decision") == "use":
+            print(f"YouTube music approved: {reason}")
+            return yt_path, True
+        print(f"YouTube music rejected ({reason})")
+    except Exception as e:
+        print(f"Gemini music eval error: {e}")
+
+    if os.path.exists(yt_path):
+        os.remove(yt_path)
+    return None, True
+
+
 def _resolve_music(music_queries, music_prompt: str, topic: str, script_text: str) -> str | None:
-    """Try each YouTube music query in order; only pay for ElevenLabs if every one is rejected."""
-    queries = _clean_music_queries(music_queries)[:MAX_MUSIC_QUERIES]
+    """Try the first results of each YouTube music query in order; only pay for ElevenLabs
+    if every one is rejected."""
+    queries = [_instrumental_query(q) for q in _clean_music_queries(music_queries)[:MAX_MUSIC_QUERIES]]
+    tried_ids = set()
 
     for i, query in enumerate(queries, 1):
-        print(f"Music candidate {i}/{len(queries)}: '{query}'")
-        yt_path = fetch_music_from_youtube(query)
-        if not yt_path:
-            print("Music download failed, trying next query")
-            continue
-
-        print("Evaluating YouTube music with Gemini...")
-        try:
-            result = evaluate_youtube_music_with_genai(yt_path, topic, script_text)
-            reason = result.get("reason", "")
-            if result.get("is_league_anthem"):
-                reason = f"league anthem, gets videos blocked. {reason}"
-            elif result.get("decision") == "use":
-                print(f"YouTube music approved: {reason}")
-                return yt_path
-            print(f"YouTube music rejected ({reason}), trying next query")
-        except Exception as e:
-            print(f"Gemini music eval error: {e}, trying next query")
-
-        if os.path.exists(yt_path):
-            os.remove(yt_path)
+        for track in range(1, MUSIC_TRACKS_PER_QUERY + 1):
+            print(f"Music candidate {i}/{len(queries)}, track {track}: '{query}'")
+            path, downloaded = _try_youtube_track(query, tried_ids, topic, script_text)
+            if path:
+                return path
+            if not downloaded:
+                print("Music download failed, trying next query")
+                break
 
     if queries:
         print("No YouTube music approved, falling back to ElevenLabs")
