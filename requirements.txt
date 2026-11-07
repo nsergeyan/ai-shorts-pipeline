@@ -4,3 +4,4 @@ google-genai>=1.67.0
 openai-whisper>=20250625
 ffmpeg-python>=0.2.0
 python-dotenv>=1.2.1
+ocrmac>=1.0.1

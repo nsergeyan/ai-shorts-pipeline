@@ -28,14 +28,26 @@ MAX_HEIGHT = 1080
 # How many search results to look at before picking which one to download.
 SEARCH_RESULTS = 15
 
-# Only MAX_SOURCE_SECONDS of a source is kept, so a feature-length upload is a huge
-# download for one slice of it (usually the intro). Ranked lower, not dropped.
-LONG_SOURCE_SECONDS = 1200
+# Only MAX_SOURCE_SECONDS of a source is kept and the whole file is downloaded first,
+# so a long upload is a huge download for a few seconds of footage. Longer results are skipped.
+MAX_RESULT_SECONDS = 600
 
-# How many of those ranked results to actually try downloading per query. When
-# YouTube is blocking requests every attempt fails, and hammering it with all 15
-# (4 methods each) only makes the block last longer.
-MAX_DOWNLOAD_TRIES = 3
+# Shorter results are skipped. Fans post scene clips of a new season at 30-60s, which
+# is plenty for 4-6s shots; YouTube Shorts are skipped by their URL, not by length.
+MIN_RESULT_SECONDS = 30
+
+# A video that several different queries found is usually the central footage
+# ("Talia Catches Roman" came up for three of six queries). Bonus per extra query, capped.
+MULTI_QUERY_BONUS = 0.5
+MAX_MULTI_QUERY_BONUS = 1.0
+
+# Trailers, teasers and promos are montages of the same footage, and they show up in
+# almost every query, so five of them topped the pool. Only the best one keeps its place.
+TRAILER_WORDS = ("trailer", "teaser", "promo", "pv", "予告編")
+
+# A query's best result is checked first only if it is a decent match. A query that
+# found nothing good ("Irish fans chant Messi", 0.3) shouldn't push ahead of real clips.
+MIN_FIRST_PICK_SCORE = 2.0
 
 # Settings every download method shares to look less like a bot:
 # - IPv4 only: YouTube judges IPv6 users per /64 block, so neighbours' traffic can flag you
@@ -64,6 +76,14 @@ PENALTY_WORDS = (
     "reaction", "reacts", "react", "reacting", "podcast", "review", "tier list",
     "ranking", "explained", "explaining", "breakdown", "analysis", "theory",
     "theories", "commentary", "first time", "top 10", "top 5", "iceberg", "lore",
+    # burned-in lyrics or translated subtitles, fan edits and re-pitched re-uploads
+    "lyrics", "lyric", "letra", "subtitulado", "sub español", "legendado", "traducida",
+    "amv", "nightcore", "slowed", "sped up",
+    # side-by-side comparisons: two labelled pictures, not clean footage
+    "comparison", "compared", "english vs japanese", "japanese vs english", "sub vs dub", "dub vs sub",
+    # song uploads: one still image over the track ("Corbin - Worth It (Original Series Soundtrack)").
+    # Only the footage search uses this list; music is searched separately.
+    "soundtrack", "ost", "full album", "official audio",
 )
 # Title words that usually mean a news roundup: several stories in one video, with
 # the subject in only one of them (and often cut out by the most-replayed trim).
@@ -76,6 +96,24 @@ BONUS_WORDS = (
     "official", "4k", "1080p", "hd", "remastered", "creditless", "no commentary",
     "full scene", "highlights", "trailer", "cutscene", "gameplay", "footage", "raw",
 )
+# Query words that say little about WHICH video is wanted. They count a quarter as much
+# in the title match: a result missing "music" or "video" can still be the right one,
+# a result missing "Watson" is not ("High Forever (Official Music Video)" outranked the
+# Watson music video because it matched "music" and "video").
+GENERIC_QUERY_WORDS = {
+    "music", "video", "official", "edit", "edits", "episode", "clip", "clips", "scene", "scenes",
+    "full", "season", "part", "english", "dub", "dubbed", "sub", "subbed", "trailer", "anime",
+    "movie", "film", "series", "goes", "hard", "best", "moment", "moments", "the", "and", "with",
+}
+# Title words that only say where an upload came from. Two titles that are the same once
+# these are dropped are the same footage ("Official Trailer" vs "Official Trailer | Netflix Anime").
+UPLOAD_FILLER_WORDS = {
+    "official", "netflix", "anime", "crunchyroll", "youtube", "hd", "4k", "1080p", "new", "the", "and",
+}
+
+# Search results per query for this run: trying a query's second candidate reuses
+# the first search instead of searching YouTube again (which also reshuffled the ranking).
+_search_cache: dict = {}
 
 
 def _get_yt_dlp_version():
@@ -150,9 +188,13 @@ def _score_entry(entry: dict, query: str, position: int) -> float:
     title = (entry.get("title") or "").lower()
     query = query.lower()
 
-    query_tokens = [t for t in re.findall(r"\w+", query) if len(t) > 2]
-    overlap = sum(_has_word(title, t) for t in query_tokens) / max(len(query_tokens), 1)
+    # numbers count too: "2" in "Edgerunners 2" is what separates season 2 from season 1
+    query_tokens = [t for t in re.findall(r"\w+", query) if len(t) > 2 or t.isdigit()]
+    weights = {t: 0.25 if t in GENERIC_QUERY_WORDS else 1.0 for t in query_tokens}
+    overlap = sum(w for t, w in weights.items() if _has_word(title, t)) / max(sum(weights.values()), 1)
     score = overlap * 4
+    # a missing specific word (a song, a character) usually means a different video
+    score -= sum(1 for t, w in weights.items() if w == 1.0 and not _has_word(title, t))
 
     score -= 5 * sum(_has_word(title, w) for w in PENALTY_WORDS if not _has_word(query, w))
     score += min(sum(_has_word(title, w) for w in BONUS_WORDS), 2)
@@ -163,23 +205,41 @@ def _score_entry(entry: dict, query: str, position: int) -> float:
     views = entry.get("view_count") or 0
     score += math.log10(views + 1) * 0.3
 
-    if (entry.get("duration") or 0) > LONG_SOURCE_SECONDS:
-        score -= 2
-
     # YouTube's own relevance order still counts as a tiebreaker.
     score -= 0.15 * position
     return score
 
 
-def _rank_entries(entries: list, query: str) -> list:
-    scored = sorted(
-        ((_score_entry(e, query, i), e) for i, e in enumerate(entries)),
-        key=lambda pair: pair[0], reverse=True,
-    )
-    print("   Ranked candidates:")
-    for score, e in scored[:5]:
-        print(f"      {score:5.1f}  {e.get('title', 'Unknown')[:70]}")
-    return [e for _, e in scored]
+def _third_party(entry: dict, query: str) -> bool:
+    """True when the title says someone else's video sits on top of the footage
+    (a reaction, recap, comparison, lyrics...). Gemini rejects every one of these
+    after a full download and upload, so they are not downloaded at all, unless
+    the query itself asked for that word."""
+    title = (entry.get("title") or "").lower()
+    query = query.lower()
+    return any(_has_word(title, w) and not _has_word(query, w) for w in PENALTY_WORDS + ROUNDUP_WORDS)
+
+
+ROMAN = {"2": "ii", "3": "iii", "4": "iv", "5": "v", "6": "vi", "7": "vii", "8": "viii", "9": "ix"}
+
+
+def _wrong_installment(title: str, query: str) -> bool:
+    """
+    True when the query names a season or sequel number ("Edgerunners 2") and the title
+    doesn't have it. "Rebecca's Death - Cyberpunk: Edgerunners (2022)" won a season 2 query
+    and put season 1 footage in the video. "S2", "Season 2" and "II" all count; a year
+    like 2026 does not contain a 2 on its own.
+    """
+    m = re.search(r"(?<![\w])([2-9])(?![\w])", query)
+    if not m:
+        return False
+    n, title = m.group(1), title.lower()
+    return not (re.search(rf"(?<!\d){n}(?!\d)", title) or re.search(rf"\b{ROMAN[n]}\b", title))
+
+
+def _title_key(title: str) -> frozenset:
+    """A title's words minus upload filler, for spotting re-uploads of the same video."""
+    return frozenset(w for w in re.findall(r"\w+", title.lower()) if w not in UPLOAD_FILLER_WORDS)
 
 
 def _write_source_meta(filepath: str, title: str, source_duration, trim_start: float = 0.0) -> None:
@@ -378,17 +438,6 @@ def _safe_title(t: str) -> str:
     return t[:200]
 
 
-def _pick_existing_video_material() -> Optional[str]:
-    """Return the largest video file already in VIDEO_MATERIAL_DIR, or None if empty."""
-    os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
-    candidates = [f for f in os.listdir(VIDEO_MATERIAL_DIR) if f.lower().endswith((".mp4", ".webm", ".mkv"))]
-    if candidates:
-        # Largest file is the one most likely to be complete
-        candidates.sort(key=lambda f: os.path.getsize(os.path.join(VIDEO_MATERIAL_DIR, f)), reverse=True)
-        return os.path.join(VIDEO_MATERIAL_DIR, candidates[0])
-    return None
-
-
 def _find_latest_video() -> Optional[str]:
     """Most recently created video in VIDEO_MATERIAL_DIR that is over 10 KB, or None."""
     try:
@@ -514,165 +563,173 @@ def _try_cli_download(vid_id: str, url: str) -> Optional[str]:
     return None
 
 
-def fetch_video_material_by_search(
-        search_queries,
-        max_videos: int = 1,
-        retry_searches: int = 20,
-        used_video_ids: Optional[set] = None
-) -> list[str]:
-    """Search YouTube, rank the results, and download up to max_videos of them. Returns file paths."""
-    if isinstance(search_queries, str):
-        search_queries = [search_queries]
-
-    os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
-
-    print(f"yt-dlp version: {_get_yt_dlp_version()}")
-
-    attempts = 0
-    query_index = 0
-    # An empty set is falsy, so `or set()` would swap the caller's set for a new one
-    # and videos rejected in an earlier query could come back in the next one.
-    if used_video_ids is None:
-        used_video_ids = set()
-    filtered_entries = []
-
-    while attempts < retry_searches:
-        attempts += 1
-        query = search_queries[query_index % len(search_queries)]
-        query_index += 1
-
-        print(f"\n[Attempt {attempts}/{retry_searches}] Searching: \"{query}\"")
-
+def _search(query: str) -> list:
+    """Raw YouTube results for a query (titles, durations, no download), cached for the run."""
+    if query in _search_cache:
+        return _search_cache[query]
+    for attempt in range(1, 4):
+        print(f"\nSearching: \"{query}\"" + (f" (attempt {attempt}/3)" if attempt > 1 else ""))
         try:
             search_opts = {
-                "quiet": False,
+                "quiet": True,
                 "skip_download": True,
                 "extract_flat": "in_playlist",
-                "playlistend": max(SEARCH_RESULTS, max_videos * 5),
+                "playlistend": SEARCH_RESULTS,
                 "ignoreerrors": True,
                 "source_address": "0.0.0.0",
             }
-
             with yt_dlp.YoutubeDL(search_opts) as ydl:
-                info = ydl.extract_info(f"ytsearch{max(SEARCH_RESULTS, max_videos * 5)}:{query}", download=False)
+                info = ydl.extract_info(f"ytsearch{SEARCH_RESULTS}:{query}", download=False)
+            _search_cache[query] = [e for e in (info.get("entries", []) or []) if e]
+            print(f"   {len(_search_cache[query])} results")
+            return _search_cache[query]
         except Exception as e:
             print(f"Search failed: {e}")
             time.sleep(3)
-            continue
+    return []
 
-        entries = info.get("entries", []) or []
 
-        valid_entries = []
-        for entry in entries:
-            if not entry:
+def _installment_number(queries: list) -> Optional[str]:
+    """The season/sequel number most queries name ("2" for "Edgerunners 2"), if at least half
+    of them name it. Applied to every result, so a query that left the number out can't
+    bring season 1 back in."""
+    found = [m.group(1) for q in queries for m in [re.search(r"(?<![\w])([2-9])(?![\w])", q)] if m]
+    if not found:
+        return None
+    n = max(set(found), key=found.count)
+    return n if found.count(n) * 2 >= len(queries) else None
+
+
+def _skip_reason(entry: dict, query: str, installment: Optional[str]) -> Optional[str]:
+    """Why a search result can't be used, or None when it can."""
+    duration = entry.get("duration") or 0
+    if entry.get("is_live"):
+        return "live"
+    if "/shorts/" in (entry.get("url") or entry.get("webpage_url") or ""):
+        return "Short"
+    if duration and duration < MIN_RESULT_SECONDS:
+        return "too short"
+    if duration and duration > MAX_RESULT_SECONDS:
+        return "too long"
+    if installment and _wrong_installment(entry.get("title", ""), installment):
+        return f"not part {installment}"
+    if _third_party(entry, query):
+        return "reaction/recap/comparison"
+    return None
+
+
+def search_pool(queries: list, used_video_ids: Optional[set] = None) -> list:
+    """
+    Search every query first, then rank all results together.
+
+    Trying queries one by one gave each query two download slots, so a bad query
+    ("King and Avida edit goes hard") burned two slow downloads while a good query's
+    third result was never tried. Searching costs seconds, a download and Gemini check
+    costs minutes, so the downloads now go to the best results across all queries.
+    Re-uploads of the same video (same title once upload filler is dropped) count once.
+    Returns entries, best first, each with "_score" and "_queries" added.
+    """
+    used_video_ids = used_video_ids if used_video_ids is not None else set()
+    installment = _installment_number(queries)
+    if installment:
+        print(f"Queries ask for part {installment}: results without it are skipped")
+    pool, skipped = {}, {}
+    for query in queries:
+        for pos, e in enumerate(_search(query)):
+            vid = e.get("id")
+            if not vid or vid in used_video_ids:
                 continue
-
-            vid_id = entry.get("id", "")
-            duration = entry.get("duration", 0)
-            is_live = entry.get("is_live", False)
-            title = entry.get("title", "").lower()
-            webpage_url = entry.get("webpage_url", "")
-
-            if vid_id in used_video_ids:
+            reason = _skip_reason(e, query, installment)
+            if reason:
+                skipped[reason] = skipped.get(reason, 0) + 1
                 continue
+            score = _score_entry(e, query, pos)
+            slot = pool.setdefault(vid, {"entry": e, "score": score, "queries": set(), "query": query})
+            if score > slot["score"]:
+                slot["score"], slot["query"] = score, query
+            slot["queries"].add(query)
+    if skipped:
+        print(f"Skipped results: {', '.join(f'{n} {r}' for r, n in skipped.items())}")
 
-            if duration and duration < 61:
-                used_video_ids.add(vid_id)
-                continue
+    def total(slot):
+        return slot["score"] + min(MULTI_QUERY_BONUS * (len(slot["queries"]) - 1), MAX_MULTI_QUERY_BONUS)
 
-            if is_live:
-                used_video_ids.add(vid_id)
-                continue
+    ranked, keys = [], set()
+    for slot in sorted(pool.values(), key=total, reverse=True):
+        key = _title_key(slot["entry"].get("title", ""))
+        if key in keys:
+            continue   # a re-upload of a video already ranked higher
+        keys.add(key)
+        ranked.append({**slot["entry"], "_score": round(total(slot), 2), "_queries": len(slot["queries"]),
+                       "_query": slot["query"]})
 
-            if "/shorts/" in webpage_url:
-                used_video_ids.add(vid_id)
-                continue
+    trailers = [e for e in ranked if any(w in e.get("title", "").lower() for w in TRAILER_WORDS)]
+    if len(trailers) > 1:
+        extra = trailers[1:]
+        ranked = [e for e in ranked if e not in extra] + extra
 
-            if duration and duration > 7200:
-                used_video_ids.add(vid_id)
-                continue
+    # Each query names one moment of the script, so its best result goes first, in query
+    # order: ranked by score alone, two red card clips filled the slots and the gesture
+    # clip (tenth) was never checked. The rest follow by score.
+    first = []
+    for q in queries:
+        pick = next((e for e in ranked if e["_query"] == q and e["_score"] >= MIN_FIRST_PICK_SCORE
+                     and not any(e is f for f in first)), None)
+        if pick:
+            pick["_first_pick"] = True
+            first.append(pick)
+    ranked = first + [e for e in ranked if not any(e is f for f in first)]
 
-            valid_entries.append(entry)
-            print(f"Found: {entry.get('title', 'Unknown')[:60]}... ({duration}s)")
+    print(f"\n{len(ranked)} usable videos across {len(queries)} queries (* = best result of its query, checked first):")
+    for e in ranked[:10]:
+        print(f"   {'*' if e.get('_first_pick') else ' '}{e['_score']:5.1f}  ({e['_queries']} quer{'y' if e['_queries'] == 1 else 'ies'})  "
+              f"{e.get('title', '')[:65]} ({e.get('duration') or '?'}s)")
+    return ranked
 
-        # Keep every valid result in ranked order: if the best one fails to
-        # download, the next one is tried instead of giving up on the query.
-        filtered_entries = _rank_entries(valid_entries, query) if valid_entries else []
 
-        if filtered_entries:
-            print(f"Found {len(filtered_entries)} suitable video(s).")
-            break
-        else:
-            print("No valid results. Retrying...")
-            time.sleep(2)
-
-    if not filtered_entries:
-        print("No suitable videos found after all retries.")
-        existing = _pick_existing_video_material()
-        if existing:
-            print(f"Using existing video: {existing}")
-            return [existing]
-        return []
-
-    paths = []
-
-    tries = 0
-    for e in filtered_entries:
-        if len(paths) >= max_videos:
-            break
-        if tries >= MAX_DOWNLOAD_TRIES:
-            print(f"   Tried {tries} results for this query, moving on")
-            break
-        tries += 1
-        vid_id = e.get("id")
-        title = _safe_title(e.get("title", "untitled"))
-        webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
-
+def download_entry(e: dict, used_video_ids: Optional[set] = None) -> Optional[str]:
+    """Download one search result (trimmed to MAX_SOURCE_SECONDS). Returns the path or None."""
+    os.makedirs(VIDEO_MATERIAL_DIR, exist_ok=True)
+    vid_id = e.get("id")
+    title = _safe_title(e.get("title", "untitled"))
+    webpage_url = e.get("webpage_url") or f"https://www.youtube.com/watch?v={vid_id}"
+    if used_video_ids is not None:
         used_video_ids.add(vid_id)
-        print(f"\nDownloading: {title}")
-        print(f"   URL: {webpage_url}")
+    print(f"\nDownloading: {title}")
+    print(f"   URL: {webpage_url}")
 
-        filepath, heatmap = None, None
+    filepath, heatmap = None, None
+    # Cookie-less first; cookies only help with age-restricted videos.
+    for use_cookies in (False, True):
+        if filepath or (not use_cookies and _no_cookie_blocked):
+            continue
+        label = "with cookies" if use_cookies else "no cookies"
+        filepath, heatmap = _try_download(f"Method 1: HD up to {MAX_HEIGHT}p ({label})",
+                                          _make_opts_hd(skip_download=False, use_cookies=use_cookies),
+                                          webpage_url, uses_cookies=use_cookies)
+    if not filepath and not _no_cookie_blocked:
+        time.sleep(3)
+        filepath, heatmap = _try_download("Method 2: no cookies (720p)",
+                                          _make_opts_no_cookies(skip_download=False),
+                                          webpage_url, uses_cookies=False)
+    if not filepath and not _no_cookie_blocked:
+        filepath = _try_cli_download(vid_id, webpage_url)
 
-        # Cookie-less first; cookies only help with age-restricted videos.
-        for use_cookies in (False, True):
-            if filepath or (not use_cookies and _no_cookie_blocked):
-                continue
-            label = "with cookies" if use_cookies else "no cookies"
-            filepath, heatmap = _try_download(f"Method 1: HD up to {MAX_HEIGHT}p ({label})",
-                                     _make_opts_hd(skip_download=False, use_cookies=use_cookies),
-                                     webpage_url, uses_cookies=use_cookies)
+    if filepath and os.path.exists(filepath):
+        print(f"   Downloaded: {os.path.basename(filepath)} ({os.path.getsize(filepath) / (1024 * 1024):.2f} MB)")
+        start = _best_window_start(heatmap, e.get("duration"), MAX_SOURCE_SECONDS)
+        print(f"   Most replayed window starts at {start:.0f}s" if start else
+              "   No most-replayed peak to use, keeping the opening")
+        filepath = _trim_video_after_download(filepath, MAX_SOURCE_SECONDS, start)
+        _write_source_meta(filepath, title, e.get("duration"), start)
+        return filepath
 
-        if not filepath and not _no_cookie_blocked:
-            time.sleep(3)
-            filepath, heatmap = _try_download("Method 2: no cookies (720p)",
-                                     _make_opts_no_cookies(skip_download=False),
-                                     webpage_url, uses_cookies=False)
-
-        if not filepath and not _no_cookie_blocked:
-            filepath = _try_cli_download(vid_id, webpage_url)
-
-        download_success = filepath is not None
-
-        if download_success and filepath and os.path.exists(filepath):
-            file_size = os.path.getsize(filepath) / (1024 * 1024)
-            print(f"   Downloaded: {os.path.basename(filepath)} ({file_size:.2f} MB)")
-
-            start = _best_window_start(heatmap, e.get("duration"), MAX_SOURCE_SECONDS)
-            print(f"   Most replayed window starts at {start:.0f}s" if start else
-                  "   No most-replayed peak to use, keeping the opening")
-            filepath = _trim_video_after_download(filepath, MAX_SOURCE_SECONDS, start)
-            paths.append(filepath)
-            _write_source_meta(filepath, title, e.get("duration"), start)
-        else:
-            print(f"   All methods failed for: {vid_id}")
-
-            latest = _find_latest_video()
-            if latest and vid_id in latest:
-                print(f"   Found partial download: {latest}")
-                paths.append(latest)
-
-    return paths
+    print(f"   All methods failed for: {vid_id}")
+    latest = _find_latest_video()
+    if latest and vid_id in latest:
+        print(f"   Found partial download: {latest}")
+        return latest
+    return None
 
 
 if __name__ == "__main__":
@@ -685,12 +742,9 @@ if __name__ == "__main__":
     print(f"\nTesting download with query: {test_query}")
 
     try:
-        results = fetch_video_material_by_search(
-            search_queries=[test_query],
-            max_videos=1,
-            retry_searches=5,
-            used_video_ids=set()
-        )
+        pool = search_pool([test_query])
+        path = download_entry(pool[0]) if pool else None
+        results = [path] if path else []
         if results:
             print(f"\nDownloaded {len(results)} video(s):")
             for i, path in enumerate(results, 1):

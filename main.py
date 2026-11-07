@@ -16,17 +16,69 @@ subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
 
 import config
 from config import GEMINI_API_KEYS, DATA_DIR, CHANNELS_DIR
+from modules.overlay_cropper import crop_overlays
 
 if not GEMINI_API_KEYS:
     raise RuntimeError("GEMINI_API_KEYS is not set. Add it to your .env file.")
 
-_key_pool = itertools.cycle(GEMINI_API_KEYS)
+_key_pool = itertools.cycle(enumerate(GEMINI_API_KEYS, 1))
+_exhausted_keys = set()   # key numbers whose daily limit is used up this run
+_client_key = {}          # id(client) -> key number, to know which key hit a limit
+
+
+class GeminiDailyQuota(Exception):
+    """Every key's requests-per-day limit is used up. It resets after hours, not
+    seconds, so retrying (and re-uploading the video for each retry) only wastes time."""
+
 
 def _gemini_client():
-    """Return a Gemini client using the next API key in the rotation pool."""
-    key = next(_key_pool)
-    print(f"Gemini key: {key[:8]}...")
-    return genai.Client(api_key=key)
+    """Return a Gemini client using the next API key in the rotation pool that still has
+    daily quota left. Raises GeminiDailyQuota when none does."""
+    for _ in range(len(GEMINI_API_KEYS)):
+        n, key = next(_key_pool)
+        if n not in _exhausted_keys:
+            break
+    else:
+        raise GeminiDailyQuota(
+            f"all {len(GEMINI_API_KEYS)} Gemini keys have used up their free daily limit. "
+            "Run again after the reset, or turn on billing for a project (much higher limits).")
+    # numbered, because every key starts with the same "AQ.Ab8RN" and the log looked like one key
+    print(f"Gemini key {n}/{len(GEMINI_API_KEYS)}")
+    client = genai.Client(api_key=key)
+    _client_key[id(client)] = n
+    return client
+
+def _on_quota_hit(client, what, attempt, error=None):
+    """
+    Handle a Gemini 429 (rate limit). With several keys, switch to the next one; its
+    files must then be uploaded again, so the caller re-uploads when this returns True.
+    With one key, "switching" gave back the same key and re-uploaded every video for
+    nothing (minutes per hit), so just wait for the per-minute limit to reset instead.
+    A daily limit is different: that key is done for hours, so it is set aside for the
+    rest of the run and the next key that still has quota takes over. Before, all four
+    used-up keys were retried in turn, re-uploading a 150 MB video each time.
+    GeminiDailyQuota is raised once every key is used up.
+    Returns (client, switched).
+    """
+    if error is not None and re.search(r"PerDay|per day", str(error)):
+        n = _client_key.get(id(client))
+        if n is not None:
+            _exhausted_keys.add(n)
+        wait = re.search(r"retry in (\d+h)?(\d+m)?", str(error))
+        reset = f", resets in {''.join(g for g in wait.groups() if g)}" if wait and any(wait.groups()) else ""
+        left = len(GEMINI_API_KEYS) - len(_exhausted_keys)
+        print(f"Gemini key {n}/{len(GEMINI_API_KEYS)} used up its daily limit ({what}{reset}), "
+              f"{left} key(s) left")
+        return _gemini_client(), True   # raises GeminiDailyQuota when no key is left
+    if len(GEMINI_API_KEYS) > 1:
+        print(f"Gemini 429 ({what}), switching key... (attempt {attempt})")
+        time.sleep(5)
+        return _gemini_client(), True
+    wait = 20 * attempt
+    print(f"Gemini 429 ({what}), rate limited, waiting {wait}s... (attempt {attempt})")
+    time.sleep(wait)
+    return client, False
+
 
 def _state_name(file_info):
     """Gemini returns a FileState enum; normalize it to a plain string like 'ACTIVE'."""
@@ -79,8 +131,51 @@ def _upload_and_wait(client, path, label=None):
     return uf
 
 
+class _EmptyReply(Exception):
+    """Gemini answered without any text: a safety block, or thinking used up the output budget."""
+
+
+def _require_text(response):
+    """Return the response, or raise _EmptyReply when it has no text, so the retry
+    loops ask again instead of parsing None (an empty reply once rejected a good video)."""
+    if getattr(response, "text", None):
+        return response
+    try:
+        reason = response.candidates[0].finish_reason
+    except Exception:
+        reason = getattr(getattr(response, "prompt_feedback", None), "block_reason", None)
+    raise _EmptyReply(f"Gemini returned no text (finish reason: {getattr(reason, 'name', reason)})")
+
+
+def _who_is_who(look):
+    """
+    Prompt lines that stop Gemini from guessing who unfamiliar names are.
+
+    Gemini 2.5 Flash had never heard of Edgerunners 2's King and Avida, so it decided
+    they were David and Lucy and approved a teaser without them. Telling it "whoever
+    doesn't match the description is not them" went too far the other way: it couldn't
+    name anyone in season 2 footage and rejected eleven of twelve videos. So the title
+    and the description guide it, and only clear evidence of another show rejects.
+    The description is often just one scene (the sports prompt writes the opening shot,
+    "Messi stepping off a private jet"), so it only helps tell who is who; a clip of a
+    different scene must never fail for not matching it.
+    """
+    if not look:
+        return ""
+    return ("WHO IS WHO: the script may name characters or people newer than your training data, so you "
+            "may not recognise them. Never call them by the names of characters you already know (an older "
+            "season's cast is not the new cast). Use the video's title and this description to recognise "
+            f'them: "{look}". The description shows only SOME of the footage, often one scene: use it to '
+            "tell who is who, and never reject a shot because it shows a different scene, place or outfit. "
+            "Not being able to put a name to a face is NOT a reason to reject: footage from the right show "
+            "and season whose title names the subject counts as the subject. The video's title, not the "
+            "faces you think you recognise, decides the season: new characters look like the old cast you "
+            "know, so never reject footage as 'the old cast'. Reject only footage that clearly comes from "
+            "another show, sport or story.")
+
+
 try:
-    from modules.video_material_fetcher import fetch_video_material_by_search
+    from modules.video_material_fetcher import search_pool, download_entry
     from modules.music_generator import generate_music, fetch_music_from_youtube
     from modules.newvoice import generate_voice
     from modules.video_editor import (merge_audio_video, render_thumbnail, append_thumbnail_frame,
@@ -97,8 +192,15 @@ CLEANUP_FILES = True
 MIN_CLIP_DURATION = 3.0
 MIN_SEGMENT_DURATION = 4.0        # shorter segments = a new shot every ~4s instead of every ~10s
 MAX_CLIPS = 8
-CANDIDATES_PER_QUERY = 2           # if a query's top result is rejected, also try its next best result
+MAX_CANDIDATES = 10                # most videos downloaded and checked per run (best across all queries first)
+MAX_SOURCE_VIDEOS_CAP = 5          # first picks may push approvals past 3, never past this
+MAX_DOWNLOAD_FAILURES = 4          # stop after this many failed downloads in a row (YouTube is blocking)
 MAX_MUSIC_QUERIES = 3              # how many free YouTube tracks to try before paying ElevenLabs
+# Each model has its own free daily limit, so the jobs are spread over three of them.
+# In a side-by-side test 3.6 spotted a Guardian news edit that 2.5 approved.
+GEMINI_MODEL = "gemini-3.6-flash"              # watches video: evaluation, edit plan, thumbnail
+GEMINI_CHECK_MODEL = "gemini-3.5-flash-lite"   # still-frame checks, the most frequent call
+GEMINI_MUSIC_MODEL = "gemini-2.5-flash"        # music check
 EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
 THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
 THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
@@ -114,68 +216,20 @@ DEFAULT_CHANNEL = {
 }
 
 MANUAL_DATA = {
-  "channel": "sports",
-  "sport": "f1",
-  "lane": "news",
-  "format": "news_why",
-  "topic": "Lewis Hamilton takes his first Ferrari pole at the 2026 Mexico City Grand Prix by 0.009s",
-  "specific_subject": "Lewis Hamilton, Mexico City GP qualifying, 31 October 2026: he was fourth after the first Q3 runs and behind Charles Leclerc all weekend, then beat George Russell's new top time on the final run by 0.009s",
-  "title": "How Lewis Hamilton Got His First Ferrari POLE #f1",
-  "verification": {
-    "event_date": "2026-10-31 (Mexico City GP qualifying, Autodromo Hermanos Rodriguez). About 19 hours before the brief's real date of 2026-11-01, so inside the 72-hour window and also inside 24 hours, which exempts it from the lane-balance penalty. The race itself starts at 14:00 local on 1 November and had not run when this was written.",
-    "sources": [
-      "https://www.formula1.com/en/latest/article/hamilton-clinches-first-pole-with-ferrari-in-qualifying-at-the-mexico-city-gp.4GffzFhlnOxOjbHHMc0AJI",
-      "https://www.formula1.com/en/results/2026/races/1298/mexico/qualifying",
-      "https://www.skysports.com/f1/news/13606015/mexico-city-gp-qualifying-lewis-hamilton-claims-first-pole-position-for-ferrari-by-edging-out-mercedes-george-russell",
-      "https://www.skysports.com/f1/news/13606018/lewis-hamilton-says-its-a-dream-to-emulate-michael-schumacher-after-claiming-his-first-ferrari-pole-at-the-mexico-city-gp",
-      "https://www.the-race.com/formula-1/hamilton-takes-first-ferrari-gp-pole-in-mexico/",
-      "https://www.gpfans.com/en/f1-news/1092267/f1-qualifying-results-2026-mexican-grand-prix-positions-times/",
-      "https://www.motorsport.com/f1/news/f1-mexico-gp-quali-report/10870286/",
-      "https://www.manilatimes.net/2026/11/01/sports/hamilton-takes-record-105th-pole-and-first-for-ferrari-as-antonelli-lurks/2458837"
-    ],
-    "claims_checked": [
-      "Hamilton took pole at the 2026 Mexico City GP, his first grand prix pole with Ferrari -> formula1.com report; Sky Sports; The Race",
-      "Pole margin over George Russell was 0.009s (1:16.514 vs 1:16.523) -> formula1.com official qualifying results; Sky Sports; Motorsport.com; The Race",
-      "Leclerc topped both Friday practice sessions -> formula1.com report (Leclerc held P1 in FP1 and FP2; Ferrari strongest on Friday); Sky Sports (Hamilton was outpaced by Leclerc all weekend)",
-      "On the first Q3 runs Leclerc went more than four tenths clear of Hamilton -> formula1.com report (Hamilton 1:17.069, Leclerc then went P1 by more than four tenths); GPFans (Hamilton was P4 after the first Q3 runs)",
-      "Hamilton was fourth after his first Q3 run -> GPFans; The Race (he messed up his banker lap early in Q3)",
-      "On the final runs Russell jumped to P1 before Hamilton beat it -> formula1.com report; Motorsport.com (Russell took provisional pole from Leclerc on his final lap)",
-      "Hamilton produced his best lap on the final attempt -> Sky Sports (best lap when it mattered most, end of Q3); The Race (no mistake on his final attempt); GPFans (pole set on his second Q3 run)",
-      "105th career pole, an F1 record -> formula1.com report; Sky Sports; Manila Times (AFP); The Race",
-      "First pole since the 2023 Hungarian GP -> formula1.com report; GPFans; Manila Times (AFP); Sky Sports (first since July 2023)",
-      "Hamilton is 41 and the oldest pole-sitter since 1982 (Mario Andretti) -> The Race; Sky Sports; GPFans; Manila Times (AFP)",
-      "Hamilton and Russell are the only drivers who can stop Kimi Antonelli clinching the title in Sunday's race -> Sky Sports; Manila Times (AFP); formula1.com (Antonelli needs ninth to secure the title)",
-      "Mario Kart photo-finish line is a comparison joke, not a factual claim -> no source needed",
-      "Faster than you can blink: 0.009s is about 9 milliseconds, shorter than a human blink. This is a comparison, not a sourced statistic, and is kept general on purpose"
-    ],
-    "footage_status": "GREEN",
-    "footage_note": "Do not use broadcast qualifying laps or onboard footage. Use Hamilton's parc ferme celebration filmed by fans in the stadium section, Ferrari's own social clips of the garage celebration, the top-three press conference (Hamilton, Russell, Leclerc), paddock walks by Leclerc and Antonelli, and stadium and grandstand b-roll of the Autodromo Hermanos Rodriguez. The team radio can only be shown as a subtitle over off-track footage. For the Mario Kart line, use generic kart-racing b-roll or skip the cutaway.",
-    "punch_markers": [
-      "last:suspense -> the ticking-clock moment when Hamilton has one lap left and Russell has just gone top, so the viewer feels the pressure",
-      "blink:shock -> the unbelievable fact: the pole was won by less time than a blink. It is the only reaction sound and sits well clear of the other markers",
-      "hundred:celebrate -> lands the record 105th pole, a milestone that deserves a trophy-style sound"
-    ]
-  },
-  "youtube_queries": [
-    "Hamilton first Ferrari pole Mexico",
-    "Hamilton pole celebration Mexico fans",
-    "Russell Hamilton Leclerc Mexico press conference",
-    "Leclerc Ferrari garage Mexico 2026",
-    "Antonelli Mexico City paddock",
-    "Autodromo Hermanos Rodriguez stadium crowd"
-  ],
-  "scene_query": "Lewis Hamilton in a red Ferrari race suit climbing onto his red Ferrari in parc ferme, both fists raised, packed stadium grandstands behind him under a sunny Mexico City sky",
-  "footage_source": "official_or_press",
-  "music_mood": "hype",
-  "music_queries": [
-    "racing phonk instrumental no copyright",
-    "epic hype trap beat instrumental no lyrics",
-    "sports hype trap instrumental no copyright"
-  ],
-  "music_prompt": "Dark cinematic trap with an Italian-opera edge, 142 BPM. Rumbling 808 bass, staccato string ostinato and a distant V6 turbo engine whine. Keep it low and tense through the Leclerc setup and Hamilton sitting fourth. Add a ticking hi-hat build on the last-chance line, cut to near silence for a beat, then drop hard with cinematic brass hits and a stadium crowd swell when he beats Russell. Ride the drop under the record stats and settle into a looping groove for the ending. Sports short-form video background, no lyrics, exclude: soft acoustic guitar, cheerful ukulele.",
-  "voice_name": "animatoryoung",
-  "script": "Lewis Hamilton grabbed his first Ferrari pole by nine thousandths of a second, without being the fastest Ferrari. [curious] So how? Charles Leclerc topped both Friday practices, and in the final shootout he went more than four tenths clear of Lewis. [understated] Lewis sat fourth after his first run. Not exactly pole energy. But then George Russell rockets to the top with a monster lap. Lewis is still out there, *last:suspense* chance. And he beats Russell by nine THOUSANDTHS. [deadpan] That's faster than you can *blink:shock*, closer than a photo finish in Mario Kart. [thoughtful] He saved his best lap for the only one that counted. It's his *hundred:celebrate* and fifth pole, his first since twenty twenty-three. And at forty-one, he's the oldest polesitter since nineteen eighty-two. [softly] Tonight, only Lewis and Russell can stop Kimi Antonelli taking the title, and that's why.",
-  "spoken_word_count": 138
+"channel": "anime",
+"topic": "Cyberpunk Edgerunners 2",
+"specific_subject": "Capri is built on Soulkiller, a program whose inventor Alt Cunningham was kidnapped by Arasaka in 2013 and became its first victim",
+"title": "Who really made Capri in Cyberpunk Edgerunners 2?",
+"hook": "Who really made Capri?",
+"youtube_queries": ["Cyberpunk Edgerunners 2 D Capri scene", "Cyberpunk Edgerunners 2 Talia Capri goes hard", "Cyberpunk Edgerunners 2 Capri 4k", "Cyberpunk Edgerunners 2 episode 3 D datashard", "Cyberpunk Edgerunners 2 Capri english dub", "Cyberpunk Edgerunners 2 official trailer"],
+"scene_query": "A black-haired young man with a green cybernetic eye clutches his head as glowing red code and a ghostly digital girl swirl around him, city lights flicker and explode, then a teenage girl with heavy chrome implants floats over a burning neon city wrapped in a shell of twisted metal",
+"footage_source": "official_or_press",
+"music_mood": "mysterious",
+"music_queries": ["Cyberpunk 2077 Never Fade Away instrumental", "Cyberpunk Edgerunners 2 OST", "dark cyberpunk ambient instrumental no copyright"],
+"music_prompt": "Dark atmospheric synthwave with a cold industrial edge, 88 BPM. Deep pulsing analog synth bass for a sci-fi cyberpunk feel, glitchy digital textures like corrupted data, and a lonely detuned electric piano melody. Quiet uneasy tension at the start, a sudden low drop and swelling pad at the big reveal around second twenty five, a brief dry lighter beat for a sarcastic joke, then a sad fading synth line for the reflective ending. short-form video background, no lyrics, exclude: upbeat pop drums, bright cheerful brass",
+"voice_name": "animatoryoung",
+"spoken_word_count": 98,
+"script": "[curious] Who really made Capri? We all remember the ghost girl in D's datashard. The show says Kyoko built her for Arasaka. [thoughtful] But Capri is made of engrams, copies of real human minds, and Arasaka makes those with one program... Soulkiller. Game lore says a netrunner named Alt Cunningham invented it. In twenty thirteen, Arasaka *kidnapped:wrong* her and forced her to rebuild it. Its own creator became its first *victim:boom*. [deadpan] Arasaka saw a program that ate its inventor and said, great, let's build *soldiers:meme* with it. [softly] So who really made Capri? A woman Arasaka stole sixty five years ago."
 }
 
 
@@ -284,9 +338,15 @@ def _check_sfx_tags(punch_words: list):
     print(f"Sound effect tags OK: {tags}")
 
 
+_CURRENCY = {"pound": "£", "pounds": "£", "dollar": "$", "dollars": "$", "euro": "€", "euros": "€"}
+
+
 def _marker_index(target, n: int, words_data: list):
     """Index in words_data of the nth copy of a marked word, or None."""
     hits = [i for i, (word, _s, _e) in enumerate(words_data) if _punch_key(word) == target]
+    if not hits and target in _CURRENCY:
+        # Whisper writes "fifty thousand pounds" as "£50,000": the word becomes a symbol
+        hits = [i for i, (word, _s, _e) in enumerate(words_data) if _CURRENCY[target] in word]
     if not hits:
         return None
     # Whisper can drop a word, so fall back to the last copy it heard
@@ -472,6 +532,7 @@ def _remove_sidecars(video_path):
 
 
 SCENE_CUT_THRESHOLD = 0.3   # ffmpeg scene-change score (0-1) that counts as a hard cut
+FLASH_SHOT = 1.0            # a shot shorter than this is a flash frame, not a place to start a clip
 
 
 def _find_shot_cuts(video_path, start, end):
@@ -496,7 +557,7 @@ def _snap_to_shot_cut(video_path, start, max_back=1.5, max_forward=0.7):
     - Otherwise a cut just BEFORE start is where this shot begins: back up to it.
     """
     try:
-        cuts = _find_shot_cuts(video_path, start - max_back, start + max_forward)
+        cuts = _find_shot_cuts(video_path, start - max_back, start + max_forward + 2 * FLASH_SHOT)
     except Exception as e:
         print(f"Shot-cut detection failed, keeping {start:.2f}s: {e}")
         return start
@@ -509,6 +570,10 @@ def _snap_to_shot_cut(video_path, start, max_back=1.5, max_forward=0.7):
         snapped = before[-1]
     else:
         return start
+    # Trailers flash several shots in a row. Starting on one that lasts 0.1s showed a
+    # one-frame blip and cancelled the planned full-screen layout, so skip past it.
+    while flashes := [c for c in cuts if snapped < c < snapped + FLASH_SHOT]:
+        snapped = flashes[-1]
 
     snapped = round(snapped + 0.02, 2)   # just past the cut so frame one is the new shot
     print(f"Snapped clip start {start:.2f}s → {snapped:.2f}s (shot cut)")
@@ -632,21 +697,23 @@ def evaluate_youtube_music_with_genai(music_path: str, topic: str, script_text: 
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = _require_text(client.models.generate_content(
+                model=GEMINI_MUSIC_MODEL,
                 contents=[uploaded_file, prompt],
                 config={"response_mime_type": "application/json"},
-            )
+            ))
             break
         except Exception as e:
-            if "503" in str(e):
+            if isinstance(e, _EmptyReply):
+                print(f"{e} (music eval), retrying... ({attempt}/{max_attempts})")
+                time.sleep(5)
+            elif "503" in str(e):
                 print(f"Gemini 503 on music eval, retrying in 20s... ({attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"Gemini 429 on music eval, rotating key... ({attempt}/{max_attempts})")
-                client = _gemini_client()
-                uploaded_file = _upload_and_wait(client, music_path, label="YouTube music")
-                time.sleep(5)
+                client, switched = _on_quota_hit(client, "music eval", attempt, e)
+                if switched:
+                    uploaded_file = _upload_and_wait(client, music_path, label="YouTube music")
             else:
                 raise
         if attempt == max_attempts:
@@ -725,7 +792,7 @@ def _prepare_narration(script_text: str, voice_name: str, punch_words: list, sfx
         print("Spanish detected, skipping subtitles.")
         words_data = None
     else:
-        words_data = transcribe_audio_to_words(audio_path, LANGUAGE)
+        words_data = transcribe_audio_to_words(audio_path, LANGUAGE, script_text)
 
     tagged_sfx = []
     if config.SFX_ENABLED and any(t for _w, _n, t in punch_words):
@@ -734,6 +801,17 @@ def _prepare_narration(script_text: str, voice_name: str, punch_words: list, sfx
         else:
             print("No word timestamps, skipping tagged sound effects")
     return audio_path, words_data, tagged_sfx
+
+
+def _subject_only(evaluation, shown):
+    """True when a rejected video is clean, real footage of the subject that just shows
+    none of the script items: worth keeping as a backup source instead of deleting."""
+    share = evaluation.get("subject_share")
+    return (evaluation.get("subject_present") is True and not shown
+            and (evaluation.get("relevance_score") or 0) >= 7
+            and (evaluation.get("technical_score") or 0) >= 6
+            and (evaluation.get("hook_score") or 0) >= 5
+            and not (isinstance(share, (int, float)) and share < MIN_SUBJECT_SHARE))
 
 
 def _video_title(video_path):
@@ -770,7 +848,7 @@ def _frame_jpeg(video_path, t, crop=None):
         return None
 
 
-def _check_frames(client, checks, subject):
+def _check_frames(client, checks, subject, look=None):
     """
     Independent look at real frames: for each check {"id", "frames": [jpeg bytes],
     "should_show": text}, does the footage really show it, cleanly?
@@ -781,6 +859,7 @@ def _check_frames(client, checks, subject):
     Returns {id: {"ok", "shows", "problem"}}; a check Gemini skips counts as failed.
     Returns None when the call itself fails, so callers keep what they had
     instead of rejecting everything over an API error.
+    `look` (the script's scene_query) lets it recognise characters it doesn't know by name.
     """
     from google.genai import types
     contents = []
@@ -789,44 +868,60 @@ def _check_frames(client, checks, subject):
         contents += [types.Part.from_bytes(data=f, mime_type="image/jpeg") for f in c["frames"] if f]
     contents.append(f"""
 You are checking frames grabbed from source footage for a short video about: {subject}.
+{_who_is_who(look)}
 Each CHECK above has one or two frames and what they should show.
 
 ok = true only when the frames show real footage (a filmed moment, broadcast, interview,
 press conference, anime scene or game footage) of the subject or of what "should show" names.
 ok = false when ANY of these is true:
-- a different person, character or story than the subject
+- a person or character from a different story, or a different person than the subject who is
+  not what "should show" names either. Side characters, objects and places that the "should show"
+  text talks about (a dying guard, a crowd, a weapon) are fine.
 - a news or recap channel graphic: headline banners, lower thirds, quote cards, tweet
   screenshots, or a photo placed inside a designed template
 - burned-in captions that transcribe a narrator, host or commentator (small original
   dialogue subtitles of a show itself are fine)
 - a host, YouTuber or commentator who is not the subject
-- a channel watermark or logo covering a large part of the frame
+- a logo bigger than a small corner bug: a channel watermark, or a studio or streaming logo card
+  (Netflix, a studio name) over the picture. A small logo tucked in a corner is fine.
 - a black screen, title card, intro, outro, end screen or subscribe screen
+- "should show" includes what an editor claims the frame shows, and the main person, object or
+  action of that claim is clearly not in the frames (ignore the claim's "no watermark / no text" parts)
 Be strict. When unsure, ok = false.
 
-Return ONLY JSON: {{"checks": [{{"id": "<id>", "ok": true, "shows": "<what you actually see, under 12 words>", "problem": "<the rule it breaks, or empty>"}}]}}
+overlay_only = true when ok is false ONLY because of a logo, watermark, caption box or text on top of the
+picture, and the footage underneath is the right person or moment. Otherwise false.
+
+Return ONLY JSON: {{"checks": [{{"id": "<id>", "ok": true, "overlay_only": false, "shows": "<what you actually see, under 12 words>", "problem": "<the rule it breaks, or empty>"}}]}}
 """)
     for attempt in range(1, 6):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = _require_text(client.models.generate_content(
+                model=GEMINI_CHECK_MODEL,
                 contents=contents,
                 config={"thinking_config": {"thinking_budget": 2048}, "response_mime_type": "application/json"},
-            )
+            ))
             break
         except Exception as e:
-            if "503" in str(e) and attempt < 5:
+            if isinstance(e, _EmptyReply) and attempt < 5:
+                print(f"{e} (frame check), retrying... (attempt {attempt}/5)")
+                time.sleep(3)
+            elif "503" in str(e) and attempt < 5:
                 print(f"Gemini 503 (frame check), retrying in 20s... (attempt {attempt}/5)")
                 time.sleep(20)
             elif "429" in str(e) and attempt < 5:
-                print(f"Gemini 429 (frame check), rotating key... (attempt {attempt}/5)")
-                client = _gemini_client()
-                time.sleep(5)
+                try:
+                    client, _ = _on_quota_hit(client, "frame check", attempt, e)
+                except GeminiDailyQuota as q:
+                    print(f"{q} Keeping these picks unchecked.")
+                    return None
             else:
                 print(f"Frame check failed ({e}), keeping these picks unchecked")
                 return None
     try:
-        rows = json.loads(response.text).get("checks", [])
+        rows = json.loads(response.text)
+        if isinstance(rows, dict):   # flash-lite sometimes returns the bare list without {"checks": ...}
+            rows = rows.get("checks", [])
     except Exception as e:
         print(f"Frame check returned bad JSON ({e}), keeping these picks unchecked")
         return None
@@ -842,10 +937,11 @@ Return ONLY JSON: {{"checks": [{{"id": "<id>", "ok": true, "shows": "<what you a
     return results
 
 
-MIN_SUBJECT_SHARE = 0.3   # below this, most of the source is about something else
+MIN_SUBJECT_SHARE = 0.3   # backups that show no script item still need to be mostly the subject
+MIN_SUBJECT_SECONDS = 8   # a video that shows script items needs this much real subject footage
 
 
-def _enforce_evaluation(evaluation, video_path, client):
+def _enforce_evaluation(evaluation, video_path, client, subject=None, look=None):
     """
     Apply the evaluation's own rules in code, then spot-check its evidence.
 
@@ -856,16 +952,19 @@ def _enforce_evaluation(evaluation, video_path, client):
     """
     if evaluation.get("decision") != "post":
         return evaluation
-    share = evaluation.get("subject_share")
-    if isinstance(share, (int, float)) and share < MIN_SUBJECT_SHARE:
-        evaluation["decision"] = "reject"
-        evaluation["reason"] = f"subject on screen only {share:.0%} of the video. {evaluation.get('reason', '')}"
-        return evaluation
-
     try:
         duration = _probe_duration(video_path)
     except Exception:
         duration = float("inf")
+    # The editor uses a few seconds per clip, so a short stretch of the right moment is enough.
+    # Seconds, not share: a news edit showed the phone incident in 21% of its runtime and was lost.
+    share = evaluation.get("subject_share")
+    if isinstance(share, (int, float)) and share * duration < MIN_SUBJECT_SECONDS:
+        evaluation["decision"] = "reject"
+        evaluation["reason"] = (f"subject on screen only {share * duration:.0f}s of the video. "
+                                f"{evaluation.get('reason', '')}")
+        return evaluation
+
     # A timestamp past the end has no frame to grab, so it can't prove anything either way.
     evidence = [e for e in evaluation.get("evidence") or []
                 if isinstance(e, dict) and isinstance(e.get("at"), (int, float))
@@ -875,7 +974,9 @@ def _enforce_evaluation(evaluation, video_path, client):
     checks = [{"id": str(k), "should_show": e.get("item", ""),
                "frames": [_frame_jpeg(video_path, e["at"]), _frame_jpeg(video_path, e["at"] + 1.5)]}
               for k, e in enumerate(evidence)]
-    results = _check_frames(client, checks, _video_title(video_path))
+    # The script's subject, not the video's own title: with the title as the subject,
+    # "Lucy and David" passed as "Avida" because they are what the teaser is about.
+    results = _check_frames(client, checks, subject or _video_title(video_path), look)
     if results is None:
         return evaluation
     passed = [e["item"] for k, e in enumerate(evidence) if results.get(str(k), {}).get("ok")]
@@ -894,18 +995,25 @@ def _enforce_evaluation(evaluation, video_path, client):
     return evaluation
 
 
-def evaluate_video_with_genai(video_path, script_text, script_items=None):
+def evaluate_video_with_genai(video_path, script_text, script_items=None, subject=None, look=None):
     """Upload a video to Gemini and score it for relevance, hook potential, and technical quality.
 
     Also returns `script_items` (the concrete things the script talks about) and `items_shown`
     (the ones visible in this footage). Pass the first call's script_items back in later calls
-    so every video is checked against the same list.
+    so every video is checked against the same list. `subject` and `look` (the script's
+    specific_subject and scene_query) say who the footage must show.
     """
     client = _gemini_client()
     if script_items:
         items_rule = f"Use EXACTLY this list, copied word for word: {json.dumps(script_items)}"
     else:
-        items_rule = "Write the list yourself: up to 6 items, 2-5 words each."
+        # Built while watching the first video, the list once held five phone-incident items
+        # and nothing about the Messi gesture or the red card, so those clips failed "shows
+        # none of the script items". The list must come from the script text alone.
+        items_rule = ("Write the list from the SCRIPT TEXT ALONE, as if you had not seen the footage: up to 6 "
+                      "items, 2-5 words each, one per distinct moment, event, object or place the script names, "
+                      "covering the WHOLE script from first line to last (a countdown gets at least one item for "
+                      "every numbered entry). Never spend two items on the same moment.")
 
     uploaded_file = client.files.upload(file=video_path)
     print(f"Uploaded file: {uploaded_file.name}")
@@ -920,11 +1028,21 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     
     SCRIPT EXCERPT:
     \"\"\"{script_text}\"\"\"
+
+    VIDEO TITLE: "{_video_title(video_path)}"
+    The title decides which season or installment this is. Never decide it from the characters you
+    think you see: you do not know a new season's cast, and you will mistake its characters for the
+    old cast you know (every season 2 clip got called "David and Lucy from season 1"). If the title
+    names the right season, the footage is that season.
     
     STEP 0 — REQUIRED SUBJECT (do this first):
     From the script, identify the CHARACTER or SHOW the footage must contain — not a specific state, form, or moment.
     State it internally as REQUIRED_SUBJECT before scoring.
+    Characters the script only mentions from other media (a game, a manga, a movie) are not part of
+    REQUIRED_SUBJECT: footage of the show can never contain them.
     Example: if the script is about Jax's abstraction, REQUIRED_SUBJECT = "Jax" — normal Jax, abstracted Jax, and scenes leading up to the abstraction ALL count. If the script is about Hange Zoë's hygiene, REQUIRED_SUBJECT = "Hange Zoë" — any footage showing Hange counts, regardless of the scene.
+    {f"The video is about: {subject}" if subject else ""}
+    {_who_is_who(look)}
     
     The footage must be raw source material — broadcast footage, official highlights, or documentary footage. It must NOT be someone else's YouTube video where they react to, comment on, or narrate over the clips.
 
@@ -932,11 +1050,15 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     Determine if this is:
     A) Raw/official footage — broadcast clips, official highlights, documentary, raw gameplay footage. ALLOWED.
     B) Reaction/commentary video — a YouTuber or creator watches clips and reacts, talks to camera, or narrates with their own voice over the footage. REJECT IMMEDIATELY.
-    C) Fan compilation with heavy custom editing, custom music, or a creator's voiceover throughout. REJECT IMMEDIATELY.
+    C) Fan compilation with heavy custom editing, custom music, or a creator's voiceover throughout, or a side-by-side
+       comparison (sub vs dub, before/after) with two pictures or labels on screen. REJECT IMMEDIATELY.
     D) Podcast/interview clip where someone is talking about the subject but not showing real action. REJECT IMMEDIATELY.
-    E) News or recap channel video: built from a designed template (headline banners, lower thirds, quote cards,
-       tweet screenshots, photos placed inside graphics), or a roundup that covers several different stories or
-       people. The subject showing up for a few seconds inside it does not make it raw footage. REJECT IMMEDIATELY.
+    E) News or recap channel video that is mostly template (headline banners, quote cards, tweet screenshots,
+       photos placed inside graphics) with only a few seconds of real footage, or a roundup that covers several
+       different stories or people. REJECT IMMEDIATELY.
+       A news edit about THIS story that also shows real footage of it (several seconds at a time with no text
+       over the picture) counts as A: for some incidents only news edits exist. Every clip is checked for text
+       before use, so only its clean stretches get used. Name those stretches in evidence.
 
     If type B, C, D or E → set decision = "reject", technical_score = 1, and stop evaluating.
 
@@ -978,7 +1100,6 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     - "reject": relevance_score <= 6  (subject barely visible, wrong character, or wrong show → reject)
     - "reject": technical_score <= 4
     - "reject": items_shown is empty (the subject is there, but nothing the script actually talks about)
-    - "reject": subject_share < 0.3 (most of the video is about something else)
     - "post":   items_shown is not empty AND relevance_score >= 7 AND hook_score >= 5 AND technical_score >= 5 AND subject_present = true
     - "revise": anything else / unsure
     
@@ -1003,21 +1124,23 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = _require_text(client.models.generate_content(
+                model=GEMINI_MODEL,
                 contents=[uploaded_file, prompt],
                 config={"thinking_config": {"thinking_budget": 8000}, "response_mime_type": "application/json"},
-            )
+            ))
             break
         except Exception as e:
-            if "503" in str(e):
+            if isinstance(e, _EmptyReply):
+                print(f"{e}, retrying... (attempt {attempt}/{max_attempts})")
+                time.sleep(5)
+            elif "503" in str(e):
                 print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"Gemini 429 quota hit, rotating key... (attempt {attempt}/{max_attempts})")
-                client = _gemini_client()
-                uploaded_file = _upload_and_wait(client, video_path)
-                time.sleep(5)
+                client, switched = _on_quota_hit(client, "evaluation", attempt, e)
+                if switched:
+                    uploaded_file = _upload_and_wait(client, video_path)
             else:
                 raise
         if attempt == max_attempts:
@@ -1031,7 +1154,7 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None):
             clean_text = clean_text[clean_text.find("{"):]
         if not clean_text.endswith("}"):
             clean_text = clean_text[:clean_text.rfind("}") + 1]
-        return _enforce_evaluation(json.loads(clean_text), video_path, client)
+        return _enforce_evaluation(json.loads(clean_text), video_path, client, subject, look)
     except Exception as e:
         print(f"Failed to parse GenAI JSON: {e}")
         print("Raw response:", raw_text)
@@ -1125,7 +1248,7 @@ def find_scene_with_gemini(video_path, query, script):
     for attempt in range(1, max_attempts + 1):
         try:
             response = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model=GEMINI_MODEL,
                 contents=[uploaded_file, prompt],
                 config={"response_mime_type": "application/json"},
             )
@@ -1282,6 +1405,8 @@ Allowed shapes (use exactly these keys):
 RULES:
 - Every value, name, item and quote MUST come from THAT segment's text. Never add facts, never round or convert numbers into new ones. Write numbers as digits even if the text spells them out ("fifty-two" → "52").
 - `segment_index` = the segment whose text contains the anchor word. `anchor_word` = that exact word, where the card should appear (usually the number or the first item).
+- A stat label uses the segment's own words. Never add a detail the line doesn't say (a season number, a year, a name).
+- A list needs at least 2 items named in the text. One named thing is not a list: skip it.
 - At most {max_cards} cards in total. Pick the strongest numbers and moments, skip the rest.
 - Spacing: at least {MIN_CARD_GAP:.0f} seconds between cards (use the segment `start` times), and none in the first {HOOK_CLEAR_SECONDS:.0f} seconds, so the hook stays clean. Cards that break this get dropped anyway.
 - Keep text short: labels up to 6 words, list items up to 5 words."""
@@ -1348,6 +1473,13 @@ def _graphic_numbers_ok(values, segment_text):
     return True
 
 
+def _label_numbers_ok(label, segment_text):
+    """True if every number in a card's label is one the narration says. The value
+    check alone let "10 / Episodes in Season 1" through: 10 was spoken, the 1 was made up."""
+    spoken = _numbers_in_text(segment_text)
+    return all(n in spoken for n in _numbers_in_text(label))
+
+
 def _validate_layout(scene, full_allowed):
     """Force layout/focus_x into safe values; anything odd becomes the framed layout."""
     layout = scene.get("layout")
@@ -1375,6 +1507,8 @@ def _validate_graphic(graphic, segment, allowed, index):
             value, label = str(graphic["value"]).strip(), str(graphic["label"]).strip()
             if not value or not label or not _graphic_numbers_ok([value], text):
                 raise ValueError("stat number not in narration")
+            if not _label_numbers_ok(label, text):
+                raise ValueError(f"label '{label}' has a number the narration doesn't say")
             clean = {"type": "stat", "value": value, "label": label}
         elif gtype == "versus":
             left, right = graphic["left"], graphic["right"]
@@ -1424,7 +1558,13 @@ def _intro_ban(video_path, duration):
     return round(min(10.0, max(3.0, duration * 0.05)), 1)
 
 
-def _clamp_backups(backups, video_durations, intro_bans, has_outro, outro_ban):
+def _outro_ban(duration, has_outro):
+    """Seconds at the end of a source that may hold an outro. A flat 30s left a 41-second
+    red card clip only seconds 3 to 9 to use, so short videos get a proportional ban."""
+    return round(min(30.0, max(3.0, duration * 0.15)), 1) if has_outro else 0.0
+
+
+def _clamp_backups(backups, video_durations, intro_bans, outro_bans):
     """Keep the edit plan's backup picks that point inside a video's usable range."""
     kept = []
     for b in backups or []:
@@ -1434,13 +1574,35 @@ def _clamp_backups(backups, video_durations, intro_bans, has_outro, outro_ban):
             continue
         if not 0 <= vi < len(video_durations):
             continue
-        hi = video_durations[vi] - (outro_ban if has_outro[vi] else 0.0) - 2.0
+        hi = video_durations[vi] - outro_bans[vi] - 2.0
         if intro_bans[vi] <= start <= hi:
             kept.append({"video_index": vi, "start": round(start, 2)})
     return kept[:2]
 
 
-def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_items=None):
+def _fix_minute_decimals(scenes, video_durations):
+    """
+    Gemini sometimes writes 3:32 as 3.32. When every start in the plan (picks and backups)
+    is under 10 with a decimal part of .59 or less, and the videos are minutes long, the
+    plan is in minutes.seconds: five picks inside the first five seconds of a five-minute
+    video never happens. Unconverted, they were all clamped to the same intro-ban second
+    and the Short played one title card five times.
+    """
+    spots = [s for s in scenes] + [b for s in scenes for b in s.get("backups") or [] if isinstance(b, dict)]
+    try:
+        values = [float(x["start"]) for x in spots]
+    except (KeyError, TypeError, ValueError):
+        return
+    if (len(values) < 3 or max(video_durations, default=0) < 120
+            or not all(0 <= v < 10 and round(v * 100) % 100 < 60 for v in values)):
+        return
+    for x in spots:
+        v = float(x["start"])
+        x["start"] = int(v) * 60 + round(v * 100) % 100
+    print(f"Edit plan timestamps were minutes.seconds (e.g. {values[0]} = {scenes[0]['start']:.0f}s), converted")
+
+
+def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_items=None, look=None):
     """
     Upload all approved source videos to Gemini in one call.
     Returns a flat list of scenes: [{index, video_index, start}, ...]
@@ -1526,6 +1688,7 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_it
         has_outro.append(not (source_duration and source_duration > cut_end + 5))
 
     intro_bans = [_intro_ban(vp, dur) for vp, dur in zip(video_paths, video_durations)]
+    outro_bans = [_outro_ban(dur, o) for dur, o in zip(video_durations, has_outro)]
     video_items = video_items or {}
 
     def _shows(vp):
@@ -1533,8 +1696,8 @@ def find_scenes_with_gemini(video_paths, script_segments, channel=None, video_it
         return f", shows: {', '.join(items)}" if items else ""
 
     videos_info = "\n".join(
-        f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, usable from {intro_bans[i]:.1f}s, "
-        f"ends with outro: {'yes' if has_outro[i] else 'no, cut from a longer video'}{_shows(video_paths[i])})"
+        f"  Video {i} - \"{video_titles[i]}\" (duration: {dur:.1f}s, usable from {intro_bans[i]:.1f}s "
+        f"until {dur - outro_bans[i]:.1f}s{_shows(video_paths[i])})"
         for i, dur in enumerate(video_durations)
     )
 
@@ -1545,6 +1708,8 @@ Your job: pick the single best (video, timestamp) for each segment so the final 
 
 SOURCE VIDEOS:
 {videos_info}
+
+{_who_is_who(look)}
 
 NARRATION SEGMENTS (index / spoken text / duration in seconds):
 {segments_json}
@@ -1599,6 +1764,10 @@ VISUAL-SCRIPT MATCHING (core rule):
 - Calm / explanatory segment → a clear mid-shot establishing what is being described.
 - DO NOT assign generic-looking footage that has nothing to do with the narration text.
 - NAMED OBJECT RULE: if the segment names a specific object, prop, weapon, or item (e.g. "the guitar", "his sword", "the case"), the frame at `start` MUST show that object visibly on screen — the subject merely being present is NOT enough. Scan specifically for the moment that object is in frame, even if it means a less "epic" shot. Only fall back to a generic shot of the subject if that object never appears anywhere in the footage.
+- MOMENT RULE (beats every pacing and variety rule below): when a segment talks about a moment, event or
+  item that a SOURCE VIDEO "shows" (see the list above), take that segment's clip from that video, at that
+  moment. Several segments about the same moment may all come from the same video, in a row. Generic
+  footage of the subject is only for segments that name no moment, or a moment no video shows.
 - Before picking a timestamp, name the specific word or phrase in that segment's text the shot must visually support. If you cannot point to one, the segment is too vague to justify a specific action shot — fall back to a clear, on-topic shot of the subject rather than an unrelated "cool" moment. You will restate this connection in `relevance_note` below, so do not pick a timestamp you can't justify this way.
 
 PACING RULE — energy alternation:
@@ -1606,9 +1775,9 @@ Use your tier tags to vary the edit rhythm. After a HIGH clip, prefer a MID or L
 Exception: the first two segments may both be HIGH if the script opens with a strong double-punch.
 
 SHOT VARIETY — mandatory across the full edit:
-- Never use two consecutive segments from the exact same timestamp range (clips must be at least 20 seconds apart within the same video).
+- Never play the same footage twice: two clips from the same video must not overlap (each starts at least 5 seconds after the other).
 - Mix shot distances: if segment N is a wide shot, segment N+1 should be a close-up or reaction — not another wide shot.
-- MULTI-VIDEO RULE: If you have multiple source videos, you MUST use every available video at least once. Never use the same video more than 2 segments in a row. Spread usage as evenly as possible.
+- MULTI-VIDEO RULE: use every available video at least once. Outside the MOMENT RULE, avoid using the same video more than 2 segments in a row.
 
 WHY THESE BANS EXIST:
 Every clip you pick plays silently under OUR OWN narration — the viewer never hears the source video's original audio. So the footage must read as genuine, raw material of the subject itself, not as "someone else's video." Anything that reveals a third party's presence — their commentary, their branding, their editing choices, their outro — breaks that illusion and makes the Short look like a screen-recording of someone else's content. Keep that goal in mind rather than pattern-matching the list below literally: the test is always "does this frame show the real subject, cleanly, with no trace of a third party's video wrapped around it?"
@@ -1619,8 +1788,8 @@ HARD BANS — never pick a timestamp that shows any of:
 - Black screens, fade-ins, fade-outs, or scene transitions
 - Burned-in subtitles or captions from the source (fansubs, translated dialogue lines at the bottom)
 - Anything before a video's "usable from" time (channel intros, animated logos, title cards)
-- The last 30 seconds of any video marked "ends with outro: yes" (outros, end screens, subscribe buttons, "thanks for watching" text). Videos marked "no" can be used right up to their end.
-- Score overlays, countdown timers, or match clocks visible in frame
+- Anything after a video's "usable until" time (outros, end screens, subscribe buttons, "thanks for watching" text).
+- Big score graphics, stat boards or countdown timers over the picture (the small corner score bug of a live match broadcast is fine)
 - Replay indicators ("REPLAY" / "INSTANT REPLAY" text on screen)
 - Fan-art or AMV frames with heavy lens flares, desaturated overlays, or color-burn effects that obscure the subject
 - Any frame where a large watermark, channel logo, or platform bug dominates the center of the image
@@ -1637,12 +1806,12 @@ Before writing JSON, verify:
 ☐ Every clip visually matches what its segment text is saying — you can name the exact word/phrase each shot supports
 ☐ Energy tiers alternate — no two consecutive HIGH clips after the opening pair
 ☐ All selected shots show the subject actively doing something (not just standing/posing)
-☐ No two consecutive clips are from the same timestamp range in the same video
+☐ No two clips from the same video overlap
 ☐ Shot distances vary across the edit (wide → close-up → mid, etc.)
 ☐ No banned content in any selected timestamp, and every start is at or after its video's "usable from" time
 ☐ All start times are safe (enough footage remaining)
 ☐ Every available source video is used at least once
-☐ No single video is used more than 2 times in a row
+☐ Every segment that names a moment a video shows uses that video (MOMENT RULE)
 
 ════════════════════════════════════
 STEP 5: LAYOUT PER SCENE
@@ -1661,7 +1830,7 @@ When unsure, ALWAYS choose "framed". A wrong "full" chops people in half; a wron
 
 {graphic_rules}
 
-TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30)
+TIMESTAMP FORMAT: seconds only (e.g. 90.0 — never 1:30, and never 1.30 for a minute and thirty seconds)
 
 VISUAL CHECK — required per scene:
 For each scene, look at the exact frame at `start` and write a short `visual_check` string confirming what is actually visible there. It must explicitly rule out every HARD BAN: no watermark/logo dominating the frame, no text/title card, no third-party commentator/reactor talking about the subject, no replay indicator, no black screen or transition, not in the banned intro/outro window. Remember: the subject themselves appearing in real footage (interview, press conference, broadcast moment) is fine — only flag a "talking head" if it's someone OTHER than the subject. If you notice a genuine banned element while writing this, pick a different timestamp before outputting — do not describe a violation and keep the timestamp.
@@ -1694,28 +1863,30 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     max_attempts = 5
     for attempt in range(1, max_attempts + 1):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = _require_text(client.models.generate_content(
+                model=GEMINI_MODEL,
                 contents=contents,
                 config={
                     "thinking_config": {"thinking_budget": 24576},
                     "response_mime_type": "application/json",
                 },
-            )
+            ))
             break
         except Exception as e:
-            if "503" in str(e):
+            if isinstance(e, _EmptyReply):
+                print(f"{e} (edit plan), retrying... (attempt {attempt}/{max_attempts})")
+                time.sleep(5)
+            elif "503" in str(e):
                 print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"Gemini 429, rotating key... (attempt {attempt}/{max_attempts})")
-                client = _gemini_client()
-                uploaded_files = [
-                    _upload_and_wait(client, vp, label=f"Video {i}")
-                    for i, vp in enumerate(video_paths)
-                ]
-                contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
-                time.sleep(5)
+                client, switched = _on_quota_hit(client, "edit plan", attempt, e)
+                if switched:
+                    uploaded_files = [
+                        _upload_and_wait(client, vp, label=f"Video {i}")
+                        for i, vp in enumerate(video_paths)
+                    ]
+                    contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
             else:
                 raise
         if attempt == max_attempts:
@@ -1727,7 +1898,7 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     try:
         result = json.loads(text)
         scenes = sorted(result.get("scenes", []), key=lambda x: x["index"])
-        OUTRO_BAN_SEC = 30.0   # matches "last 30 seconds" ban in the prompt
+        _fix_minute_decimals(scenes, video_durations)
 
         validated = []
         for scene in scenes:
@@ -1736,14 +1907,14 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
             dur = video_durations[vi]
 
             lo = intro_bans[vi]
-            hi = dur - (OUTRO_BAN_SEC if has_outro[vi] else 0.0) - 2.0
+            hi = dur - outro_bans[vi] - 2.0
             if hi < lo:
                 # Video too short to honor both bans, so fall back to the old, looser bound.
                 lo, hi = 0.0, max(dur - 2.0, 0.0)
 
             asked = float(scene.get("start", 0.0))
             scene["start"] = round(min(max(asked, lo), hi), 2)
-            scene["backups"] = _clamp_backups(scene.get("backups"), video_durations, intro_bans, has_outro, OUTRO_BAN_SEC)
+            scene["backups"] = _clamp_backups(scene.get("backups"), video_durations, intro_bans, outro_bans)
             if abs(scene["start"] - asked) > 1.0:
                 print(f"Scene {scene.get('index')}: Gemini start {asked:.1f}s is outside video {vi}'s usable range, "
                       f"moved to {scene['start']:.1f}s (Gemini did not check this frame)")
@@ -1774,13 +1945,15 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
         return fallback, [], video_paths, uploaded_files, client
 
 
-def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject):
+def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject, look=None):
     """
     Check every planned clip on its real frames and swap in a backup when it fails.
 
-    Round 1 checks each scene's pick, later rounds check the next backup of the
-    scenes that failed. A scene with no passing candidate reuses the nearest
-    passing scene's shot: the same shot twice beats a clip of another story.
+    Round 1 checks each scene's pick against the line and against what the plan
+    claimed the frame shows, later rounds check the next backup of the scenes that
+    failed. A scene with no passing candidate continues its nearest passing
+    neighbour's footage from where that clip ends; only if that fails too does it
+    reuse the neighbour's shot (the same shot twice beats a clip of another story).
     Starts are snapped to shot cuts here, so the frames checked are the frames used.
     """
     candidates = {s["index"]: [{"video_index": s["video_index"], "start": s["start"],
@@ -1789,6 +1962,7 @@ def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject)
                   for s in scenes}
     segment_by_index = dict(enumerate(script_segments))
     chosen, last_shows = {}, {}
+    overlay_picks = {}   # scene -> first candidate that failed only for a logo/text overlay
     for rnd in range(3):
         todo = [s for s in scenes if s["index"] not in chosen and rnd < len(candidates[s["index"]])]
         if not todo:
@@ -1801,10 +1975,15 @@ def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject)
             seg = segment_by_index.get(s["index"], {})
             mid = c["start"] + max(1.0, min(seg.get("duration", 4.0), 6.0) / 2)
             crop = crops.get(video)
-            checks.append({"id": str(s["index"]), "should_show": f'a shot for the line "{seg.get("text", "")}"',
+            should = f'a shot for the line "{seg.get("text", "")}"'
+            if rnd == 0 and s.get("visual_check"):
+                # the plan's own claim: "Avida showing King a coat with a gold crown" passed
+                # on a frame of her eye when only the line was checked
+                should += f'. The editor claims the frame shows: {s["visual_check"]}'
+            checks.append({"id": str(s["index"]), "should_show": should,
                            "frames": [_frame_jpeg(video, c["start"] + 0.3, crop), _frame_jpeg(video, mid, crop)]})
             picks[str(s["index"])] = c
-        results = _check_frames(client, checks, subject)
+        results = _check_frames(client, checks, subject, look)
         if results is None:
             # The check itself failed: keep the remaining first picks as they are.
             for s in todo:
@@ -1821,6 +2000,19 @@ def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject)
                 chosen[int(sid)] = c
             else:
                 last_shows[int(sid)] = r.get("shows", "")
+                if r.get("overlay_only") is True:
+                    overlay_picks.setdefault(int(sid), c)
+
+    # A shot of the right moment with a news logo on it beats another video's clean
+    # footage: every gesture shot carried a Guardian logo, every scene fell back to the
+    # Ireland clip, and the Short showed one red card seven times.
+    for i, c in overlay_picks.items():
+        if i not in chosen:
+            print(f"Scene {i}: no clean shot, using video {c['video_index']} @ {c['start']:.1f}s "
+                  f"(right moment, only a logo or text overlay on it)")
+            chosen[i] = c
+
+    chosen.update(_continue_neighbours(client, scenes, chosen, segment_by_index, video_paths, crops, subject, look))
 
     for s in scenes:
         i = s["index"]
@@ -1834,7 +2026,83 @@ def _verify_scenes(client, scenes, script_segments, video_paths, crops, subject)
                      layout=c.get("layout") or "framed", focus_x=c.get("focus_x") or 0.5)
     if not chosen:
         print("WARNING: no planned shot passed the frame check, using Gemini's picks unchecked")
+    _spread_overlaps(scenes, segment_by_index, video_paths)
     return scenes
+
+
+def _spread_overlaps(scenes, segment_by_index, video_paths):
+    """
+    Last guard against playing the same footage twice: a clip that starts inside an
+    earlier clip of the same video moves to the nearest free stretch of that video
+    (right after a placed clip, or the very start). Five scenes clamped to one start
+    once became five copies of the same title card. Only "move to where the earlier
+    clip ends" gave up at the end of a 34-second source and kept the duplicate.
+    """
+    placed = {}   # video_index -> [(start, end)]
+    for s in sorted(scenes, key=lambda s: s["index"]):
+        seg = segment_by_index.get(s["index"], {})
+        length = max(seg.get("cut_duration", seg.get("duration", 4.0)), MIN_CLIP_DURATION)
+        spans = placed.setdefault(s["video_index"], [])
+        duration = _probe_duration(video_paths[s["video_index"]])
+
+        def free(t):
+            return t + length <= duration and all(not (a - length < t < b) for a, b in spans)
+
+        if not free(s["start"]) and spans:
+            options = sorted({b for _a, b in spans} | {0.0}, key=lambda t: abs(t - s["start"]))
+            fit = next((t for t in options if free(t)), None)
+            if fit is not None:
+                print(f"Scene {s['index']} overlapped an earlier clip, moved {s['start']:.1f}s -> {fit:.1f}s")
+                s["start"] = round(fit, 2)
+            else:
+                print(f"WARNING: scene {s['index']} repeats footage, video {s['video_index']} is too short "
+                      f"({duration:.0f}s) for every clip planned on it")
+        spans.append((s["start"], s["start"] + length))
+
+
+def _continue_neighbours(client, scenes, chosen, segment_by_index, video_paths, crops, subject, look):
+    """
+    For scenes with no passing candidate: keep playing the nearest passing scene's
+    footage from where its clip ends (or, for a scene before it, the stretch just
+    before it starts). Copying the neighbour's start played one shot twice in a row.
+    Returns {scene index: candidate} for the continuations that pass the frame check.
+    """
+    seconds = {i: max(seg.get("cut_duration", seg.get("duration", 4.0)), MIN_CLIP_DURATION)
+               for i, seg in segment_by_index.items()}
+    fills, checks = {}, []
+    for i in sorted(s["index"] for s in scenes if s["index"] not in chosen):
+        placed = {**chosen, **fills}
+        if not placed:
+            break
+        near = min(placed, key=lambda k: (abs(k - i), k > i))   # the scene before wins a tie
+        base = placed[near]
+        video = video_paths[base["video_index"]]
+        if near < i:
+            start = base["start"] + sum(seconds.get(k, 4.0) for k in range(near, i))
+        else:
+            start = base["start"] - sum(seconds.get(k, 4.0) for k in range(i, near))
+        if start < 0 or start + seconds.get(i, 4.0) > _probe_duration(video):
+            continue
+        start = _snap_to_shot_cut(video, round(start, 2), max_back=0.3, max_forward=1.0)
+        fills[i] = {"video_index": base["video_index"], "start": start, "layout": "framed",
+                    "focus_x": 0.5, "from": near}
+        seg = segment_by_index.get(i, {})
+        crop = crops.get(video)
+        mid = start + max(1.0, min(seg.get("duration", 4.0), 6.0) / 2)
+        checks.append({"id": str(i), "should_show": f'a shot for the line "{seg.get("text", "")}"',
+                       "frames": [_frame_jpeg(video, start + 0.3, crop), _frame_jpeg(video, mid, crop)]})
+    if not fills:
+        return {}
+    results = _check_frames(client, checks, subject, look)
+    passed = {}
+    for i, c in fills.items():
+        r = None if results is None else results.get(str(i))
+        verdict = "unchecked" if r is None else ("ok" if r.get("ok") else "FAIL")
+        print(f"Scene {i} continues scene {c['from']}'s footage (video {c['video_index']} @ {c['start']:.1f}s): "
+              f"{verdict}, {(r or {}).get('shows', 'no answer')}")
+        if r is None or r.get("ok"):
+            passed[i] = c
+    return passed
 
 
 MIN_FULL_SHOT = 1.0       # a full-screen crop shorter than this before the first cut isn't worth it
@@ -1918,7 +2186,7 @@ def _fit_graphic_windows(graphics):
     return [g for g in graphics if g["end"] - g["start"] >= 1.0]
 
 
-def find_thumbnail_with_gemini(client, uploaded_files, video_paths, topic, subject):
+def find_thumbnail_with_gemini(client, uploaded_files, video_paths, topic, subject, title=None):
     """
     Reuses the already-uploaded (ACTIVE) video files from find_scenes_with_gemini to pick
     the single best thumbnail frame across all footage, plus a short punchy hook broken
@@ -1943,6 +2211,7 @@ image someone sees before they tap play. This is a separate job from editing the
 
 TOPIC: {topic}
 SUBJECT: {subject}
+VIDEO TITLE: {title or topic}
 
 Across all the source videos provided, find the ONE frame that would make someone stop
 scrolling and tap: the most visually striking, dramatic, or emotionally loaded moment —
@@ -1967,7 +2236,9 @@ HARD BANS — never pick a frame with:
 
 Also write a short HOOK, split into 1-3 short lines, comic-thumbnail style, 3 to 6 words
 total, curiosity-driven. The hook MUST be about the TOPIC and SUBJECT above — name or clearly
-reference the actual subject of THIS video. Do NOT reuse the wording from the format example
+reference the actual subject of THIS video. It must tease the same question or claim as the
+VIDEO TITLE, never a different story (a title asking why A left B needs a hook about A leaving,
+not about B's downfall). Do NOT reuse the wording from the format example
 below; that is only a shape to copy, not content. Structure examples (do not copy the words):
 "BIGGEST MISCONCEPTION / ABOUT [SUBJECT]", "[SUBJECT]: GOAT / OR OVERRATED", "THE ONLY / HOPE".
 Give EACH line its own color from this palette only: "#FFFFFF" (white),
@@ -1984,25 +2255,31 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     response = None
     for attempt in range(1, max_attempts + 1):
         try:
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = _require_text(client.models.generate_content(
+                model=GEMINI_MODEL,
                 contents=contents,
                 config={"response_mime_type": "application/json"},
-            )
+            ))
             break
         except Exception as e:
-            if "503" in str(e):
+            if isinstance(e, _EmptyReply):
+                print(f"{e} (thumbnail), retrying... (attempt {attempt}/{max_attempts})")
+                time.sleep(5)
+            elif "503" in str(e):
                 print(f"Gemini 503 (thumbnail), retrying in 20s... (attempt {attempt}/{max_attempts})")
                 time.sleep(20)
             elif "429" in str(e):
-                print(f"Gemini 429 (thumbnail), rotating key... (attempt {attempt}/{max_attempts})")
-                client = _gemini_client()
-                uploaded_files = [
-                    _upload_and_wait(client, vp, label=f"Video {i}")
-                    for i, vp in enumerate(video_paths)
-                ]
-                contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
-                time.sleep(5)
+                try:
+                    client, switched = _on_quota_hit(client, "thumbnail", attempt, e)
+                except GeminiDailyQuota as q:
+                    print(f"{q} Skipping the thumbnail.")
+                    return None
+                if switched:
+                    uploaded_files = [
+                        _upload_and_wait(client, vp, label=f"Video {i}")
+                        for i, vp in enumerate(video_paths)
+                    ]
+                    contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
             else:
                 print(f"Thumbnail selection failed: {e}")
                 return None
@@ -2082,65 +2359,100 @@ def run_manual_pipeline(data):
 
         print("Fetching visuals...")
 
+        LOOK = data.get("scene_query")   # how the footage looks, for characters Gemini doesn't know
         rejected_videos = []
+        backup_videos = []    # (score, path): good footage of the subject that shows no script item
         used_video_ids = set()
         MAX_SOURCE_VIDEOS = 3
 
         script_items = None   # concrete things the script talks about, fixed by the first evaluation
         video_items = {}      # approved video path -> script items it shows
 
-        for i, query in enumerate(YOUTUBE_QUERIES):
-            print(f"Query {i + 1}/{len(YOUTUBE_QUERIES)}: '{query}'")
-            # used_video_ids skips results already tried, so each pass gets the next best one
-            for candidate_num in range(1, CANDIDATES_PER_QUERY + 1):
-                video_paths = fetch_video_material_by_search(
-                    search_queries=[query],
-                    max_videos=1,
-                    retry_searches=5,
-                    used_video_ids=used_video_ids
-                )
-                if not video_paths:
-                    print(f"No results for query '{query}', skipping...")
-                    break
+        # Every query is searched first and the results ranked together, so the slow
+        # download + Gemini check goes to the best videos overall, not two per query.
+        pool = search_pool(YOUTUBE_QUERIES, used_video_ids)
+        tried, failed_in_a_row = 0, 0
+        for entry in pool:
+            # Each query's best result is a "first pick" and is checked even past 3 approvals:
+            # stopping at 3 once approved two red card clips before the gesture clip was tried.
+            if len(approved_videos) >= MAX_SOURCE_VIDEOS_CAP or (
+                    len(approved_videos) >= MAX_SOURCE_VIDEOS and not entry.get("_first_pick")):
+                print(f"Reached {len(approved_videos)} approved videos.")
+                break
+            if tried >= MAX_CANDIDATES:
+                print(f"Checked {tried} videos, stopping the search.")
+                break
+            if failed_in_a_row >= MAX_DOWNLOAD_FAILURES:
+                print(f"{failed_in_a_row} downloads failed in a row, YouTube is probably blocking. Stopping the search.")
+                break
 
-                candidate_video = video_paths[0]
-                if candidate_video in rejected_videos or candidate_video in approved_videos:
-                    break   # the fetcher fell back to a file we already judged
-                try:
-                    ffmpeg.probe(candidate_video)
-                except Exception:
-                    print("Downloaded file is corrupt (ffprobe failed), skipping")
-                    rejected_videos.append(candidate_video)
-                    continue
-                print(f"Evaluating video (candidate {candidate_num}/{CANDIDATES_PER_QUERY})...")
-                try:
-                    evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT, script_items) or {}
-                except RuntimeError as e:
-                    print(f"Gemini evaluation failed for query '{query}': {e}, skipping")
-                    rejected_videos.append(candidate_video)
-                    continue
+            candidate_video = download_entry(entry, used_video_ids)
+            entry["_path"] = candidate_video
+            if not candidate_video or candidate_video in rejected_videos or candidate_video in approved_videos:
+                failed_in_a_row += 1
+                continue
+            failed_in_a_row = 0
+            tried += 1
+            try:
+                ffmpeg.probe(candidate_video)
+            except Exception:
+                print("Downloaded file is corrupt (ffprobe failed), skipping")
+                rejected_videos.append(candidate_video)
+                continue
+            crop_overlays(candidate_video)   # cut fixed news banners and logos before Gemini sees it
+            print(f"Evaluating video {tried}/{MAX_CANDIDATES} (score {entry['_score']}, "
+                  f"found by {entry['_queries']} quer{'y' if entry['_queries'] == 1 else 'ies'})...")
+            try:
+                evaluation = evaluate_video_with_genai(candidate_video, SCRIPT_TEXT, script_items,
+                                                       SUBJECT, LOOK) or {}
+            except RuntimeError as e:
+                print(f"Gemini evaluation failed: {e}, skipping")
+                rejected_videos.append(candidate_video)
+                continue
 
-                if script_items is None and evaluation.get("script_items"):
-                    script_items = [str(x) for x in evaluation["script_items"]][:6]
-                    print(f"Script items to cover: {script_items}")
-                known = {x.lower() for x in script_items or []}
-                shown = [str(x) for x in evaluation.get("items_shown") or [] if str(x).lower() in known]
+            if script_items is None and evaluation.get("script_items"):
+                script_items = [str(x) for x in evaluation["script_items"]][:6]
+                print(f"Script items to cover: {script_items}")
+            known = {x.lower() for x in script_items or []}
+            shown = [str(x) for x in evaluation.get("items_shown") or [] if str(x).lower() in known]
 
-                reason = evaluation.get("reason", "")
-                decision = evaluation.get("decision", "unknown")
-                if decision == "post" and script_items and not shown:
-                    decision, reason = "reject", f"shows none of the script items. {reason}"
-                if decision == "post":
-                    print(f"Video {i + 1} approved! Shows {shown or 'n/a'}: {reason}")
-                    approved_videos.append(candidate_video)
-                    video_items[candidate_video] = shown
-                    break
+            reason = evaluation.get("reason", "")
+            decision = evaluation.get("decision", "unknown")
+            if decision == "post" and script_items and not shown:
+                decision, reason = "reject", f"shows none of the script items. {reason}"
+            if decision == "post":
+                # numbered like the edit plan's video_index, so the logs line up
+                print(f"Video {len(approved_videos)} approved! Shows {shown or 'n/a'}: {reason}")
+                approved_videos.append(candidate_video)
+                video_items[candidate_video] = shown
+            elif _subject_only(evaluation, shown):
+                score = sum(evaluation.get(k) or 0 for k in ("relevance_score", "hook_score", "technical_score"))
+                print(f"Video kept as a backup (clean footage of the subject, but none of the script items): {reason}")
+                backup_videos.append((score, candidate_video, entry.get("_query")))
+            else:
                 print(f"Video rejected ({decision}): {reason}")
                 rejected_videos.append(candidate_video)
 
-            if len(approved_videos) >= MAX_SOURCE_VIDEOS:
-                print(f"Reached {MAX_SOURCE_VIDEOS} approved videos, skipping remaining queries.")
-                break
+        # Sports scripts are told to use off-pitch footage (training, arrivals) because match
+        # moments are blocked, so "shows none of the script items" rejected four long, clean
+        # Ronaldo training videos and the whole Short came from one 34-second clip. A backup
+        # only fills a slot the real matches left empty.
+        # Each query names one moment, so a backup from a query no other pick came from goes
+        # first: by score alone, two red card clips beat the only Messi gesture clip. Among
+        # those, the earlier query wins: prompts list the script's moments first, filler last.
+        backup_videos.sort(key=lambda b: b[0], reverse=True)
+        used_queries = {e.get("_query") for e in pool if e.get("_path") in approved_videos}
+        query_rank = {q: i for i, q in enumerate(YOUTUBE_QUERIES)}
+        while backup_videos and len(approved_videos) < MAX_SOURCE_VIDEOS:
+            fresh = sorted((b for b in backup_videos if b[2] not in used_queries),
+                           key=lambda b: query_rank.get(b[2], len(query_rank)))
+            pick = (fresh or backup_videos)[0]
+            backup_videos.remove(pick)
+            used_queries.add(pick[2])
+            print(f"Using backup video {len(approved_videos)} (general footage of the subject): {_video_title(pick[1])}")
+            approved_videos.append(pick[1])
+            video_items[pick[1]] = []
+        rejected_videos += [path for _score, path, _q in backup_videos]
 
         if script_items:
             covered = {x.lower() for shown in video_items.values() for x in shown}
@@ -2190,13 +2502,13 @@ def run_manual_pipeline(data):
                 script_segments.pop(m + 1)
             _set_cut_durations(script_segments, tagged_sfx, _probe_duration(audio_path))
             print(f"{len(script_segments)} clips planned, analyzing {len(approved_videos)} video(s)...")
-            scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL, video_items)
+            scenes, graphic_plan, valid_videos, uploaded_files, gemini_client = find_scenes_with_gemini(approved_videos, script_segments, CHANNEL, video_items, LOOK)
 
             if len(scenes) < len(script_segments):
                 print(f"Gemini returned {len(scenes)} scenes for {len(script_segments)} segments, using available scenes only")
             crops = {v: _detect_crop(v) for v in valid_videos}
             print("Checking every planned shot on its real frames...")
-            scenes = _verify_scenes(gemini_client, scenes, script_segments, valid_videos, crops, SUBJECT)
+            scenes = _verify_scenes(gemini_client, scenes, script_segments, valid_videos, crops, SUBJECT, LOOK)
             for scene, segment in zip(scenes, script_segments):
                 vi = min(scene.get("video_index", 0), len(valid_videos) - 1)
                 source_video = valid_videos[vi]
@@ -2222,7 +2534,8 @@ def run_manual_pipeline(data):
             print(f"Graphics: {[(g['type'], g['start']) for g in graphics] or 'none'}")
 
             print("Picking thumbnail frame...")
-            thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT)
+            thumb = find_thumbnail_with_gemini(gemini_client, uploaded_files, valid_videos, TOPIC, SUBJECT,
+                                               data.get("title"))
             if thumb:
                 frame_path = os.path.join(DATA_DIR, f"thumb_frame_{uuid.uuid4().hex[:6]}.jpg")
                 thumb_video = valid_videos[thumb["video_index"]]
@@ -2307,6 +2620,8 @@ def run_manual_pipeline(data):
         pipeline_ok = True
         return True
 
+    except GeminiDailyQuota as e:
+        print(f"\nSTOPPED: {e}")
     except KeyError as e:
         print(f"Missing Key in JSON: {e}")
     except Exception as e:

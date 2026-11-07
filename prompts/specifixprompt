@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE cyberpunk egderunners season two anime idea.
+Find ONE Cyberpunk edgerunners season 2  idea.
 
 It must be either:
 
@@ -20,8 +20,29 @@ Think like a viral  creator, not a wikipedia
 
 One idea. One question. One answer.
 
+WATCHER TEST (the most important rule, it beats every other rule)
+Imagine a fan who watched every episode once. If they could answer the question in a few seconds, the idea is DEAD, even if it is about a famous scene. A plot recap is not a fact: "Why did Avida leave King? Because he caused a bloodbath in front of her" is what the episode already showed, so nobody learns anything.
+An idea passes only when the answer is one of these:
+- a connection viewers missed: a callback to an earlier episode, a pattern across several scenes, a line that means more than it seemed
+- something from outside the show: the game or tabletop lore, the creators, the real-world inspiration, a translation or naming detail
+- a consequence the show never says out loud: numbers, logic or timelines that make a scene stranger once you work them out
+The main event of a scene is never the answer. It is only the setup.
+
+PIPELINE LIMITS (an idea that breaks one is DEAD, however good it is)
+- NO SHORT MOMENTS: the answer must never depend on the viewer SEEING one short moment (a one-second detail, a background object, a blink-and-miss frame). The footage finder cannot locate those. The narration carries the answer while the screen shows broad clips of the character or scene.
+- NO AUDIO: the video plays only our narration and music, never the show's own sound. Never make an idea about a sound, a voice line's delivery, a sound effect, a song or a voice actor's performance. An old video about Sukuna's slash sound got three million views, but it could not play the sound, and viewers were furious. A video that promises something it cannot show or play makes people angry, not curious.
+
+IDEA SEARCH (do this before picking, never answer from memory)
+1. Search beyond plot summaries: wiki trivia and "behind the scenes" sections, "things you missed" and "did you notice" threads, game and tabletop lore, creator interviews. A plot synopsis only tells you what every viewer already knows.
+2. Write TWELVE candidate ideas. For each one write:
+   VIEWER THINKS: what a fan who watched the show would answer
+   REAL ANSWER: what the script would reveal
+   If the two say the same thing, the idea fails the Watcher Test. Kill it.
+3. Kill every candidate that breaks the PIPELINE LIMITS. From the survivors, pick the one with the biggest gap between VIEWER THINKS and REAL ANSWER that still passes the TOPIC FILTER and the FOOTAGE REALITY CHECK below.
+If nothing survives, widen the search (more episodes, the game lore, the first season) instead of lowering the bar.
+
 TOPIC FILTER (from top competitor channels)
-Ideas that win ANSWER A QUESTION FANS ALREADY HAVE about a famous moment or main character:
+Ideas that win ANSWER A QUESTION FANS ALREADY HAVE about a famous moment or main character, where the show itself never gives the answer (see the Watcher Test):
 - "Why did [character] [do famous thing]?" (why did Eren laugh when Sasha died, why did Zeke let Levi kill him)
 - "Why can't / couldn't [character] [do thing]?" (why couldn't Sasha kill that Titan)
 - "The real reason [character] [looks or acts a certain way]"
@@ -147,7 +168,8 @@ correct    the right answer, a good idea, a rule that works
 wrong      illegal, a mistake, a rule broken, "no"
 celebrate  a title, a trophy, a win
 join       someone joins a team, a crew or a side
-leave      someone leaves, quits, betrays or is kicked out
+leave      someone quits, betrays or is kicked out. It is a light chat-app "user left" blip,
+           so never on a sad or tragic exit (a lover running away, a death): leave those untagged
 
 Reaction sounds play AFTER the sentence that holds the tagged word, in a short pause the code adds, so they never cover a word. Give them to a line the viewer should react to:
 
@@ -199,7 +221,7 @@ THE SETUP (one to two lines): anchor to the scene viewers remember ("We all reme
 - STAKES, for everything else: say why this question matters or what makes it strange ("And nobody ever explained why." / "Which is weird, because he never did that again.").
 Never invent a belief just to bust it. If you are not sure fans really believe it, use STAKES. The bust must also be real: shoot the myth down with story evidence, never with an invented creator statement. Say "some fans" or "one theory" unless the belief is truly the majority view. Do not open the Setup with "most fans think" or "you might think" in two scripts in a row.
 
-THE REAL ANSWER (the core): the receipt. Best receipt is what happens on screen or on the page (the scene, the chapter). Name an official source (fanbook, interview, author note, databook) ONLY if you know its exact content and could name which one it is. If you are not sure, argue from the story itself and never say "the creator confirmed", "Gege said", "in the fanbook" or "officially". A made-up source is worse than no source. The answer must land by the halfway point. No long backstory before it.
+THE REAL ANSWER (the core): the receipt. It must pass the Watcher Test: a connection viewers missed, an earlier episode that changes the meaning, lore from outside the show, or a consequence the show never says. It must also pass the Pipeline Limits: told by the narration, never needing one short moment on screen or any sound. Never the main event of the scene, viewers already saw that. Name an official source (fanbook, interview, author note, databook) ONLY if you know its exact content and could name which one it is. If you are not sure, argue from the story itself and never say "the creator confirmed", "Gege said", "in the fanbook" or "officially". A made-up source is worse than no source. The answer must land by the halfway point. No long backstory before it.
 
 ESCALATION (one to two lines): why it's weirder/darker/funnier than it sounds; side detail and the roast line go here.
 
@@ -226,7 +248,7 @@ Exactly six queries, typed the way a real fan searches — short, natural, two t
 
 Query 1 — THE DIRECT MOMENT: "[character/actor] [moment] scene" / "[movie] [character] vs [character] full fight"
 
-Query 2 — EMOTIONAL/VIRAL FRAMING: "[character/movie] [moment] goes hard" / "[actor] acting masterclass [movie]"
+Query 2 — EMOTIONAL/VIRAL FRAMING: "[series] [character] [moment] goes hard" / "[actor] acting masterclass [movie]"
 
 Query 3 — HIGH-QUALITY POOL: "[character] [moment] 4k" / "[series] [arc] all fights"
 
@@ -237,6 +259,8 @@ Query 5 — DUB vs SUB POOL: (For anime/foreign media, use "[character] [moment]
 Query 6 — OFFICIAL/CLIP POOL: "[movie/series] [moment] official clip" / "[movie/series] official trailer"
 
 SCENE ACCURACY RULE: all six chase the exact moment the script references.
+TITLE RULE: every query names the series or movie. "[character] edit goes hard" without it pulls unrelated videos (one returned Puss in Boots and drama movies).
+SINGLE SOURCE RULE: if the receipt lives in one specific video (a music video, a trailer, one episode), at least three of the six queries name that video by its exact title, because the other pools will not have the scene.
 
 OUTPUT: replace every bracket with real names. No leftover brackets.
 
@@ -279,6 +303,9 @@ VERIFICATION BOX
 ☐ Format: [A: The Answer OR B: The Countdown]
 ☐ Topic Filter: Answers a question fans already have about a main character or famous scene (not opinion, not a news recap)
 ☐ Novelty Check: Topic does not repeat any from the Existing Videos list
+☐ Watcher Test: VIEWER THINKS: [what a fan who watched the show would answer] / REAL ANSWER: [what the script reveals]. They are different, and the answer is not the main event of a scene
+☐ Idea Search: [the twelve candidates, one line each, with the reason each one was killed] -> picked [number]
+☐ Pipeline Limits: answer is carried by the narration over broad clips, needs no short on-screen moment, and is not about any sound
 ☐ Fact-Checked: list EVERY factual claim in the script, one per line, tagged:
    CANON [chapter/episode/scene] | OFFICIAL [exact source name] | THEORY [where it exists + labeled out loud] | UNSURE
    Any UNSURE claim must be cut or rewritten before output. Any "the creator/fanbook/interview says" line must be OFFICIAL with the exact source.
@@ -301,23 +328,29 @@ VERIFICATION BOX
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-1. the real reason roman has no backstory in cyberpunk edgerunners 2 #cyberpunk
-2. the real reason d never got his revenge in cyberpunk edgerunners 2 #cyberpunk
-3. why did king survive the cyberpsycho meltdown in cyberpunk edgerunners? #cyberpunk
-4. why did gojo get trapped by a tiny box in jujutsu kaisen? #jjk #jujutsukaisen #gojo
-5. why did nanami leave his job? #jjk #jujutsukaisenmanga
-6. why does anya hate studying #spyxfamilyedit
-7. the real reason mikasa gets headaches in attack on titan #aot #mikasa
-8. the real reason sukuna has four arms in jujutsu kaisen #sukuna
-9. why did gojo use a zero point two second domain in jujutsu kaisen? #jjk
-10. why does yuta wear a white uniform in jujutsu kaisen? #jjk
-11. why did david keep upgrading his body in cyberpunk edgerunners? #cyberpunk
-12. why toji never gets trapped in domains in jujutsu kaise #jjk #toji
-13. the real reason levi holds his cup weirdly in attack on titan #aot  #leviackerman
-14. why did soichiro see light's lifespan in death note? #deathnote
-15. why did erwin smile when he learned titans were humans in attack on titan? #aot
-16. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
-17. the real reason l never sits normally in death note. #deathnote
-18. why light never just guessed l's name in death note #deathnote
-19. the jaw titan curse in attack on titan #aot
-20. why did sukuna save megumi in jujutsu kaisen? #jjk
+1. the hidden number behind vi's tattoo in arcane #arcane
+2. the real reason weak wears a crown in cyberpunk edgerunners 2 #cyberpunk
+3. three tragic details about david martinez #cyberpunk
+4. the real reason weak has no chrome in cyberpunk edgerunners 2 #cyberpunk
+5. why can't trigger destroy night city in cyberpunk edgerunner? #cyberpunk
+6. the real reason weak protects talia in cyberpunk edgerunners 2 #cyberpunk
+7. the real reason roman has no backstory in cyberpunk edgerunners 2 #cyberpunk
+8. the real reason d never got his revenge in cyberpunk edgerunners 2 #cyberpunk
+9. why did king survive the cyberpsycho meltdown in cyberpunk edgerunners? #cyberpunk
+10. why did gojo get trapped by a tiny box in jujutsu kaisen? #jjk #jujutsukaisen #gojo
+11. why did nanami leave his job? #jjk #jujutsukaisenmanga
+12. why does anya hate studying #spyxfamilyedit
+13. the real reason mikasa gets headaches in attack on titan #aot #mikasa
+14. the real reason sukuna has four arms in jujutsu kaisen #sukuna
+15. why did gojo use a zero point two second domain in jujutsu kaisen? #jjk
+16. why does yuta wear a white uniform in jujutsu kaisen? #jjk
+17. why did david keep upgrading his body in cyberpunk edgerunners? #cyberpunk
+18. why toji never gets trapped in domains in jujutsu kaise #jjk #toji
+19. the real reason levi holds his cup weirdly in attack on titan #aot  #leviackerman
+20. why did soichiro see light's lifespan in death note? #deathnote
+21. why did erwin smile when he learned titans were humans in attack on titan? #aot
+22. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
+23. the real reason l never sits normally in death note. #deathnote
+24. why light never just guessed l's name in death note #deathnote
+25. the jaw titan curse in attack on titan #aot
+26. why did sukuna save megumi in jujutsu kaisen? #jjk
