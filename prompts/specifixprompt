@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE Cyberpunk edgerunners season 2  idea.
+Find ONE jujutsu kaisen idea.
 
 It must be either:
 
@@ -27,6 +27,12 @@ An idea passes only when the answer is one of these:
 - something from outside the show: the game or tabletop lore, the creators, the real-world inspiration, a translation or naming detail
 - a consequence the show never says out loud: numbers, logic or timelines that make a scene stranger once you work them out
 The main event of a scene is never the answer. It is only the setup.
+THE REGULAR FAN TEST: picture a regular fan who watched the anime but never reads wikis, Reddit or manga. Aim for the middle:
+- TOO OBVIOUS (kill): the show says or clearly shows the answer, or nearly every fan already knows it (why Toji stopped when Megumi said Fushiguro).
+- SWEET SPOT (pick): a regular fan does not know it, but gets it instantly and wants to tell a friend (Gojo's famous line copies what the Buddha said as a newborn baby).
+- TOO OBSCURE (kill): needs niche knowledge to care about, or the fan has to look it up to understand why it matters (a slogan from a real biker gang).
+Being explained on a wiki, Sportskeeda or Know Your Meme does NOT kill an idea. That is how you verify it.
+VIEWER THINKS must be what a regular fan would really answer, never a weaker guess written so the idea passes.
 
 PIPELINE LIMITS (an idea that breaks one is DEAD, however good it is)
 - NO SHORT MOMENTS: the answer must never depend on the viewer SEEING one short moment (a one-second detail, a background object, a blink-and-miss frame). The footage finder cannot locate those. The narration carries the answer while the screen shows broad clips of the character or scene.
@@ -38,7 +44,7 @@ IDEA SEARCH (do this before picking, never answer from memory)
    VIEWER THINKS: what a fan who watched the show would answer
    REAL ANSWER: what the script would reveal
    If the two say the same thing, the idea fails the Watcher Test. Kill it.
-3. Kill every candidate that breaks the PIPELINE LIMITS. From the survivors, pick the one with the biggest gap between VIEWER THINKS and REAL ANSWER that still passes the TOPIC FILTER and the FOOTAGE REALITY CHECK below.
+3. Kill every candidate that breaks the PIPELINE LIMITS. From the survivors, pick the one with the biggest gap between VIEWER THINKS and REAL ANSWER that still passes the TOPIC FILTER and the FOOTAGE REALITY CHECK below. The rules only kill ideas, they do not rank them. Among the survivors, pick the one a fan would most want to send to a friend.
 If nothing survives, widen the search (more episodes, the game lore, the first season) instead of lowering the bar.
 
 TOPIC FILTER (from top competitor channels)
@@ -57,7 +63,7 @@ Ideas that flop, so KILL them:
 - side characters most viewers can't picture
 News is allowed only if the script answers a question about it, not just reports it.
 
-BALANCE RULE: Check the USED VIDEOS LIST before picking. Most entries so far are real-world trivia (inspirations, name origins, author facts). Top competitor channels get their biggest hits from IN-UNIVERSE questions (why a character did something, how a power works). Until about half of the recent entries are in-universe, prefer an in-universe question over another real-world trivia fact.
+BALANCE RULE (tie-breaker only, never a kill): count the last ten USED VIDEOS entries yourself. If more than seven are the same kind (in-universe or real-world trivia), prefer the other kind ONLY when two ideas are equally strong. Real-world trivia that changes the meaning of a famous in-universe moment (a line that quotes a real legend, a name with a hidden meaning) counts as a strong idea.
 
 FORMAT (pick one, default A)
 A. THE ANSWER: one question, one answer, one receipt.
@@ -87,9 +93,13 @@ The title asks, the video answers. Never put the answer in the title.
 HOOK RULE
 Output a separate "hook" field: the punchy opener shown on screen as a big card and spoken as the script's first line, word for word.
 Two to six words, under thirty characters. No series name, no hashtags, no emoji.
-Name the character, place or stake. It may be a short question ("Why is Night City still standing?") or a statement that creates tension ("Trigger is holding back..."). A curiosity word is optional when the statement itself raises the question.
+The hook must stop a scroller in under two seconds. It needs one of these:
+- a contradiction: two things that should not fit together ("Gojo copied a newborn baby")
+- a strange, specific claim the viewer cannot explain yet
+- a direct challenge to the viewer ("You missed why Gojo said this")
+DEAD hooks: a plain description of the scene ("Toji stopped fighting...", "Gojo said a famous line..."). Fans already know the scene, so it gives them nothing to wait for.
+Test each candidate alone, with no title and no video: if it does not raise a question the viewer needs answered, rewrite it.
 Withhold the answer. The full title is NOT the hook: it is too long to read in the first second.
-Example: title "Why can't Trigger destroy Night City in Cyberpunk Edgerunners 2?" -> hook "Trigger could destroy Night City..."
 
 Pillar G format: "The [X] controversy explained in sixty seconds or less"
 
@@ -314,7 +324,7 @@ VERIFICATION BOX
 ☐ Language Standard: B1 Simple English verified
 ☐ Spoken Word Count: [Number] spoken words (tags excluded; A: 90-100, B: 110-130)
 ☐ Number Check: Zero digit characters used, at least one concrete verified number spoken as words
-☐ Hook Check: First line is the "hook" field word for word, two to six words, under thirty characters, answer withheld (no greeting). Three hook candidates: [...] -> picked [number]
+☐ Hook Check: First line is the "hook" field word for word, two to six words, under thirty characters, answer withheld (no greeting). Three hook candidates, each marked stops the scroll yes/no: [...] -> picked [number]
 ☐ Title Candidates: [all four titles, one per line] -> picked [number] because [one short reason]
 ☐ Receipt Point: Direct visual reference included without frame-precise demands
 ☐ Footage Test: Passes Generic Footage Test ([GREEN / YELLOW])
