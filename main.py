@@ -201,6 +201,7 @@ MAX_MUSIC_QUERIES = 3              # how many free YouTube tracks to try before 
 GEMINI_MODEL = "gemini-3.6-flash"              # watches video: evaluation, edit plan, thumbnail
 GEMINI_CHECK_MODEL = "gemini-3.5-flash-lite"   # still-frame checks, the most frequent call
 GEMINI_MUSIC_MODEL = "gemini-2.5-flash"        # music check
+GEMINI_FALLBACK_MODEL = "gemini-2.5-flash"     # video calls switch to this after 3 overloaded (503) tries
 EMBED_THUMBNAIL_FRAME = True       # burn the thumbnail as a still frame so YouTube can use it as the cover
 THUMBNAIL_FRAME_POSITION = "end"   # "start" = auto cover (0.25s freeze first); "end" = clean hook, pick cover manually
 THUMBNAIL_FRAME_DURATION = 0.25    # seconds the thumbnail frame stays on screen
@@ -216,20 +217,72 @@ DEFAULT_CHANNEL = {
 }
 
 MANUAL_DATA = {
-"channel": "anime",
-"topic": "Cyberpunk Edgerunners 2",
-"specific_subject": "Capri is built on Soulkiller, a program whose inventor Alt Cunningham was kidnapped by Arasaka in 2013 and became its first victim",
-"title": "Who really made Capri in Cyberpunk Edgerunners 2?",
-"hook": "Who really made Capri?",
-"youtube_queries": ["Cyberpunk Edgerunners 2 D Capri scene", "Cyberpunk Edgerunners 2 Talia Capri goes hard", "Cyberpunk Edgerunners 2 Capri 4k", "Cyberpunk Edgerunners 2 episode 3 D datashard", "Cyberpunk Edgerunners 2 Capri english dub", "Cyberpunk Edgerunners 2 official trailer"],
-"scene_query": "A black-haired young man with a green cybernetic eye clutches his head as glowing red code and a ghostly digital girl swirl around him, city lights flicker and explode, then a teenage girl with heavy chrome implants floats over a burning neon city wrapped in a shell of twisted metal",
-"footage_source": "official_or_press",
-"music_mood": "mysterious",
-"music_queries": ["Cyberpunk 2077 Never Fade Away instrumental", "Cyberpunk Edgerunners 2 OST", "dark cyberpunk ambient instrumental no copyright"],
-"music_prompt": "Dark atmospheric synthwave with a cold industrial edge, 88 BPM. Deep pulsing analog synth bass for a sci-fi cyberpunk feel, glitchy digital textures like corrupted data, and a lonely detuned electric piano melody. Quiet uneasy tension at the start, a sudden low drop and swelling pad at the big reveal around second twenty five, a brief dry lighter beat for a sarcastic joke, then a sad fading synth line for the reflective ending. short-form video background, no lyrics, exclude: upbeat pop drums, bright cheerful brass",
-"voice_name": "animatoryoung",
-"spoken_word_count": 98,
-"script": "[curious] Who really made Capri? We all remember the ghost girl in D's datashard. The show says Kyoko built her for Arasaka. [thoughtful] But Capri is made of engrams, copies of real human minds, and Arasaka makes those with one program... Soulkiller. Game lore says a netrunner named Alt Cunningham invented it. In twenty thirteen, Arasaka *kidnapped:wrong* her and forced her to rebuild it. Its own creator became its first *victim:boom*. [deadpan] Arasaka saw a program that ate its inventor and said, great, let's build *soldiers:meme* with it. [softly] So who really made Capri? A woman Arasaka stole sixty five years ago."
+  "channel": "sports",
+  "sport": "f1",
+  "lane": "fun_fact",
+  "format": "money_countdown",
+  "topic": "The three most expensive things Max Verstappen owns: the Aston Martin Valkyrie, the superyacht and the Falcon 8X private jet",
+  "specific_subject": "Max Verstappen: Aston Martin Valkyrie (reportedly given to him, not bought), Mangusta Gransport 33 superyacht Unleash the Lion (2025), Dassault Falcon 8X jet registered PH-UTL (2025), replacing his ex-Richard Branson Falcon 900EX",
+  "title": "3 Most EXPENSIVE Things Max Verstappen Owns #f1",
+  "hook": "Verstappen's craziest toys.",
+  "verification": {
+    "event_date": "Fun fact lane. Valkyrie handed over around 2020-2022; old Falcon 900EX bought late 2020; superyacht reportedly bought January 2025; Falcon 8X PH-UTL bought early 2025",
+    "sources": [
+      "https://www.slashgear.com/880474/the-most-expensive-car-in-max-verstappens-car-collection",
+      "https://www.essentiallysports.com/f1-news-a-glimpse-into-red-bull-champion-max-verstappen-23-million-dollar-car-collection",
+      "https://www.gpfans.com/nl/f1-nieuws/92460/dit-is-het-wagenpark-van-max-verstappen",
+      "https://topgear.nl/autonieuws/max-verstappen-krijgt-aston-martin-valkyrie-cadeau/",
+      "https://www.planetf1.com/features/max-verstappen-car-collection",
+      "https://www.gpfans.com/en/f1-news/1066572/max-verstappen-net-worth-f1-assets-superyacht-cars-private-jet/",
+      "https://sportskeeda.com/f1/news-inside-max-verstappen-s-new-42m-private-jet",
+      "https://www.gpfans.com/en/f1-news/1045367/f1-max-verstappen-red-bull-privarte-jet-sale/",
+      "https://speedcafe.com/f1-news-2025-max-verstappen-red-bull-private-jet-cost-details/",
+      "https://topgear.nl/formule-1/privejet-van-max-verstappen-gespot/",
+      "https://zeenews.india.com/aviation/max-verstappens-private-jet-is-as-fast-as-the-fastest-man-on-earth-check-images-here-2525091.html/amp",
+      "https://www.superyachtfan.com/pa/private-jet/owner/max-verstappen/"
+    ],
+    "claims_checked": [
+      "The three items together are reportedly worth over $55 million -> sum of the sourced estimates below (Valkyrie about $3M + yacht over $12M + Falcon 8X over $40M); every part is spoken as reported",
+      "Verstappen owns an Aston Martin Valkyrie -> SlashGear; PlanetF1; GPFans NL",
+      "The Valkyrie was developed with Red Bull's Adrian Newey -> PlanetF1 (developed by Red Bull chief technical officer Adrian Newey); Rerev (co-developed with Red Bull Advanced Technologies under Newey)",
+      "Valkyrie worth around $3 million -> SlashGear (prices start around $3 million); EssentiallySports (valued at 3 million dollars)",
+      "He reportedly did not pay for the Valkyrie because he helped develop it -> GPFans NL (he did not have to pay, he was given the car); TopGear NL (given one because he helped develop it)",
+      "He reportedly bought a Mangusta superyacht in 2025 -> GPFans EN (Mangusta Gransport 33 reportedly bought January 2025); Sportskeeda (bought a yacht from Italy before the 2025 jet upgrade)",
+      "Yacht estimated at over $12 million -> GPFans EN (estimates around $12.6 million); Sportskeeda (reportedly $15 million)",
+      "The yacht is named Unleash the Lion -> GPFans EN; Sportskeeda",
+      "His old jet once belonged to Richard Branson -> TopGear NL (the Falcon 900EX came from Richard Branson); Zee News (obtained from Sir Richard Branson); SlashGear",
+      "In 2025 he upgraded to a Dassault Falcon 8X -> GPFans EN (bought a Falcon 8X in 2025); Speedcafe (acquired a Dassault Falcon 8X ahead of the 2025 season); Sportskeeda",
+      "Falcon 8X reportedly worth over $40 million -> Sportskeeda (Guardian Jet: minimum $42M); GPFans EN (list price around £46 million); Speedcafe (AUD $80 million price tag)",
+      "The new jet's registration is PH-UTL, standing for Unleash The Lion -> GPFans EN; Superyachtfan (Falcon 8X registered PH-UTL, Unleash the Lion)"
+    ],
+    "footage_status": "GREEN",
+    "footage_note": "Picked over three news candidates (Norris winning Brazil, Barcelona's Fermín and Yamal comeback at Atletico, Real Madrid 3-0 at Valencia) because none had a surprising enough reason, and the Verstappen Brazil comeback is already used. Verstappen money is tier one, unused (only Hamilton, Messi and Ronaldo money videos exist), and ends on its biggest number. Footage exists for every item. Aston Martin's own clip shows Verstappen driving the Valkyrie at Silverstone. Spotter videos of PH-UTL and the old PH-DTF Falcon exist. Mangusta Gransport 33 walkthroughs and Unleash the Lion sightings in Monaco exist. If no clip of his exact yacht turns up, the editor uses Gransport 33 model b-roll for that one beat. No beat needs original audio.",
+    "punch_markers": [
+      "pay:shock -> the most expensive car he owns was reportedly free, the unbelievable fact of the video",
+      "forty:money -> the biggest price in the countdown lands on number one",
+      "registration:pop -> the plane's registration letters appear on screen right before the Unleash the Lion reveal"
+    ]
+  },
+  "youtube_queries": [
+    "Verstappen Falcon 8X PH-UTL",
+    "Verstappen private jet landing",
+    "Verstappen Unleash the Lion yacht",
+    "Verstappen Valkyrie Silverstone",
+    "Verstappen Falcon 900EX PH-DTF",
+    "Mangusta Gransport 33 tour"
+  ],
+  "scene_query": "Max Verstappen in a dark Red Bull team jacket walking across an airport apron toward a large private business jet with its stairs down",
+  "footage_source": "official_or_press",
+  "music_mood": "flex",
+  "music_queries": [
+    "luxury phonk instrumental slowed",
+    "billionaire lifestyle trap beat instrumental",
+    "luxury trap instrumental no copyright"
+  ],
+  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 140 BPM half-time feel, deep 808 bass, glossy synth pluck melody, crisp hi-hat rolls. Starts minimal and smooth under the hook, adds the 808 at number three, layers the synth melody through the superyacht at number two, pulls back to near silence on the setup for number one, then drops hard with full bass on the registration reveal and rides that energy to the loop line. Sports short-form video background, no lyrics, exclude: sad piano ballad, aggressive metal guitars",
+  "voice_name": "animatoryoung",
+  "script": "[curious] Verstappen's craziest toys. His three biggest are reportedly worth over fifty-five million dollars. And at number three... the Aston Martin Valkyrie. Built with Red Bull genius Adrian Newey, worth around three million dollars. [deadpan] And Max reportedly didn't even *pay:shock* for it, cause he helped develop it. Basically a cheat code you only get in Forza. But at number two... a superyacht. In twenty twenty-five, Max reportedly bought a Mangusta yacht estimated at over twelve million dollars. He named it Unleash the Lion. [light chuckle] Remember that name. But at number one... a private jet. His old jet once belonged to Richard Branson. So in twenty twenty-five, Max upgraded to a Dassault Falcon eight X, reportedly worth over *forty:money* million dollars. And the *registration:pop*? P H U T L. Unleash. The. LION. [thoughtful] The lion rules road, sea and sky, and that's why.",
+  "spoken_word_count": 138
 }
 
 
@@ -1149,10 +1202,11 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None, subjec
     """
 
     max_attempts = 5
+    model = GEMINI_MODEL
     for attempt in range(1, max_attempts + 1):
         try:
             response = _require_text(client.models.generate_content(
-                model=GEMINI_MODEL,
+                model=model,
                 contents=[uploaded_file, prompt],
                 config={"thinking_config": {"thinking_budget": 8000}, "response_mime_type": "application/json"},
             ))
@@ -1162,8 +1216,12 @@ def evaluate_video_with_genai(video_path, script_text, script_items=None, subjec
                 print(f"{e}, retrying... (attempt {attempt}/{max_attempts})")
                 time.sleep(5)
             elif "503" in str(e):
-                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
-                time.sleep(20)
+                if attempt >= 3:
+                    model = GEMINI_FALLBACK_MODEL
+                if attempt < max_attempts:
+                    wait = 20 * 2 ** (attempt - 1)  # 20, 40, 80, 160s
+                    print(f"Gemini 503, retrying with {model} in {wait}s... (attempt {attempt}/{max_attempts})")
+                    time.sleep(wait)
             elif "429" in str(e):
                 client, switched = _on_quota_hit(client, "evaluation", attempt, e)
                 if switched:
@@ -1888,10 +1946,11 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     contents = _labeled_videos(uploaded_files, video_paths) + [prompt]
 
     max_attempts = 5
+    model = GEMINI_MODEL
     for attempt in range(1, max_attempts + 1):
         try:
             response = _require_text(client.models.generate_content(
-                model=GEMINI_MODEL,
+                model=model,
                 contents=contents,
                 config={
                     "thinking_config": {"thinking_budget": 24576},
@@ -1904,8 +1963,12 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                 print(f"{e} (edit plan), retrying... (attempt {attempt}/{max_attempts})")
                 time.sleep(5)
             elif "503" in str(e):
-                print(f"Gemini 503, retrying in 20s... (attempt {attempt}/{max_attempts})")
-                time.sleep(20)
+                if attempt >= 3:
+                    model = GEMINI_FALLBACK_MODEL
+                if attempt < max_attempts:
+                    wait = 20 * 2 ** (attempt - 1)  # 20, 40, 80, 160s
+                    print(f"Gemini 503, retrying with {model} in {wait}s... (attempt {attempt}/{max_attempts})")
+                    time.sleep(wait)
             elif "429" in str(e):
                 client, switched = _on_quota_hit(client, "edit plan", attempt, e)
                 if switched:
@@ -2280,10 +2343,11 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
     max_attempts = 5
     response = None
+    model = GEMINI_MODEL
     for attempt in range(1, max_attempts + 1):
         try:
             response = _require_text(client.models.generate_content(
-                model=GEMINI_MODEL,
+                model=model,
                 contents=contents,
                 config={"response_mime_type": "application/json"},
             ))
@@ -2293,8 +2357,12 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
                 print(f"{e} (thumbnail), retrying... (attempt {attempt}/{max_attempts})")
                 time.sleep(5)
             elif "503" in str(e):
-                print(f"Gemini 503 (thumbnail), retrying in 20s... (attempt {attempt}/{max_attempts})")
-                time.sleep(20)
+                if attempt >= 3:
+                    model = GEMINI_FALLBACK_MODEL
+                if attempt < max_attempts:
+                    wait = 20 * 2 ** (attempt - 1)  # 20, 40, 80, 160s
+                    print(f"Gemini 503 (thumbnail), retrying with {model} in {wait}s... (attempt {attempt}/{max_attempts})")
+                    time.sleep(wait)
             elif "429" in str(e):
                 try:
                     client, switched = _on_quota_hit(client, "thumbnail", attempt, e)
