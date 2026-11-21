@@ -1,11 +1,14 @@
-"""Post rendered videos at their time slot. launchd runs this every 30 minutes.
+"""Upload rendered videos, scheduled for their time slot. daily.py runs this after the night's
+renders, and launchd every 30 minutes to retry anything that failed.
 
     python publish.py
 
 A job in data/jobs/done/ first gets the next free post time of its channel (schedule.json).
-Once that time has passed it goes to every account the channel lists, and when all of them
-have it, the job moves to data/jobs/published/. Each upload is saved into the job right away,
-so a crash or a retry never posts the same video twice.
+It is then uploaded right away to every account the channel lists, with that time set as the
+scheduled publish time, so YouTube and TikTok release it on their own and the Mac does not
+need to be on then. A slot that has already passed is posted immediately. When every account
+has the video, the job moves to data/jobs/published/. Each upload is saved into the job right
+away, so a crash or a retry never posts the same video twice.
 """
 import datetime
 import glob
@@ -14,13 +17,17 @@ import os
 import shutil
 
 from config import DATA_DIR
-from modules.uploader import load_schedule, upload_youtube, upload_tiktok
+from modules import tiktok_uploader
+from modules.uploader import load_schedule, upload_youtube
 
 JOBS_DIR = os.path.join(DATA_DIR, "jobs")
 DONE_DIR = os.path.join(JOBS_DIR, "done")
 PUBLISHED_DIR = os.path.join(JOBS_DIR, "published")
 FAILED_DIR = os.path.join(JOBS_DIR, "failed")
 MAX_ATTEMPTS = 3  # per platform, then the job goes to failed/
+# TikTok schedules 15 minutes to 10 days ahead; the margins keep clear of both ends
+SCHEDULE_LEAD = datetime.timedelta(minutes=20)
+SCHEDULE_MAX_AHEAD = datetime.timedelta(days=9)
 PLATFORMS = ("youtube", "tiktok")
 
 
@@ -60,7 +67,8 @@ def _assign_slots(schedule, now):
     return jobs
 
 
-def _publish(path, job, accounts):
+def _publish(path, job, accounts, when=None):
+    """Upload to every account that does not have it yet; when=None posts now, else schedules."""
     video = job.get("video_path")
     if not video or not os.path.exists(video):
         print(f"Video file missing for {job['title']}: {video}")
@@ -68,7 +76,7 @@ def _publish(path, job, accounts):
         return
     job.setdefault("published", {})
     job.setdefault("publish_errors", {})
-    print(f"\nPosting: {job['title']}")
+    print(f"\n{'Scheduling for ' + when.strftime('%b %d %H:%M') if when else 'Posting now'}: {job['title']}")
     for platform in PLATFORMS:
         cfg = accounts.get(platform)
         if not cfg or platform in job["published"]:
@@ -77,11 +85,13 @@ def _publish(path, job, accounts):
             if platform == "youtube":
                 job["published"][platform] = upload_youtube(
                     video, job["title"], job.get("description") or job["title"], job.get("tags"), cfg,
-                    job.get("thumbnail_path"))
+                    job.get("thumbnail_path"), publish_at=when)
             else:
                 # TikTok has one caption: the title, then the description's teaser and hashtags
                 caption = f"{job['title']}\n\n{job['description']}" if job.get("description") else job["title"]
-                job["published"][platform] = upload_tiktok(video, caption, cfg, job.get("cover_ms"))
+                tiktok_uploader.post(video, caption, cfg.get("privacy", "public"), job.get("thumbnail_path"),
+                                     schedule_at=when)
+                job["published"][platform] = datetime.datetime.now().isoformat(timespec="seconds")
         except Exception as e:
             job["publish_errors"][platform] = job["publish_errors"].get(platform, 0) + 1
             print(f"  {platform} upload failed ({job['publish_errors'][platform]}/{MAX_ATTEMPTS}): {e}")
@@ -102,8 +112,14 @@ def main():
     now = datetime.datetime.now()
     jobs = _assign_slots(schedule, now)
     for path, job in jobs.items():
-        if job.get("post_at") and datetime.datetime.fromisoformat(job["post_at"]) <= now:
+        if not job.get("post_at"):
+            continue
+        slot = datetime.datetime.fromisoformat(job["post_at"])
+        if slot <= now:
             _publish(path, job, schedule[job["channel"]])
+        elif now + SCHEDULE_LEAD <= slot <= now + SCHEDULE_MAX_AHEAD:
+            _publish(path, job, schedule[job["channel"]], when=slot)
+        # Otherwise the slot is too close to schedule (next run posts it) or too far ahead for TikTok
 
 
 if __name__ == "__main__":

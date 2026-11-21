@@ -8,3 +8,4 @@ ocrmac>=1.0.1
 google-api-python-client>=2.150.0
 google-auth-oauthlib>=1.2.1
 requests>=2.32.0
+playwright>=1.50.0

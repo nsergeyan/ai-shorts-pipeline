@@ -8,6 +8,7 @@ One-time login per account, saved under tokens/ (paths come from schedule.json):
 Until Google audits the Cloud project, YouTube keeps API uploads private. Until TikTok
 audits the app, only SELF_ONLY (private) posts are allowed.
 """
+import datetime
 import json
 import os
 import secrets
@@ -74,8 +75,9 @@ def _youtube_client(token_path, interactive=False):
     return build("youtube", "v3", credentials=creds)
 
 
-def upload_youtube(video_path, title, description, tags, cfg, thumbnail_path=None):
-    """Upload one video, set its thumbnail when given, and return its YouTube id."""
+def upload_youtube(video_path, title, description, tags, cfg, thumbnail_path=None, publish_at=None):
+    """Upload one video, set its thumbnail when given, and return its YouTube id. With publish_at
+    (local datetime) it goes up private and YouTube makes it public at that time by itself."""
     from googleapiclient.http import MediaFileUpload
 
     yt = _youtube_client(_token_path(cfg["token"]))
@@ -85,6 +87,10 @@ def upload_youtube(video_path, title, description, tags, cfg, thumbnail_path=Non
                     "tags": _fit_tags(tags, 500)},
         "status": {"privacyStatus": cfg.get("privacy", "private"), "selfDeclaredMadeForKids": False},
     }
+    if publish_at:
+        # YouTube only schedules private videos; publishAt is UTC
+        body["status"]["privacyStatus"] = "private"
+        body["status"]["publishAt"] = publish_at.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     request = yt.videos().insert(
         part="snippet,status", body=body,
         media_body=MediaFileUpload(video_path, mimetype="video/mp4", chunksize=-1, resumable=True),
@@ -93,7 +99,8 @@ def upload_youtube(video_path, title, description, tags, cfg, thumbnail_path=Non
     while response is None:
         _, response = request.next_chunk()
     video_id = response["id"]
-    print(f"  YouTube: uploaded https://youtube.com/shorts/{video_id}")
+    when = f", public at {publish_at:%b %d %H:%M}" if publish_at else ""
+    print(f"  YouTube: uploaded https://youtube.com/shorts/{video_id}{when}")
     if thumbnail_path and os.path.exists(thumbnail_path):
         # A thumbnail failure must not fail the upload, or the retry would post the video twice
         try:

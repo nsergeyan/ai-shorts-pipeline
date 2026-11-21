@@ -20,6 +20,9 @@
       "token": "tokens/youtube_anime.json",
       "category_id": "1",
       "privacy": "public"
+    },
+    "tiktok": {
+      "privacy": "public"
     }
   },
   "sports": {
