@@ -1,7 +1,7 @@
 {
   "anime": {
     "videos_per_day": 2,
-    "post_times": ["15:00", "20:00"],
+    "post_times": ["18:00", "22:00"],
     "history_urls": [
       "https://www.tiktok.com/@plaim62",
       "https://www.youtube.com/@PLAIM77/shorts"
@@ -27,7 +27,7 @@
   },
   "sports": {
     "videos_per_day": 2,
-    "post_times": ["16:00", "21:00"],
+    "post_times": ["19:00", "23:00"],
     "history_urls": [
       "https://www.youtube.com/@PLAim-g1x/shorts"
     ],
