@@ -16,6 +16,8 @@ import sys
 import time
 import urllib.parse
 
+import subprocess
+
 import requests
 
 from config import (BASE_DIR, YOUTUBE_CLIENT_SECRET, TIKTOK_CLIENT_KEY,
@@ -28,6 +30,10 @@ YT_SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
              "https://www.googleapis.com/auth/youtube.readonly"]
 
 YT_PROCESSING_WAIT = 15 * 60  # thumbnails.set only works once YouTube has processed the video
+# The Cloud project stays in Testing mode, where Google ends every login after 7 days
+LOGINS_PATH = os.path.join(BASE_DIR, "tokens", "logins.json")
+YT_LOGIN_DAYS = 7
+YT_WARN_AFTER_DAYS = 5
 
 TIKTOK_API = "https://open.tiktokapis.com/v2"
 TIKTOK_SINGLE_CHUNK_MAX = 64 * 1024 * 1024  # TikTok accepts one chunk up to 64MB
@@ -141,11 +147,45 @@ def _fit_tags(tags, limit):
     return fitted
 
 
-def login_youtube(cfg):
-    yt = _youtube_client(_token_path(cfg["token"]), interactive=True)
+def login_youtube(cfg, channel):
+    token_path = _token_path(cfg["token"])
+    # An expired login would only fail to refresh, so always start from a fresh one
+    if os.path.exists(token_path):
+        os.remove(token_path)
+    yt = _youtube_client(token_path, interactive=True)
     channels = yt.channels().list(part="snippet", mine=True).execute().get("items", [])
     name = channels[0]["snippet"]["title"] if channels else "(no channel found)"
+    logins = _load_logins()
+    logins[channel] = datetime.date.today().isoformat()
+    _save_json(LOGINS_PATH, logins)
     print(f"Logged in to YouTube channel: {name}\nSaved to {cfg['token']}")
+
+
+def _load_logins():
+    try:
+        with open(LOGINS_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def youtube_login_warnings():
+    """One line per YouTube login that ends within two days (or already ended)."""
+    warnings = []
+    for channel, day in _load_logins().items():
+        age = (datetime.date.today() - datetime.date.fromisoformat(day)).days
+        if age >= YT_WARN_AFTER_DAYS:
+            ends = datetime.date.fromisoformat(day) + datetime.timedelta(days=YT_LOGIN_DAYS)
+            when = "has ended" if age >= YT_LOGIN_DAYS else f"ends {ends:%a %b %d}"
+            warnings.append(f"YouTube login for {channel} {when}. "
+                            f"Run: python -m modules.uploader login youtube {channel}")
+    return warnings
+
+
+def mac_notify(title, message):
+    """macOS notification banner; it also stays in Notification Center if nobody is looking."""
+    script = f"display notification {json.dumps(message)} with title {json.dumps(title)} sound name \"Glass\""
+    subprocess.run(["osascript", "-e", script], check=False, capture_output=True)
 
 
 # ---------------------------------------------------------------- TikTok
@@ -265,4 +305,4 @@ if __name__ == "__main__":
     cfg = schedule.get(channel, {}).get(platform)
     if not cfg:
         sys.exit(f"schedule.json has no {platform} account for '{channel}'")
-    login_youtube(cfg) if platform == "youtube" else login_tiktok(cfg)
+    login_youtube(cfg, channel) if platform == "youtube" else login_tiktok(cfg)

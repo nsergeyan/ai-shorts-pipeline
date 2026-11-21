@@ -18,7 +18,7 @@ import shutil
 
 from config import DATA_DIR
 from modules import tiktok_uploader
-from modules.uploader import load_schedule, upload_youtube
+from modules.uploader import load_schedule, mac_notify, upload_youtube
 
 JOBS_DIR = os.path.join(DATA_DIR, "jobs")
 DONE_DIR = os.path.join(JOBS_DIR, "done")
@@ -95,6 +95,9 @@ def _publish(path, job, accounts, when=None):
         except Exception as e:
             job["publish_errors"][platform] = job["publish_errors"].get(platform, 0) + 1
             print(f"  {platform} upload failed ({job['publish_errors'][platform]}/{MAX_ATTEMPTS}): {e}")
+            if platform == "youtube" and "invalid_grant" in str(e):
+                mac_notify("Shorts: YouTube login expired",
+                           f"Uploads to {job['channel']} are stuck. Run: python -m modules.uploader login youtube {job['channel']}")
         _save(path, job)
 
     pending = [p for p in PLATFORMS if accounts.get(p) and p not in job["published"]]

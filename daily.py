@@ -11,13 +11,16 @@ import os
 import generate_scripts
 import publish
 import run_queue
-from modules.uploader import load_schedule
+from modules.uploader import load_schedule, mac_notify, youtube_login_warnings
 
 
 def main():
     print(f"===== Daily run {datetime.datetime.now():%Y-%m-%d %H:%M} =====")
     os.makedirs(generate_scripts.QUEUE_DIR, exist_ok=True)
     schedule = load_schedule()
+    for warning in youtube_login_warnings():
+        print(warning)
+        mac_notify("Shorts: YouTube login", warning)
     needed = {ch: max(0, schedule[ch]["videos_per_day"] - generate_scripts._queued_count(ch)) for ch in schedule}
     print(f"Scripts to write: {needed}")
 
