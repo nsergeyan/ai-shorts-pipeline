@@ -1,0 +1,37 @@
+{
+  "anime": {
+    "videos_per_day": 2,
+    "post_times": ["15:00", "20:00"],
+    "history_urls": [
+      "https://www.tiktok.com/@plaim62",
+      "https://www.youtube.com/@PLAIM77/shorts"
+    ],
+    "series_plan": ["trending", "evergreen"],
+    "evergreen_series": [
+      {"name": "Jujutsu Kaisen", "match": ["jujutsu", "jjk", "gojo", "sukuna"]},
+      {"name": "Attack on Titan", "match": ["attack on titan", "#aot"]},
+      {"name": "Cyberpunk Edgerunners", "match": ["edgerunner", "#cyberpunk"]},
+      {"name": "Death Note", "match": ["death note", "#deathnote"]},
+      {"name": "Solo Leveling", "match": ["solo leveling", "sololeveling"]},
+      {"name": "Arcane", "match": ["arcane"]},
+      {"name": "Spy x Family", "match": ["spy x family", "spyxfamily"]}
+    ],
+    "youtube": {
+      "token": "tokens/youtube_anime.json",
+      "category_id": "1",
+      "privacy": "public"
+    }
+  },
+  "sports": {
+    "videos_per_day": 2,
+    "post_times": ["16:00", "21:00"],
+    "history_urls": [
+      "https://www.youtube.com/@PLAim-g1x/shorts"
+    ],
+    "youtube": {
+      "token": "tokens/youtube_sports.json",
+      "category_id": "17",
+      "privacy": "public"
+    }
+  }
+}

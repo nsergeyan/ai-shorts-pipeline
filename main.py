@@ -218,70 +218,71 @@ DEFAULT_CHANNEL = {
 
 MANUAL_DATA = {
   "channel": "sports",
-  "sport": "f1",
-  "lane": "fun_fact",
-  "format": "money_countdown",
-  "topic": "The three most expensive things Max Verstappen owns: the Aston Martin Valkyrie, the superyacht and the Falcon 8X private jet",
-  "specific_subject": "Max Verstappen: Aston Martin Valkyrie (reportedly given to him, not bought), Mangusta Gransport 33 superyacht Unleash the Lion (2025), Dassault Falcon 8X jet registered PH-UTL (2025), replacing his ex-Richard Branson Falcon 900EX",
-  "title": "3 Most EXPENSIVE Things Max Verstappen Owns #f1",
-  "hook": "Verstappen's craziest toys.",
+  "sport": "football",
+  "lane": "news",
+  "format": "news_why",
+  "topic": "Manchester City 1-1 Fulham: Haaland's disallowed goal ended City's 20-game winning run against Fulham",
+  "specific_subject": "Erling Haaland's goal was ruled out for kicking the ball from Bernd Leno's hands. Under Law 12, a keeper holding the ball between his hands is in control and cannot be challenged. In September, VAR wrongly gave Haaland a derby winner against Manchester United.",
+  "title": "The Rule That Cost Erling Haaland A GOAL #football",
+  "hook": "Haaland's goal didn't count.",
   "verification": {
-    "event_date": "Fun fact lane. Valkyrie handed over around 2020-2022; old Falcon 900EX bought late 2020; superyacht reportedly bought January 2025; Falcon 8X PH-UTL bought early 2025",
+    "event_date": "Saturday 21 November 2026, 12:30 kick-off, Etihad Stadium. This is less than 24 hours before today (21 Nov 2026), so it is inside the 72-hour window and skips the lane penalty.",
     "sources": [
-      "https://www.slashgear.com/880474/the-most-expensive-car-in-max-verstappens-car-collection",
-      "https://www.essentiallysports.com/f1-news-a-glimpse-into-red-bull-champion-max-verstappen-23-million-dollar-car-collection",
-      "https://www.gpfans.com/nl/f1-nieuws/92460/dit-is-het-wagenpark-van-max-verstappen",
-      "https://topgear.nl/autonieuws/max-verstappen-krijgt-aston-martin-valkyrie-cadeau/",
-      "https://www.planetf1.com/features/max-verstappen-car-collection",
-      "https://www.gpfans.com/en/f1-news/1066572/max-verstappen-net-worth-f1-assets-superyacht-cars-private-jet/",
-      "https://sportskeeda.com/f1/news-inside-max-verstappen-s-new-42m-private-jet",
-      "https://www.gpfans.com/en/f1-news/1045367/f1-max-verstappen-red-bull-privarte-jet-sale/",
-      "https://speedcafe.com/f1-news-2025-max-verstappen-red-bull-private-jet-cost-details/",
-      "https://topgear.nl/formule-1/privejet-van-max-verstappen-gespot/",
-      "https://zeenews.india.com/aviation/max-verstappens-private-jet-is-as-fast-as-the-fastest-man-on-earth-check-images-here-2525091.html/amp",
-      "https://www.superyachtfan.com/pa/private-jet/owner/max-verstappen/"
+      "https://www.espn.com/soccer/report/_/gameId/401879233",
+      "https://www.click2houston.com/sports/2026/11/21/man-citys-14-year-winning-run-against-fulham-is-over-after-draw-in-premier-league/",
+      "https://citizen.digital/article/haaland-in-var-controversy-as-man-city-held-by-fulham-n394316",
+      "https://sports.yahoo.com/articles/man-city-boss-maresca-says-171826205.html",
+      "https://www.nbcsports.com/soccer/news/should-erling-haalands-goal-vs-fulham-have-been-disallowed",
+      "https://www.thefa.com/football-rules-governance/laws/football-11-11/law-12---fouls-and-misconduct",
+      "https://downloads.theifab.com/downloads/changes-to-the-laws-of-the-game-2025-26",
+      "https://www.thescore.com/news/3598882",
+      "https://www.aljazeera.com/sports/2026/9/13/manchester-city-wrongly-awarded-haaland-goal-by-var-at-united-refs-body",
+      "https://www.irishnews.com/sport/soccer/pro-ref-admits-error-of-judgment-over-var-call-for-erling-haalands-derby-goal-Y7OSHEOEBFP4XBFP5XCWGJDAXY/"
     ],
     "claims_checked": [
-      "The three items together are reportedly worth over $55 million -> sum of the sourced estimates below (Valkyrie about $3M + yacht over $12M + Falcon 8X over $40M); every part is spoken as reported",
-      "Verstappen owns an Aston Martin Valkyrie -> SlashGear; PlanetF1; GPFans NL",
-      "The Valkyrie was developed with Red Bull's Adrian Newey -> PlanetF1 (developed by Red Bull chief technical officer Adrian Newey); Rerev (co-developed with Red Bull Advanced Technologies under Newey)",
-      "Valkyrie worth around $3 million -> SlashGear (prices start around $3 million); EssentiallySports (valued at 3 million dollars)",
-      "He reportedly did not pay for the Valkyrie because he helped develop it -> GPFans NL (he did not have to pay, he was given the car); TopGear NL (given one because he helped develop it)",
-      "He reportedly bought a Mangusta superyacht in 2025 -> GPFans EN (Mangusta Gransport 33 reportedly bought January 2025); Sportskeeda (bought a yacht from Italy before the 2025 jet upgrade)",
-      "Yacht estimated at over $12 million -> GPFans EN (estimates around $12.6 million); Sportskeeda (reportedly $15 million)",
-      "The yacht is named Unleash the Lion -> GPFans EN; Sportskeeda",
-      "His old jet once belonged to Richard Branson -> TopGear NL (the Falcon 900EX came from Richard Branson); Zee News (obtained from Sir Richard Branson); SlashGear",
-      "In 2025 he upgraded to a Dassault Falcon 8X -> GPFans EN (bought a Falcon 8X in 2025); Speedcafe (acquired a Dassault Falcon 8X ahead of the 2025 season); Sportskeeda",
-      "Falcon 8X reportedly worth over $40 million -> Sportskeeda (Guardian Jet: minimum $42M); GPFans EN (list price around £46 million); Speedcafe (AUD $80 million price tag)",
-      "The new jet's registration is PH-UTL, standing for Unleash The Lion -> GPFans EN; Superyachtfan (Falcon 8X registered PH-UTL, Unleash the Lion)"
+      "Man City had beaten Fulham 20 times in a row -> AP via click2houston (20 straight victories since 2012) + ESPN (Fulham's run of 20 straight defeats to City in all competitions)",
+      "The run lasted fourteen years -> AP headline (14-year winning run, click2houston/clickorlando) + AP body (wins date back to 2012)",
+      "Played on Saturday, finished 1-1 -> ESPN match report (21 Nov 2026) + AFP via citizen.digital + AP via click2houston",
+      "Disallowed goal came midway through the first half -> ESPN (25th minute) + AFP via citizen.digital (26th minute); the script avoids naming an exact minute",
+      "Haaland's volley was weak or not clean -> ESPN (volley not clean) + AFP (weak volley saved by Leno)",
+      "Leno caught the ball but could not hold it securely -> ESPN (failed to gather securely, appeared to drop it) + AFP (Leno struggled to hold it)",
+      "Haaland knocked the ball out and into the net -> AP (kicked the ball out of Leno's hands, bundled it in on the line) + ESPN (poked it in at the second attempt)",
+      "The referee ruled it out and VAR did not overturn it -> ESPN (on-field call stood, VAR did not overturn) + NBC Sports (VAR stayed with the on-field decision)",
+      "Ball between the keeper's hands means he is in control and opponents cannot challenge him -> IFAB Law changes 2025/26 + The FA Law 12 (2026-27)",
+      "VAR ruled Leno was in control because the ball was between his hands -> ESPN + AP (Premier League said Leno was in control of the ball)",
+      "Maresca said City were denied a clear goal (paraphrased) -> PA via Yahoo Sports (he had no doubt the goal should have stood) + ESPN (Maresca said City were denied a clear goal)",
+      "City are winless in four league games -> AP via click2houston + AFP via citizen.digital + ESPN headline",
+      "In September 2026 VAR awarded Haaland a derby winner against Manchester United -> theScore + Al Jazeera + Irish News (60th minute, 13 Sept 2026, given after a VAR overturn)",
+      "The referees' body later admitted that goal was a mistake -> theScore (Pro Ref admitted an error of judgment) + Irish News (Pro Ref admits error of judgment)",
+      "City say the Fulham goal was clean (paraphrase of City's view) -> PA via Yahoo Sports (Maresca had no doubt it should have stood) + AFP (City had reason to feel aggrieved)"
     ],
-    "footage_status": "GREEN",
-    "footage_note": "Picked over three news candidates (Norris winning Brazil, Barcelona's Fermín and Yamal comeback at Atletico, Real Madrid 3-0 at Valencia) because none had a surprising enough reason, and the Verstappen Brazil comeback is already used. Verstappen money is tier one, unused (only Hamilton, Messi and Ronaldo money videos exist), and ends on its biggest number. Footage exists for every item. Aston Martin's own clip shows Verstappen driving the Valkyrie at Silverstone. Spotter videos of PH-UTL and the old PH-DTF Falcon exist. Mangusta Gransport 33 walkthroughs and Unleash the Lion sightings in Monaco exist. If no clip of his exact yacht turns up, the editor uses Gransport 33 model b-roll for that one beat. No beat needs original audio.",
+    "footage_status": "YELLOW",
+    "footage_note": "The disallowed goal is a famous incident, so the queries look first for fan phone clips and stadium angles, and use broadcast highlights only as a backup because those can get claimed. Safe filler: Haaland and Leno around the Etihad, Maresca's post-match press conference, fans booing at full time. The September derby goal is the second moment, and fan clips of it exist. The rule explanation (ball between the hands) has no clip of its own and is narration-only, so the editor plays the Leno grab while the voice explains it. That makes one narration-only beat.",
     "punch_markers": [
-      "pay:shock -> the most expensive car he owns was reportedly free, the unbelievable fact of the video",
-      "forty:money -> the biggest price in the countdown lands on number one",
-      "registration:pop -> the plane's registration letters appear on screen right before the Unleash the Lion reveal"
+      "twenty:shock -> twenty straight wins over the same team is hard to believe, and it plays right before the streak breaks",
+      "no:wrong -> the referee's call is the moment the goal turns into a rule broken",
+      "mistake:awkward -> the referees' body was publicly caught out admitting it wrongly gave Haaland a derby winner, which sets up the loop"
     ]
   },
   "youtube_queries": [
-    "Verstappen Falcon 8X PH-UTL",
-    "Verstappen private jet landing",
-    "Verstappen Unleash the Lion yacht",
-    "Verstappen Valkyrie Silverstone",
-    "Verstappen Falcon 900EX PH-DTF",
-    "Mangusta Gransport 33 tour"
+    "Haaland disallowed goal Leno Fulham",
+    "Haaland Leno goal fan view Etihad",
+    "Man City vs Fulham 1-1 highlights",
+    "Maresca press conference Fulham",
+    "Haaland goal Man United VAR offside",
+    "Etihad fans boo City Fulham"
   ],
-  "scene_query": "Max Verstappen in a dark Red Bull team jacket walking across an airport apron toward a large private business jet with its stairs down",
+  "scene_query": "Erling Haaland in a sky blue Manchester City kit sitting on the grass at the Etihad Stadium, frustrated, with a Fulham goalkeeper in a bright kit holding the ball nearby",
   "footage_source": "official_or_press",
-  "music_mood": "flex",
+  "music_mood": "dramatic",
   "music_queries": [
-    "luxury phonk instrumental slowed",
-    "billionaire lifestyle trap beat instrumental",
-    "luxury trap instrumental no copyright"
+    "dark phonk instrumental slowed no copyright",
+    "dramatic football trap beat instrumental",
+    "cinematic dramatic trap instrumental no copyright"
   ],
-  "music_prompt": "Luxury hip-hop instrumental with a dark trap edge, 140 BPM half-time feel, deep 808 bass, glossy synth pluck melody, crisp hi-hat rolls. Starts minimal and smooth under the hook, adds the 808 at number three, layers the synth melody through the superyacht at number two, pulls back to near silence on the setup for number one, then drops hard with full bass on the registration reveal and rides that energy to the loop line. Sports short-form video background, no lyrics, exclude: sad piano ballad, aggressive metal guitars",
+  "music_prompt": "Dark cinematic trap with orchestral hybrid elements, 140 BPM in half-time feel. Deep 808 bass, tense string tremolo and sharp cinematic brass hits. Opens sparse and uneasy under the hook, builds through the streak and the goal, cuts almost to silence on the referee's call, then rebuilds with a deep impact boom on the derby twist and resolves on a sustained low string as the loop line lands. Sports short-form video background, no lyrics, exclude: celebratory stadium anthems, upbeat happy pop chords",
   "voice_name": "animatoryoung",
-  "script": "[curious] Verstappen's craziest toys. His three biggest are reportedly worth over fifty-five million dollars. And at number three... the Aston Martin Valkyrie. Built with Red Bull genius Adrian Newey, worth around three million dollars. [deadpan] And Max reportedly didn't even *pay:shock* for it, cause he helped develop it. Basically a cheat code you only get in Forza. But at number two... a superyacht. In twenty twenty-five, Max reportedly bought a Mangusta yacht estimated at over twelve million dollars. He named it Unleash the Lion. [light chuckle] Remember that name. But at number one... a private jet. His old jet once belonged to Richard Branson. So in twenty twenty-five, Max upgraded to a Dassault Falcon eight X, reportedly worth over *forty:money* million dollars. And the *registration:pop*? P H U T L. Unleash. The. LION. [thoughtful] The lion rules road, sea and sky, and that's why.",
+  "script": "Haaland's goal didn't count. [curious] Manchester City had beaten Fulham *twenty:shock* times in a row, for fourteen years. But on Saturday, it ended one all. Midway through the first half, Haaland's volley comes off weak. Keeper Bernd Leno grabs it, but it's wobbling. Haaland pokes it out and into the net. [light chuckle] In FIFA, that's a goal every time. [deadpan] But the referee says *no:wrong*. Cause if the ball is between the keeper's hands, he's in control, and attackers can't touch it. VAR agreed. [thoughtful] Maresca said City were denied a clear goal, and now they're winless in four league games. [softly] And here's the twist. In September, VAR gave Haaland a derby winner against United that the referees admitted was a *mistake:awkward*. So VAR handed him one goal he shouldn't have got, then took one City say was clean, and that's why.",
   "spoken_word_count": 138
 }
 
@@ -1987,6 +1988,9 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
 
     try:
         result = json.loads(text)
+        # Gemini sometimes wraps the plan in a one-item list: [{"scenes": ..., "graphics": ...}]
+        if isinstance(result, list) and len(result) == 1 and isinstance(result[0], dict):
+            result = result[0]
         scenes = sorted(result.get("scenes", []), key=lambda x: x["index"])
         _fix_minute_decimals(scenes, video_durations)
 
@@ -2713,10 +2717,12 @@ def run_manual_pipeline(data):
                 os.remove(thumb_frame_path)
 
         pipeline_ok = True
-        return True
+        return final_path
 
     except GeminiDailyQuota as e:
         print(f"\nSTOPPED: {e}")
+        # Re-raised so run_queue.py can tell "come back tomorrow" apart from a broken job
+        raise
     except KeyError as e:
         print(f"Missing Key in JSON: {e}")
     except Exception as e:
@@ -2739,7 +2745,38 @@ def run_manual_pipeline(data):
 
 
 if __name__ == "__main__":
+    # A job file on the command line wins over MANUAL_DATA, so run_queue.py can feed generated scripts.
+    # Exit codes: 0 rendered (path saved into the job as "video_path"), 1 failed, 2 Gemini daily limit.
+    if len(sys.argv) > 1:
+        job_path = sys.argv[1]
+        with open(job_path) as f:
+            job = json.load(f)
+        try:
+            final_path = run_manual_pipeline(job)
+        except GeminiDailyQuota:
+            sys.exit(2)
+        if not final_path:
+            sys.exit(1)
+        job["video_path"] = final_path
+        # render_thumbnail names the PNG after the video; missing if that render failed
+        thumb_png = os.path.join(config.THUMBNAIL_DIR, os.path.splitext(os.path.basename(final_path))[0] + ".png")
+        if os.path.exists(thumb_png):
+            job["thumbnail_path"] = thumb_png
+        # Middle of the burned-in thumbnail frame, so TikTok can use it as the cover
+        if EMBED_THUMBNAIL_FRAME:
+            half_frame_ms = THUMBNAIL_FRAME_DURATION * 500
+            if THUMBNAIL_FRAME_POSITION == "end":
+                duration_ms = float(ffmpeg.probe(final_path)["format"]["duration"]) * 1000
+                job["cover_ms"] = int(duration_ms - half_frame_ms)
+            else:
+                job["cover_ms"] = int(half_frame_ms)
+        with open(job_path, "w") as f:
+            json.dump(job, f, indent=2, ensure_ascii=False)
+        sys.exit(0)
     if MANUAL_DATA:
-        run_manual_pipeline(MANUAL_DATA)
+        try:
+            run_manual_pipeline(MANUAL_DATA)
+        except GeminiDailyQuota:
+            pass
     else:
         print("Please paste your JSON into the MANUAL_DATA variable.")

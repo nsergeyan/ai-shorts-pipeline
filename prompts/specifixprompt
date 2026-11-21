@@ -1,5 +1,5 @@
 NARRATION AND SCRIPT AND TOPIC PART:
-Find ONE jujutsu kaisen idea.
+{{SERIES}}
 
 It must be either:
 
@@ -288,6 +288,10 @@ RED — fails the generic footage test, OR is audio-dependent, OR has no footage
 
 JSON OUTPUT FORMAT
 
+DESCRIPTION AND TAGS (for the upload, never spoken)
+"description": one or two short sentences that make the viewer want the answer without giving it, then 3 to 5 hashtags (the series, the main character, #anime, #shorts). Under 300 characters. Normal digits are fine here.
+"tags": 5 to 10 search phrases people really type, no hashtags: the series name, the character names, "<series> explained", "anime facts".
+
 JSON
 {
 "channel": "anime",
@@ -295,6 +299,8 @@ JSON
 "specific_subject": "",
 "title": "",
 "hook": "",
+"description": "",
+"tags": ["", "", "", "", ""],
 "youtube_queries": ["", "", "", "", "", ""],
 "scene_query": "",
 "footage_source": "official_or_press | stills_and_broll | single_rare_source",
@@ -313,7 +319,7 @@ VERIFICATION BOX
 ☐ Track Selected: [Track A: News OR Track B: Fact]
 ☐ Format: [A: The Answer OR B: The Countdown]
 ☐ Topic Filter: Answers a question fans already have about a main character or famous scene (not opinion, not a news recap)
-☐ Novelty Check: Topic does not repeat any from the Existing Videos list
+☐ Novelty Check: Topic does not repeat any from the USED VIDEOS LIST
 ☐ Watcher Test: VIEWER THINKS: [what a fan who watched the show would answer] / REAL ANSWER: [what the script reveals]. They are different, and the answer is not the main event of a scene
 ☐ Idea Search: [the twelve candidates, one line each, with the reason each one was killed] -> picked [number]
 ☐ Pipeline Limits: answer is carried by the narration over broad clips, needs no short on-screen moment, and is not about any sound
@@ -339,29 +345,6 @@ VERIFICATION BOX
 ═══════════════════════════════════
 USED VIDEOS LIST (DO NOT REPEAT) — running history across ALL series
 ═══════════════════════════════════
-1. the hidden number behind vi's tattoo in arcane #arcane
-2. the real reason weak wears a crown in cyberpunk edgerunners 2 #cyberpunk
-3. three tragic details about david martinez #cyberpunk
-4. the real reason weak has no chrome in cyberpunk edgerunners 2 #cyberpunk
-5. why can't trigger destroy night city in cyberpunk edgerunner? #cyberpunk
-6. the real reason weak protects talia in cyberpunk edgerunners 2 #cyberpunk
-7. the real reason roman has no backstory in cyberpunk edgerunners 2 #cyberpunk
-8. the real reason d never got his revenge in cyberpunk edgerunners 2 #cyberpunk
-9. why did king survive the cyberpsycho meltdown in cyberpunk edgerunners? #cyberpunk
-10. why did gojo get trapped by a tiny box in jujutsu kaisen? #jjk #jujutsukaisen #gojo
-11. why did nanami leave his job? #jjk #jujutsukaisenmanga
-12. why does anya hate studying #spyxfamilyedit
-13. the real reason mikasa gets headaches in attack on titan #aot #mikasa
-14. the real reason sukuna has four arms in jujutsu kaisen #sukuna
-15. why did gojo use a zero point two second domain in jujutsu kaisen? #jjk
-16. why does yuta wear a white uniform in jujutsu kaisen? #jjk
-17. why did david keep upgrading his body in cyberpunk edgerunners? #cyberpunk
-18. why toji never gets trapped in domains in jujutsu kaise #jjk #toji
-19. the real reason levi holds his cup weirdly in attack on titan #aot  #leviackerman
-20. why did soichiro see light's lifespan in death note? #deathnote
-21. why did erwin smile when he learned titans were humans in attack on titan? #aot
-22. this is the most worrying detail about cyberpunk edgerunners season two #cyberpunk
-23. the real reason l never sits normally in death note. #deathnote
-24. why light never just guessed l's name in death note #deathnote
-25. the jaw titan curse in attack on titan #aot
-26. why did sukuna save megumi in jujutsu kaisen? #jjk
+Order: oldest at the top, newest at the bottom. Format: title, views (no views = not public yet).
+
+{{USED_VIDEOS}}

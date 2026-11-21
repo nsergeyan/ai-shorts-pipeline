@@ -45,3 +45,6 @@ skills-lock.json
 
 
 .pytest_cache/
+
+# Upload logins (YouTube/TikTok OAuth tokens)
+tokens/

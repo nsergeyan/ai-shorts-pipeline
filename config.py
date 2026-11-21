@@ -22,6 +22,14 @@ CTA_PATH = os.path.join(BASE_DIR, "Green_Screen_Footage_for_Follow_Button_Boost_
 # API keys: set these in a .env file (see .env.example)
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 
+# Uploads: YouTube OAuth app from Google Cloud, TikTok app from developers.tiktok.com.
+# Per-account logins are saved in TOKENS_DIR by `python -m modules.uploader login ...`
+YOUTUBE_CLIENT_SECRET = os.path.join(BASE_DIR, "client_secret.json")
+TOKENS_DIR = os.path.join(BASE_DIR, "tokens")
+TIKTOK_CLIENT_KEY = os.getenv("TIKTOK_CLIENT_KEY", "")
+TIKTOK_CLIENT_SECRET = os.getenv("TIKTOK_CLIENT_SECRET", "")
+TIKTOK_REDIRECT_URI = os.getenv("TIKTOK_REDIRECT_URI", "")
+
 # Comma-separated list, rotated on quota errors. GEMINI_API_KEY (singular) also works.
 _gemini_raw = os.getenv("GEMINI_API_KEYS", os.getenv("GEMINI_API_KEY", ""))
 GEMINI_API_KEYS = [k.strip() for k in _gemini_raw.split(",") if k.strip()]
