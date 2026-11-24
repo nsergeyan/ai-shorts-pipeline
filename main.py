@@ -44,7 +44,8 @@ def _gemini_client():
             "Run again after the reset, or turn on billing for a project (much higher limits).")
     # numbered, because every key starts with the same "AQ.Ab8RN" and the log looked like one key
     print(f"Gemini key {n}/{len(GEMINI_API_KEYS)}")
-    client = genai.Client(api_key=key)
+    # 10 min per request (ms): without it a dead connection hangs the nightly run forever
+    client = genai.Client(api_key=key, http_options=genai.types.HttpOptions(timeout=600_000))
     _client_key[id(client)] = n
     return client
 
