@@ -28,6 +28,7 @@
   "sports": {
     "videos_per_day": 2,
     "post_times": ["19:00", "23:00"],
+    "lane_plan": ["news", "fun_fact"],
     "history_urls": [
       "https://www.youtube.com/@PLAim-g1x/shorts"
     ],

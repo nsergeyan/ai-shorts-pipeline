@@ -56,8 +56,14 @@ def _pick_series(cfg, slot, used):
     return f"Find a {pick['name']} idea."
 
 
+def _pick_lane(cfg, slot):
+    """Today's lane for this video, from lane_plan in schedule.json (news, fun_fact, ...)."""
+    plan = cfg.get("lane_plan")
+    return plan[slot % len(plan)].replace("_", " ").upper() if plan else None
+
+
 def _build_prompt(channel, slot=0):
-    """Fill {{DATE}}, {{USED_VIDEOS}} and {{SERIES}}. slot is the video's number in today's plan."""
+    """Fill {{DATE}}, {{USED_VIDEOS}}, {{SERIES}} and {{LANE}}. slot is the video's number in today's plan."""
     cfg = load_schedule()[channel]
     with open(PROMPTS[channel]) as f:
         prompt = f.read()
@@ -67,6 +73,9 @@ def _build_prompt(channel, slot=0):
         raise ValueError(f"{PROMPTS[channel]} has {{{{SERIES}}}} but schedule.json has no series_plan for {channel}")
     prompt = prompt.replace("{{DATE}}", datetime.date.today().strftime("%B %d %Y"))
     prompt = prompt.replace("{{USED_VIDEOS}}", format_used_videos(used))
+    lane = _pick_lane(cfg, slot)
+    if lane:
+        prompt = prompt.replace("{{LANE}}", lane)
     if series:
         prompt = prompt.replace("{{SERIES}}", series)
     return prompt
