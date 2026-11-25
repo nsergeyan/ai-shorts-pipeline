@@ -90,7 +90,7 @@ def _publish(path, job, accounts, when=None):
                 # TikTok has one caption: the title, then the description's teaser and hashtags
                 caption = f"{job['title']}\n\n{job['description']}" if job.get("description") else job["title"]
                 tiktok_uploader.post(video, caption, cfg.get("privacy", "public"), job.get("thumbnail_path"),
-                                     schedule_at=when)
+                                     schedule_at=when, profile=cfg.get("profile"))
                 job["published"][platform] = datetime.datetime.now().isoformat(timespec="seconds")
         except Exception as e:
             job["publish_errors"][platform] = job["publish_errors"].get(platform, 0) + 1

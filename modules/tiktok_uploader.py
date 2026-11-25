@@ -3,6 +3,9 @@
 One-time login, kept in tokens/tiktok_browser/ (a Chrome profile only this tool uses):
     python -m modules.tiktok_uploader login
 
+A second account gets its own profile folder (schedule.json "profile" of that channel):
+    python -m modules.tiktok_uploader login tokens/tiktok_browser_sports
+
 Test post of any file:
     python -m modules.tiktok_uploader post <video.mp4> "caption #tags" [public|private] [cover.png] [2026-11-22T15:00]
 
@@ -26,10 +29,10 @@ UPLOAD_WAIT_MS = 10 * 60 * 1000  # processing a 40MB short can take a few minute
 PRIVACY_LABELS = {"public": "Everyone", "friends": "Friends", "private": "Only you"}
 
 
-def _open(p):
+def _open(p, profile=None):
     # Real Chrome (channel="chrome") and a visible window: TikTok blocks headless browsers more often
     return p.chromium.launch_persistent_context(
-        PROFILE_DIR, channel="chrome", headless=False,
+        os.path.join(BASE_DIR, profile) if profile else PROFILE_DIR, channel="chrome", headless=False,
         viewport={"width": 1400, "height": 900}, args=["--disable-blink-features=AutomationControlled"],
     )
 
@@ -44,9 +47,9 @@ def _screenshot(page, name):
         pass
 
 
-def login():
+def login(profile=None):
     with sync_playwright() as p:
-        ctx = _open(p)
+        ctx = _open(p, profile)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         page.goto("https://www.tiktok.com/login")
         input("Log in to the TikTok account in the Chrome window, then press Enter here...")
@@ -166,11 +169,11 @@ def _set_schedule(page, when):
     print(f"  TikTok: scheduled for {want_date} {want_time}")
 
 
-def post(video_path, caption, privacy="public", cover_path=None, schedule_at=None):
+def post(video_path, caption, privacy="public", cover_path=None, schedule_at=None, profile=None):
     """Upload one video and wait until TikTok confirms it. schedule_at (local datetime, 15 min
     to 10 days ahead, minutes in steps of 5) makes TikTok publish it later by itself."""
     with sync_playwright() as p:
-        ctx = _open(p)
+        ctx = _open(p, profile)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         step = "open"
         try:
@@ -234,11 +237,12 @@ def post(video_path, caption, privacy="public", cover_path=None, schedule_at=Non
 
 if __name__ == "__main__":
     if sys.argv[1:2] == ["login"]:
-        login()
+        # Optional profile folder for a second account, e.g. tokens/tiktok_browser_sports
+        login(sys.argv[2] if len(sys.argv) > 2 else None)
     elif sys.argv[1:2] == ["post"] and len(sys.argv) >= 4:
         args = sys.argv[2:] + [None] * 4
         when = datetime.datetime.fromisoformat(args[4]) if args[4] else None
         post(args[0], args[1], args[2] or "private", args[3] or None, when)
     else:
-        sys.exit("Usage: python -m modules.tiktok_uploader login | "
+        sys.exit("Usage: python -m modules.tiktok_uploader login [profile_dir] | "
                  "post <video> <caption> [public|private] [cover.png] [2026-11-22T15:00]")

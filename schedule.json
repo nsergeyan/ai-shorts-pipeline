@@ -30,12 +30,17 @@
     "post_times": ["19:00", "23:00"],
     "lane_plan": ["news", "fun_fact"],
     "history_urls": [
-      "https://www.youtube.com/@PLAim-g1x/shorts"
+      "https://www.youtube.com/@PLAim-g1x/shorts",
+      "https://www.tiktok.com/@plaimgm"
     ],
     "youtube": {
       "token": "tokens/youtube_sports.json",
       "category_id": "17",
       "privacy": "public"
+    },
+    "tiktok": {
+      "privacy": "public",
+      "profile": "tokens/tiktok_browser_sports"
     }
   }
 }
