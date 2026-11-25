@@ -2391,6 +2391,9 @@ OUTPUT: Return ONLY valid JSON, no explanation, no markdown.
     text = _fix_timestamps(re.sub(r"```json|```", "", response.text).strip())
     try:
         result = json.loads(text)
+        # Gemini sometimes wraps the object in a one-item list
+        if isinstance(result, list) and result:
+            result = result[0]
         vi = min(max(result.get("video_index", 0), 0), len(video_paths) - 1)
         dur = video_durations[vi]
         lo, hi = 10.0, max(dur - 30.0 - 2.0, 0.0)
