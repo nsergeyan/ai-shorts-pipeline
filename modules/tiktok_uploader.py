@@ -14,6 +14,7 @@ to data/jobs/logs/ so the selector below can be fixed.
 """
 import datetime
 import os
+import re
 import sys
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
@@ -60,8 +61,9 @@ def login(profile=None):
         ctx.close()
 
 
-# Popups that cover the form: the feature tour and the cookie banner
-POPUP_BUTTONS = ["Got it", "Decline optional cookies", "Not now", "Skip"]
+# Popups that cover the form: the content checks and scheduled posting dialogs (new accounts, modals that block
+# every other click, so they go first), the feature tour and the cookie banner
+POPUP_BUTTONS = ["Turn on", "Allow", "Got it", "Decline optional cookies", "Not now", "Skip"]
 
 
 def _dismiss_popups(page):
@@ -146,6 +148,9 @@ def _set_schedule(page, when):
     page.get_by_text("Schedule", exact=True).first.click()
     page.wait_for_timeout(1000)
     _dismiss_popups(page)
+    # The new picker has a time and a date input; the old one can also have a single input (the timezone box)
+    if page.locator(".scheduled-picker input").count() >= 2:
+        return _set_schedule_inputs(page, when)
 
     date_box = page.locator('[aria-label="Select date"]')
     date_box.click()
@@ -164,6 +169,38 @@ def _set_schedule(page, when):
 
     shown_date, shown_time = date_box.inner_text().strip(), time_box.inner_text().strip()
     want_date, want_time = f"{when:%b} {when.day}, {when.year}", f"{when:%H:%M}"
+    if (shown_date, shown_time) != (want_date, want_time):
+        raise RuntimeError(f"schedule shows {shown_date} {shown_time}, wanted {want_date} {want_time}")
+    print(f"  TikTok: scheduled for {want_date} {want_time}")
+
+
+def _set_schedule_inputs(page, when):
+    """The newer picker some accounts get (the F1 one): a time box ("12:30") with hour and minute
+    columns, then a date box ("2026-11-26") with a one-month calendar. Date first, then time."""
+    boxes = page.locator(".scheduled-picker input")
+    time_box, date_box = boxes.nth(0), boxes.nth(1)
+
+    date_box.click()
+    page.wait_for_timeout(800)
+    calendar = page.locator(".calendar-wrapper")
+    # Schedules reach at most 10 days ahead, so the day is in this month or the next one
+    if calendar.locator(".month-title").inner_text().strip() != f"{when:%B}":
+        calendar.locator(".arrow").last.click()
+        page.wait_for_timeout(500)
+    calendar.locator("span.day.valid", has_text=re.compile(rf"^{when.day}$")).click()
+    page.wait_for_timeout(800)
+
+    time_box.click()
+    page.wait_for_timeout(800)
+    columns = page.locator(".tiktok-timepicker-time-picker-container .tiktok-timepicker-option-list")
+    columns.nth(0).locator(".tiktok-timepicker-option-item", has_text=re.compile(rf"^{when.hour:02d}$")).click()
+    page.wait_for_timeout(500)
+    columns.nth(1).locator(".tiktok-timepicker-option-item", has_text=re.compile(rf"^{when.minute:02d}$")).click()
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(800)
+
+    shown_date, shown_time = date_box.input_value(), time_box.input_value()
+    want_date, want_time = f"{when:%Y-%m-%d}", f"{when:%H:%M}"
     if (shown_date, shown_time) != (want_date, want_time):
         raise RuntimeError(f"schedule shows {shown_date} {shown_time}, wanted {want_date} {want_time}")
     print(f"  TikTok: scheduled for {want_date} {want_time}")
