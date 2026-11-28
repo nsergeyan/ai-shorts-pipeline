@@ -14,7 +14,11 @@
       {"name": "Death Note", "match": ["death note", "#deathnote"]},
       {"name": "Solo Leveling", "match": ["solo leveling", "sololeveling"]},
       {"name": "Arcane", "match": ["arcane"]},
-      {"name": "Spy x Family", "match": ["spy x family", "spyxfamily"]}
+      {"name": "One Punch Man", "match": ["one punch man", "saitama", "#opm"]},
+      {"name": "The Amazing Digital Circus", "match": ["digital circus", "#tadc", "pomni"]},
+      {"name": "Murder Drones", "match": ["murder drone", "murderdrones"]},
+      {"name": "Hazbin Hotel", "match": ["hazbin", "alastor"]},
+      {"name": "Helluva Boss", "match": ["helluva", "blitzo"]}
     ],
     "youtube": {
       "token": "tokens/youtube_anime.json",
